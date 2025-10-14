@@ -30,7 +30,7 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 
 // Hello World kuy fluke nahee
-console.log("Hatsarak");
+console.log("onnum");
 
 
 // --- SVG Icons ---
