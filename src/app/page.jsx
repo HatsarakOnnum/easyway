@@ -12,7 +12,7 @@ import {
     onAuthStateChanged,
     signOut
 } from "firebase/auth";
-
+// before admin reject user
 // ***** ⬇️⬇️⬇️ สำคัญมาก! คัดลอก Config ที่ถูกต้องจาก Firebase Console มาวางทับตรงนี้ทั้งหมด ⬇️⬇️⬇️ *****
 // Your web app's Firebase configuration
 const firebaseConfig = {
