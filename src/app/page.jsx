@@ -3,8 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 // --- Firebase Initialization ---
 import { initializeApp } from "firebase/app";
-// *** เพิ่ม import สำหรับ CRUD ***
-import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, setDoc, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, onSnapshot, addDoc, doc, setDoc, deleteDoc, where, query, updateDoc, increment, serverTimestamp } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { 
     getAuth, 
     createUserWithEmailAndPassword, 
@@ -13,9 +13,10 @@ import {
     signOut
 } from "firebase/auth";
 
+// ***** ⬇️⬇️⬇️ สำคัญมาก! คัดลอก Config ที่ถูกต้องจาก Firebase Console มาวางทับตรงนี้ทั้งหมด ⬇️⬇️⬇️ *****
 // Your web app's Firebase configuration
 const firebaseConfig = {
-  apiKey: "AIzaSyDkAJ0WxSm1NbgPMHXx6MByAryRQkRxqVA",
+    apiKey: "AIzaSyDkAJ0WxSm1NbgPMHXx6MByAryRQkRxqVA",
   authDomain: "easyway-40e1b.firebaseapp.com",
   projectId: "easyway-40e1b",
   storageBucket: "easyway-40e1b.firebasestorage.app",
@@ -23,14 +24,13 @@ const firebaseConfig = {
   appId: "1:371724947061:web:a48a31d9cfe3138c84b23c",
   measurementId: "G-8P4JG1N4GC"
 };
+// ***** ⬆️⬆️⬆️ สำคัญมาก! คัดลอก Config ที่ถูกต้องจาก Firebase Console มาวางทับตรงนี้ทั้งหมด ⬆️⬆️⬆️ *****
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const auth = getAuth(app);
-
-// Hello World kuy fluke nahee
-console.log("thank you N'fluke");
+const storage = getStorage(app);
 
 
 // --- SVG Icons ---
@@ -41,14 +41,53 @@ const SearchIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 
 const GpsIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v.01M12 12v.01M12 16v.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
 const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>;
 const MinusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 12H6" /></svg>;
-const CarIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14h-5v-4h5m2 4h-2m2 0l-1-4H8l-1 4m10 0v4a1 1 0 01-1 1H8a1 1 0 01-1-1v-4m10 0a2 2 0 100-4 2 2 0 000 4z" /></svg>;
-const MotorcycleIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 16l-4-4m0 0l4-4m-4 4h12m-6 4a2 2 0 100-4 2 2 0 000 4z" /></svg>;
+const MotorcycleIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/>
+        <path d="M15 17.5V9.5l-3.6-4.2c-.2-.2-.5-.3-.8-.3H5.5"/>
+        <path d="m8 17.5 4-4"/><path d="M8 13h4.5"/>
+    </svg>
+);
+const BusIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/>
+        <circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>
+    </svg>
+);
+const AddPinIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle>
+        <line x1="12" y1="7" x2="12" y2="13"></line><line x1="9" y1="10" x2="15" y2="10"></line>
+    </svg>
+);
+const LikeIcon = ({ isLiked }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${isLiked ? 'text-blue-600' : 'text-gray-700'}`} viewBox="0 0 24 24" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path>
+    </svg>
+);
+const SaveIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>;
+const PriceIcon = () => (
+    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M8 7h5a3 3 0 0 1 0 6H8V7z"></path>
+        <path d="M8 13h5a3 3 0 0 1 0 6H8v-6z"></path>
+        <path d="M12 4v16"></path>
+    </svg>
+);
+const ReviewIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>;
+const StarIcon = ({ className, filled, half }) => (
+    <svg xmlns="http://www.w3.org/2000/svg" className={`h-5 w-5 ${className}`} viewBox="0 0 20 20" fill="currentColor">
+        <defs><linearGradient id="half_grad"><stop offset="50%" stopColor="currentColor" /><stop offset="50%" stopColor="#d1d5db" stopOpacity="1" /></linearGradient></defs>
+        <path fill={half ? "url(#half_grad)" : (filled ? "currentColor" : "none")} stroke="currentColor" strokeWidth="1" d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+    </svg>
+);
+const ReportIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>;
+const ImageIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>;
 
 
 // --- Authentication Screens ---
 function WelcomeScreen({ setView }) {
     return (
-        <div className="relative w-full h-screen bg-cover bg-center text-white" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%D%3D')" }}>
+        <div className="relative w-full h-screen bg-cover bg-center text-white" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
             <div className="absolute inset-0 flex flex-col justify-center items-center p-8" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}>
                 <div className="text-center"><h1 className="text-6xl md:text-8xl font-bold tracking-wider">EW</h1><p className="text-2xl md:text-3xl font-light tracking-widest mt-2">EASYWAY</p></div>
                 <div className="mt-16 text-center"><h2 className="text-3xl md:text-4xl font-semibold">Welcome To The App EasyWay</h2><p className="mt-4 text-lg md:text-xl italic text-gray-300">"Every Journey Starts With A Single Pin."</p></div>
@@ -90,7 +129,7 @@ function LoginScreen({ setView }) {
                     </form>
                 </div>
             </div>
-            <div className="hidden lg:flex w-1/2 relative items-center justify-center"><img src="https://images.unsplash.com/photo-1533122250115-61328808de74?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%D%3D" alt="Driving with map" className="w-full h-full object-cover"/></div>
+            <div className="hidden lg:flex w-1/2 relative items-center justify-center"><img src="https://images.unsplash.com/photo-1562953510-621350a4d34f?q=80&w=1964&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Driving with map" className="w-full h-full object-cover"/></div>
         </div>
     );
 }
@@ -107,12 +146,12 @@ function SignUpScreen({ setView }) {
         }
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-            // After user is created, save user info to 'users' collection
             const user = userCredential.user;
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 email: user.email,
-                createdAt: new Date()
+                createdAt: new Date(),
+                status: 'active'
             });
         } catch (err) {
             setError("Failed to create an account. The email may already be in use.");
@@ -133,7 +172,7 @@ function SignUpScreen({ setView }) {
                     </form>
                 </div>
             </div>
-            <div className="hidden lg:flex w-1/2 relative items-center justify-center"><img src="https://images.unsplash.com/photo-1611702859239-401736b47c05?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%D%3D" alt="Person working on laptop" className="w-full h-full object-cover"/></div>
+            <div className="hidden lg:flex w-1/2 relative items-center justify-center"><img src="https://images.unsplash.com/photo-1611702859239-401736b47c05?q=80&w=1974&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" alt="Person working on laptop" className="w-full h-full object-cover"/></div>
         </div>
     );
 }
@@ -150,6 +189,7 @@ const ManageUsers = () => {
     const [users, setUsers] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         const unsubscribe = onSnapshot(collection(db, "users"), (snapshot) => {
@@ -169,39 +209,66 @@ const ManageUsers = () => {
         setEditingUser(null);
     };
 
-    const handleDelete = async (user) => {
-        if (window.confirm(`Are you sure you want to delete user ${user.email}?`)) {
-            // Deleting from Firestore 'users' collection
-            await deleteDoc(doc(db, "users", user.id));
-            alert(`User ${user.email} deleted from Firestore. Auth user must be deleted from the Firebase Console or a backend function.`);
+    const handleToggleUserStatus = async (user) => {
+        const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
+        const actionVerb = newStatus === 'active' ? 'activate' : 'suspend';
+
+        if (window.confirm(`Are you sure you want to ${actionVerb} user ${user.email}?`)) {
+            const userRef = doc(db, "users", user.id);
+            await updateDoc(userRef, { status: newStatus });
+            alert(`User status changed in Firestore. IMPORTANT: This does NOT prevent the user from logging in. To fully ${actionVerb} a user, you must disable their account in the Firebase Authentication console or using the Admin SDK.`);
         }
     };
+
+    const filteredUsers = users.filter(user => 
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div>
             <div className="flex justify-between items-center mb-5">
                 <h2 className="text-3xl font-bold">Manage Users</h2>
-                <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add User</button>
+                <div className="flex items-center space-x-4">
+                    <input 
+                        type="text"
+                        placeholder="Search by email..."
+                        className="px-4 py-2 border rounded-lg"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add User</button>
+                </div>
             </div>
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">User ID</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Created At</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {users.map(user => (
+                        {filteredUsers.map(user => (
                             <tr key={user.id}>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{user.email}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{user.uid}</td>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{user.createdAt?.toDate().toLocaleString()}</td>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                        user.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {user.status || 'active'}
+                                    </span>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
                                     <button onClick={() => handleOpenModal(user)} className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
-                                    <button onClick={() => handleDelete(user)} className="text-red-600 hover:text-red-900">Delete</button>
+                                    <button 
+                                        onClick={() => handleToggleUserStatus(user)} 
+                                        className={user.status === 'suspended' ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}
+                                    >
+                                        {user.status === 'suspended' ? 'Activate' : 'Suspend'}
+                                    </button>
                                 </td>
                             </tr>
                         ))}
@@ -223,12 +290,12 @@ const UserFormModal = ({ currentUser, onClose }) => {
         setError('');
 
         if (currentUser) {
-            // Edit mode
+            // Edit mode - Firestore only
             const userRef = doc(db, "users", currentUser.id);
-            await setDoc(userRef, { ...currentUser, email: email });
+            await updateDoc(userRef, { email: email });
             onClose();
         } else {
-            // Add mode
+            // Add mode - Auth and Firestore
             if (password.length < 6) {
                 setError("Password should be at least 6 characters.");
                 return;
@@ -239,7 +306,8 @@ const UserFormModal = ({ currentUser, onClose }) => {
                 await setDoc(doc(db, "users", user.uid), {
                     uid: user.uid,
                     email: user.email,
-                    createdAt: new Date()
+                    createdAt: new Date(),
+                    status: 'active'
                 });
                 onClose();
             } catch (err) {
@@ -267,7 +335,7 @@ const UserFormModal = ({ currentUser, onClose }) => {
                                 value={password} 
                                 onChange={e => setPassword(e.target.value)} 
                                 className="w-full px-3 py-2 border rounded disabled:bg-gray-200" 
-                                placeholder={currentUser ? "Password can't be changed here" : ""}
+                                placeholder={currentUser ? "Password cannot be changed here" : ""}
                                 required={!currentUser} 
                                 disabled={!!currentUser} 
                             />
@@ -287,15 +355,18 @@ const UserFormModal = ({ currentUser, onClose }) => {
 const ManageLocations = ({ onViewLocation }) => {
     const [locations, setLocations] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [currentLocation, setCurrentLocation] = useState(null); // For editing
+    const [currentLocation, setCurrentLocation] = useState(null);
+    const [searchTerm, setSearchTerm] = useState('');
+    const [statusFilter, setStatusFilter] = useState('approved');
     
     useEffect(() => {
-        const unsubscribe = onSnapshot(collection(db, "locations"), (snapshot) => {
+        const q = query(collection(db, "locations"), where("status", "==", statusFilter));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
             const locsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setLocations(locsData);
         });
         return () => unsubscribe();
-    }, []);
+    }, [statusFilter]);
 
     const handleOpenModal = (loc = null) => {
         setCurrentLocation(loc);
@@ -312,34 +383,65 @@ const ManageLocations = ({ onViewLocation }) => {
             await deleteDoc(doc(db, "locations", id));
         }
     };
+    
+    const handleApprove = async (id) => {
+        const locRef = doc(db, "locations", id);
+        await setDoc(locRef, { status: 'approved' }, { merge: true });
+    };
+
+    const filteredLocations = locations.filter(loc => 
+        loc.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
     return (
         <div>
             <div className="flex justify-between items-center mb-5">
                 <h2 className="text-3xl font-bold">Manage Locations</h2>
-                <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Location</button>
+                <div className="flex items-center space-x-4">
+                     <input 
+                        type="text"
+                        placeholder="Search by name..."
+                        className="px-4 py-2 border rounded-lg"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Location</button>
+                </div>
             </div>
+            
+            <div className="mb-4 border-b border-gray-200">
+                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button onClick={() => setStatusFilter('approved')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'approved' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                        Approved Locations
+                    </button>
+                    <button onClick={() => setStatusFilter('pending')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'pending' ? 'border-indigo-500 text-indigo-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'}`}>
+                        Pending Requests
+                    </button>
+                </nav>
+            </div>
+
 
             <div className="bg-white shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full leading-normal">
                      <thead>
                         <tr>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pin Name</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Latitude</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Longitude</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Type</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {locations.map(loc => (
+                        {filteredLocations.map(loc => (
                             <tr key={loc.id}>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{loc.name}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{loc.lat}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{loc.lng}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm capitalize">{loc.type}</td>
                                 <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
                                     <button onClick={() => onViewLocation(loc)} className="text-blue-600 hover:text-blue-900 mr-4">View</button>
+                                    {statusFilter === 'pending' && (
+                                         <button onClick={() => handleApprove(loc.id)} className="text-green-600 hover:text-green-900 mr-4">Approve</button>
+                                    )}
                                     <button onClick={() => handleOpenModal(loc)} className="text-indigo-600 hover:text-indigo-900 mr-4">Edit</button>
-                                    <button onClick={() => handleDelete(loc.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                    <button onClick={() => handleDelete(loc.id)} className="text-red-600 hover:text-red-900">Reject</button>
                                 </td>
                             </tr>
                         ))}
@@ -347,87 +449,73 @@ const ManageLocations = ({ onViewLocation }) => {
                 </table>
             </div>
             
-            {isModalOpen && <LocationFormModal currentLocation={currentLocation} onClose={handleCloseModal} />}
+            {isModalOpen && <LocationFormModal currentLocation={currentLocation} onClose={handleCloseModal} onSuccess={handleCloseModal}/>}
         </div>
     );
 };
 
-const LocationFormModal = ({ currentLocation, onClose }) => {
-    const [name, setName] = useState(currentLocation?.name || '');
-    const [lat, setLat] = useState(currentLocation?.lat || '');
-    const [lng, setLng] = useState(currentLocation?.lng || '');
-    const [routes, setRoutes] = useState(currentLocation?.routes || [{ destination: '', price: '' }]);
-    
-    const handleRouteChange = (index, field, value) => {
-        const newRoutes = [...routes];
-        if (field === 'price') {
-             newRoutes[index][field] = Number(value);
-        } else {
-            newRoutes[index][field] = value;
-        }
-        setRoutes(newRoutes);
+const ManageReports = () => {
+    const [reports, setReports] = useState([]);
+
+    useEffect(() => {
+        const q = query(collection(db, "reports"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const reportsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setReports(reportsData);
+        });
+        return () => unsubscribe();
+    }, []);
+
+    const handleStatusChange = async (reportId, newStatus) => {
+        const reportRef = doc(db, "reports", reportId);
+        await updateDoc(reportRef, { status: newStatus });
     };
 
-    const addRoute = () => {
-        setRoutes([...routes, { destination: '', price: '' }]);
-    };
-    
-    const removeRoute = (index) => {
-        const newRoutes = routes.filter((_, i) => i !== index);
-        setRoutes(newRoutes);
-    };
-    
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        const locationData = { name, lat: Number(lat), lng: Number(lng), routes };
-        
-        if (currentLocation) {
-            // Update
-            await setDoc(doc(db, "locations", currentLocation.id), locationData);
-        } else {
-            // Add new
-            await addDoc(collection(db, "locations"), locationData);
+    const handleDelete = async (reportId) => {
+        if (window.confirm("Are you sure you want to delete this report?")) {
+            await deleteDoc(doc(db, "reports", reportId));
         }
-        onClose();
     };
-
+    
     return (
-        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div className="relative top-20 mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white">
-                <form onSubmit={handleSubmit}>
-                    <h3 className="text-xl font-bold mb-4">{currentLocation ? 'Edit Location' : 'Add New Location'}</h3>
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block">Pin Name</label>
-                            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded" required />
-                        </div>
-                        <div className="flex space-x-4">
-                            <div className="w-1/2">
-                                <label className="block">Latitude</label>
-                                <input type="number" step="any" value={lat} onChange={e => setLat(e.target.value)} className="w-full px-3 py-2 border rounded" required />
-                            </div>
-                            <div className="w-1/2">
-                                <label className="block">Longitude</label>
-                                <input type="number" step="any" value={lng} onChange={e => setLng(e.target.value)} className="w-full px-3 py-2 border rounded" required />
-                            </div>
-                        </div>
-                        <div>
-                            <h4 className="font-semibold mt-4">Places & Prices</h4>
-                            {routes.map((route, index) => (
-                                <div key={index} className="flex items-center space-x-2 mt-2">
-                                    <input type="text" placeholder="Place (e.g., Plum phase 1)" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="w-1/2 px-3 py-2 border rounded" />
-                                    <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-1/3 px-3 py-2 border rounded" />
-                                    <button type="button" onClick={() => removeRoute(index)} className="bg-red-500 text-white p-2 rounded">-</button>
-                                </div>
-                            ))}
-                            <button type="button" onClick={addRoute} className="mt-2 bg-gray-200 px-4 py-2 rounded text-sm">+ Add Route</button>
-                        </div>
-                    </div>
-                    <div className="flex justify-end mt-6">
-                        <button type="button" onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2">Cancel</button>
-                        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
-                    </div>
-                </form>
+        <div>
+            <h2 className="text-3xl font-bold mb-5">Manage Reports</h2>
+            <div className="bg-white shadow-md rounded-lg overflow-x-auto">
+                <table className="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Location Name</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Report Details</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Reported By</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Date</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Status</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 bg-gray-100 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {reports.map(report => (
+                            <tr key={report.id}>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{report.locationName}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm max-w-xs break-words">{report.reportText}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{report.userEmail}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm">{report.createdAt?.toDate().toLocaleString()}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                                    <select 
+                                        value={report.status}
+                                        onChange={(e) => handleStatusChange(report.id, e.target.value)}
+                                        className={`p-1 rounded text-xs ${report.status === 'resolved' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}
+                                    >
+                                        <option value="pending">Pending</option>
+                                        <option value="resolved">Resolved</option>
+                                    </select>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 bg-white text-sm text-center">
+                                    <button onClick={() => handleDelete(report.id)} className="text-red-600 hover:text-red-900">Delete</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
     );
@@ -488,6 +576,8 @@ function AdminDashboard() {
                 return <ManageUsers />;
             case 'locations':
                 return <ManageLocations onViewLocation={setViewingLocation} />;
+            case 'reports':
+                return <ManageReports />;
             case 'dashboard':
             default:
                 return <DashboardHome />;
@@ -502,7 +592,7 @@ function AdminDashboard() {
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('dashboard'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'dashboard' && !viewingLocation ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Dashboard</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'users' && !viewingLocation ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Manage Users</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'locations' && !viewingLocation ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Manage Locations</a>
-                    <a href="#" className="p-2 rounded hover:bg-gray-700">Reports</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'reports' && !viewingLocation ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Manage Reports</a>
                 </nav>
                 <button 
                     onClick={handleSignOut} 
@@ -518,9 +608,360 @@ function AdminDashboard() {
     );
 }
 
+const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess }) => {
+    const [name, setName] = useState(currentLocation?.name || '');
+    const [lat, setLat] = useState(currentLocation?.lat || initialCoords?.lat || '');
+    const [lng, setLng] = useState(currentLocation?.lng || initialCoords?.lng || '');
+    const [type, setType] = useState(currentLocation?.type || 'motorcycle');
+    const [routes, setRoutes] = useState(currentLocation?.routes || [{ destination: '', price: '' }]);
+    const [imageFile, setImageFile] = useState(null);
+    const [uploading, setUploading] = useState(false);
+    const [error, setError] = useState('');
+    
+    const handleRouteChange = (index, field, value) => {
+        const newRoutes = [...routes];
+        newRoutes[index][field] = field === 'price' ? Number(value) : value;
+        setRoutes(newRoutes);
+    };
+
+    const addRoute = () => setRoutes([...routes, { destination: '', price: '' }]);
+    const removeRoute = (index) => setRoutes(routes.filter((_, i) => i !== index));
+    
+    const handleImageChange = (e) => {
+        if (e.target.files[0]) {
+            setImageFile(e.target.files[0]);
+        }
+    };
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setError('');
+        if (!imageFile && !currentLocation?.imageUrl) {
+            setError("Please upload an image for the location.");
+            return;
+        }
+
+        setUploading(true);
+        let imageUrl = currentLocation?.imageUrl || '';
+
+        try {
+            if (imageFile) {
+                const storageRef = ref(storage, `locations/${Date.now()}-${imageFile.name}`);
+                const snapshot = await uploadBytes(storageRef, imageFile);
+                imageUrl = await getDownloadURL(snapshot.ref);
+            }
+
+            const locationData = { 
+                name, 
+                lat: Number(lat), 
+                lng: Number(lng), 
+                type, 
+                routes, 
+                imageUrl,
+                status: currentLocation?.status || 'pending', 
+                submittedBy: auth.currentUser.uid 
+            };
+            
+            if (currentLocation) {
+                await setDoc(doc(db, "locations", currentLocation.id), locationData, { merge: true });
+            } else {
+                await addDoc(collection(db, "locations"), locationData);
+            }
+
+            onSuccess();
+        } catch (err) {
+            console.error("Error submitting location:", err);
+            setError("Failed to submit location. Please try again.");
+        } finally {
+            setUploading(false);
+        }
+    };
+
+    return (
+        <div 
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <div 
+                className="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <form onSubmit={handleSubmit}>
+                    <h3 className="text-xl font-bold mb-4">{currentLocation ? 'Edit Location' : 'Add New Location'}</h3>
+                    {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+                    <div className="space-y-4">
+                        <div>
+                            <label className="block">Pin Name</label>
+                            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded" required />
+                        </div>
+                        <div className="flex space-x-4">
+                            <div className="w-1/2">
+                                <label className="block">Latitude</label>
+                                <input type="number" step="any" value={lat} onChange={e => setLat(e.target.value)} className="w-full px-3 py-2 border rounded bg-gray-100" readOnly required />
+                            </div>
+                            <div className="w-1/2">
+                                <label className="block">Longitude</label>
+                                <input type="number" step="any" value={lng} onChange={e => setLng(e.target.value)} className="w-full px-3 py-2 border rounded bg-gray-100" readOnly required />
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block">Type</label>
+                            <select value={type} onChange={e => setType(e.target.value)} className="w-full px-3 py-2 border rounded bg-white">
+                                <option value="motorcycle">วินมอเตอร์ไซค์</option>
+                                <option value="songthaew">สองแถว</option>
+                            </select>
+                        </div>
+                        <div>
+                           <label className="block">Location Image</label>
+                           <input type="file" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"/>
+                           {imageFile && <p className="text-xs text-gray-500 mt-1">Selected: {imageFile.name}</p>}
+                        </div>
+                        <div>
+                            <h4 className="font-semibold mt-4">Places & Prices</h4>
+                            {routes.map((route, index) => (
+                                <div key={index} className="flex items-center space-x-2 mt-2">
+                                    <input type="text" placeholder="Place (e.g., Plum phase 1)" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="w-1/2 px-3 py-2 border rounded" />
+                                    <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-1/3 px-3 py-2 border rounded" />
+                                    <button type="button" onClick={() => removeRoute(index)} className="bg-red-500 text-white p-2 rounded">-</button>
+                                </div>
+                            ))}
+                            <button type="button" onClick={addRoute} className="mt-2 bg-gray-200 px-4 py-2 rounded text-sm">+ Add Route</button>
+                        </div>
+                    </div>
+                    <div className="flex justify-end mt-6">
+                        <button type="button" onClick={onClose} className="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded mr-2">Cancel</button>
+                        <button type="submit" disabled={uploading} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300">
+                            {uploading ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
+//--- ⭐⭐ Feature Components ⭐⭐ ---
+const StarRatingDisplay = ({ rating = 0, count = 0 }) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+        if (i <= rating) {
+            stars.push(<StarIcon key={i} className="text-yellow-400" filled />);
+        } else if (i === Math.ceil(rating) && !Number.isInteger(rating)) {
+            stars.push(<StarIcon key={i} className="text-yellow-400" half />);
+        } else {
+            stars.push(<StarIcon key={i} className="text-gray-300" filled />);
+        }
+    }
+    return <div className="flex items-center">{stars} <span className="ml-2 text-sm text-gray-500">({count || 0} reviews)</span></div>;
+};
+
+const StarRatingInput = ({ rating, setRating }) => {
+    const [hover, setHover] = useState(0);
+    return (
+        <div className="flex space-x-1">
+            {[...Array(5)].map((_, index) => {
+                const ratingValue = index + 1;
+                return (
+                    <label key={index}>
+                        <input type="radio" name="rating" value={ratingValue} onClick={() => setRating(ratingValue)} className="hidden" />
+                        <StarIcon 
+                            className={`cursor-pointer transition-colors duration-200 ${ratingValue <= (hover || rating) ? 'text-yellow-400' : 'text-gray-300'}`}
+                            onMouseEnter={() => setHover(ratingValue)}
+                            onMouseLeave={() => setHover(0)}
+                            filled
+                        />
+                    </label>
+                );
+            })}
+        </div>
+    );
+};
+
+const ReviewsModal = ({ location, user, onClose }) => {
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [newReviewText, setNewReviewText] = useState('');
+    const [newRating, setNewRating] = useState(0);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (!location) return;
+        setLoading(true);
+        const q = query(collection(db, "reviews"), where("locationId", "==", location.id));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const reviewsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setReviews(reviewsData);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [location]);
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        if (!user) {
+            setError("Please log in to submit a review.");
+            return;
+        }
+        if (newRating === 0) {
+            setError("Please select a star rating.");
+            return;
+        }
+        if (newReviewText.trim() === '') {
+            setError("Please write a review.");
+            return;
+        }
+
+        setError('');
+
+        const reviewData = {
+            locationId: location.id,
+            userId: user.uid,
+            userEmail: user.email,
+            rating: newRating,
+            text: newReviewText,
+            createdAt: new Date(),
+        };
+        await addDoc(collection(db, "reviews"), reviewData);
+
+        const locationRef = doc(db, "locations", location.id);
+        const newReviewCount = (location.reviewCount || 0) + 1;
+        const newAvgRating = ((location.avgRating || 0) * (location.reviewCount || 0) + newRating) / newReviewCount;
+        
+        await setDoc(locationRef, {
+            reviewCount: newReviewCount,
+            avgRating: newAvgRating,
+        }, { merge: true });
+
+        setNewReviewText('');
+        setNewRating(0);
+    };
+
+    return (
+        <div 
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={onClose}
+        >
+            <div 
+                className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col"
+                onClick={(e) => e.stopPropagation()}
+            >
+                <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-2xl font-bold">Reviews for {location.name}</h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+                </div>
+                <div className="p-4 overflow-y-auto">
+                    {loading && <p>Loading reviews...</p>}
+                    {!loading && reviews.length === 0 && <p className="text-gray-500">No reviews yet. Be the first to write one!</p>}
+                    <div className="space-y-4">
+                        {reviews.map(review => (
+                            <div key={review.id} className="border-b pb-3 last:border-b-0">
+                                <div className="flex items-center mb-1">
+                                    <StarRatingDisplay rating={review.rating} />
+                                    <p className="ml-auto text-sm text-gray-500">{review.createdAt.toDate().toLocaleDateString()}</p>
+                                </div>
+                                <p className="font-semibold text-sm">{review.userEmail.split('@')[0]}</p>
+                                <p className="text-gray-700 mt-1">{review.text}</p>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+                <div className="p-4 border-t bg-gray-50">
+                    <h3 className="font-bold text-lg mb-2">Write a Review</h3>
+                    {user ? (
+                        <form onSubmit={handleSubmitReview}>
+                            {error && <p className="text-red-500 text-sm mb-2">{error}</p>}
+                            <div className="mb-2">
+                                <StarRatingInput rating={newRating} setRating={setNewRating} />
+                            </div>
+                            <textarea
+                                value={newReviewText}
+                                onChange={(e) => setNewReviewText(e.target.value)}
+                                className="w-full p-2 border rounded-md"
+                                rows="3"
+                                placeholder="Share your experience..."
+                            ></textarea>
+                            <button type="submit" className="mt-2 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600">
+                                Submit Review
+                            </button>
+                        </form>
+                    ) : (
+                        <p className="text-gray-600">You must be logged in to write a review.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+const ReportModal = ({ location, user, onClose }) => {
+    const [reportText, setReportText] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [error, setError] = useState('');
+
+    const handleReportSubmit = async (e) => {
+        e.preventDefault();
+        if (reportText.trim() === '') {
+            setError('Please describe the issue.');
+            return;
+        }
+        setError('');
+        setIsSubmitting(true);
+
+        try {
+            await addDoc(collection(db, 'reports'), {
+                locationId: location.id,
+                locationName: location.name,
+                reportText: reportText,
+                userId: user.uid,
+                userEmail: user.email,
+                createdAt: serverTimestamp(),
+                status: 'pending', // pending, resolved
+            });
+            alert('Report submitted successfully. Thank you!');
+            onClose();
+        } catch (err) {
+            console.error('Error submitting report:', err);
+            setError('Failed to submit report. Please try again.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/30 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white rounded-lg shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}>
+                <div className="p-4 border-b flex justify-between items-center">
+                    <h2 className="text-2xl font-bold">Report an Issue</h2>
+                    <button onClick={onClose} className="text-gray-500 hover:text-gray-800 text-3xl font-bold">&times;</button>
+                </div>
+                <form onSubmit={handleReportSubmit} className="p-4">
+                    <p className="text-sm text-gray-600 mb-2">You are reporting an issue for: <span className="font-semibold">{location.name}</span></p>
+                    <textarea
+                        value={reportText}
+                        onChange={(e) => setReportText(e.target.value)}
+                        className="w-full p-2 border rounded-md"
+                        rows="4"
+                        placeholder="Please describe the problem (e.g., incorrect price, location closed, etc.)..."
+                        required
+                    ></textarea>
+                    {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+                    <div className="flex justify-end mt-4">
+                        <button type="button" onClick={onClose} className="bg-gray-200 text-gray-800 font-bold py-2 px-4 rounded hover:bg-gray-300 mr-2">
+                            Cancel
+                        </button>
+                        <button type="submit" disabled={isSubmitting} className="bg-red-500 text-white font-bold py-2 px-4 rounded hover:bg-red-600 disabled:bg-red-300">
+                            {isSubmitting ? 'Submitting...' : 'Submit Report'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
+
 
 // --- Main App Screen (Map View) ---
-function MapScreen() {
+function MapScreen({ user }) {
     const [isMenuOpen, setMenuOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false);
     const [loadError, setLoadError] = useState(null);
@@ -528,16 +969,75 @@ function MapScreen() {
     const mapRef = useRef(null);
     const mapInstanceRef = useRef(null);
     const userMarkerRef = useRef(null);
-    const searchInputRef = useRef(null);
-    const searchMarkerRef = useRef(null);
     const isScriptInjected = useRef(false);
-    const markersRef = useRef([]); // Ref to hold the location markers
+    const markersRef = useRef([]);
+    const [searchQuery, setSearchQuery] = useState('');
+    const [filterType, setFilterType] = useState('all');
+    
+    const [pinningMode, setPinningMode] = useState(false);
+    const [tempPin, setTempPin] = useState(null);
+    const tempMarkerRef = useRef(null);
+    const [isAddLocationModalOpen, setIsAddLocationModalOpen] = useState(false);
+    const [submissionStatus, setSubmissionStatus] = useState('');
+    
+    const [selectedLocation, setSelectedLocation] = useState(null);
+    const [showPrices, setShowPrices] = useState(false);
+    const [isReviewsModalOpen, setIsReviewsModalOpen] = useState(false);
+    const [isReportModalOpen, setIsReportModalOpen] = useState(false);
+    const [userLikes, setUserLikes] = useState(new Set());
 
     const handleSignOut = async () => {
         try {
             await signOut(auth);
         } catch (error) {
             console.error("Error signing out: ", error);
+        }
+    };
+
+    useEffect(() => {
+        if (!user) {
+            setUserLikes(new Set());
+            return;
+        }
+        const likesRef = collection(db, "users", user.uid, "likes");
+        const unsubscribe = onSnapshot(likesRef, (snapshot) => {
+            const likedIds = snapshot.docs.map(doc => doc.id);
+            setUserLikes(new Set(likedIds));
+        });
+        return () => unsubscribe();
+    }, [user]);
+
+    const handleLike = async (location) => {
+        if (!user) {
+            alert("Please log in to like a location.");
+            return;
+        }
+        const locationId = location.id;
+        const locationRef = doc(db, "locations", locationId);
+        const likeRef = doc(db, "users", user.uid, "likes", locationId);
+
+        const isLiked = userLikes.has(locationId);
+        
+        // Optimistic UI updates
+        const newLikes = new Set(userLikes);
+        const currentLikeCount = location.likeCount || 0;
+        
+        if (isLiked) {
+            newLikes.delete(locationId);
+            setSelectedLocation({...location, likeCount: currentLikeCount - 1 });
+        } else {
+            newLikes.add(locationId);
+            setSelectedLocation({...location, likeCount: currentLikeCount + 1 });
+        }
+        setUserLikes(newLikes);
+
+        // Firestore updates
+        if (isLiked) {
+            await deleteDoc(likeRef);
+            await updateDoc(locationRef, { likeCount: increment(-1) });
+        } else {
+            await setDoc(likeRef, { createdAt: new Date() });
+            await updateDoc(locationRef, { likeCount: increment(1) });
         }
     };
     
@@ -550,12 +1050,9 @@ function MapScreen() {
             if (isScriptInjected.current) return;
             isScriptInjected.current = true;
             const script = document.createElement('script');
-            script.id = 'google-maps-script';
-            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyA2ndedv2-QOZ5mlwQRVaPxzhwrmpZrLrw`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDCOw5hM4WqkOfqKElOqrZag0QAiJO68HY`;
             script.async = true;
-            script.defer = true;
             window.initMap = () => setIsLoaded(true);
-            script.src += `&callback=initMap`;
             script.onerror = () => {
                 setLoadError(new Error('Could not load Google Maps script.'));
                 delete window.initMap;
@@ -567,107 +1064,136 @@ function MapScreen() {
 
     useEffect(() => {
         if (isLoaded && mapRef.current && !mapInstanceRef.current) {
-            const center = { lat: 13.7563, lng: 100.5018 };
             const map = new window.google.maps.Map(mapRef.current, {
-                center: center,
+                center: { lat: 13.7563, lng: 100.5018 },
                 zoom: 12,
                 disableDefaultUI: true,
+                clickableIcons: !pinningMode,
+                draggableCursor: pinningMode ? 'crosshair' : 'grab'
             });
             mapInstanceRef.current = map;
+        } else if (mapInstanceRef.current) {
+             mapInstanceRef.current.setOptions({
+                clickableIcons: !pinningMode,
+                draggableCursor: pinningMode ? 'crosshair' : 'grab'
+            });
         }
+    }, [isLoaded, pinningMode]);
+
+    useEffect(() => {
+        if (pinningMode && mapInstanceRef.current) {
+            const listener = mapInstanceRef.current.addListener('click', (e) => {
+                setTempPin({ lat: e.latLng.lat(), lng: e.latLng.lng() });
+            });
+            return () => window.google.maps.event.removeListener(listener);
+        }
+    }, [pinningMode, isLoaded]);
+
+    useEffect(() => {
+        if (tempMarkerRef.current) tempMarkerRef.current.setMap(null);
+        if (tempPin && mapInstanceRef.current) {
+            tempMarkerRef.current = new window.google.maps.Marker({
+                position: tempPin,
+                map: mapInstanceRef.current,
+                icon: {
+                    path: window.google.maps.SymbolPath.CIRCLE,
+                    scale: 10,
+                    fillColor: "#FF0000",
+                    fillOpacity: 1,
+                    strokeColor: "white",
+                    strokeWeight: 2,
+                },
+            });
+        }
+    }, [tempPin]);
+
+    useEffect(() => {
+        if (!isLoaded) return;
+        const q = query(collection(db, "locations"), where("status", "==", "approved"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            const locationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            setLocations(locationsData);
+        });
+        return () => unsubscribe();
     }, [isLoaded]);
 
     useEffect(() => {
-        if (isLoaded && db) {
-            const unsubscribe = onSnapshot(collection(db, "locations"), (snapshot) => {
-                const locationsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setLocations(locationsData);
+        if (!isLoaded || !mapInstanceRef.current) return;
+        
+        markersRef.current.forEach(marker => marker.setMap(null));
+        markersRef.current = [];
+        
+        const filteredLocations = locations.filter(loc => filterType === 'all' || loc.type === filterType);
+
+        filteredLocations.forEach(location => {
+            const marker = new window.google.maps.Marker({
+                position: { lat: location.lat, lng: location.lng },
+                map: mapInstanceRef.current,
+                title: location.name,
             });
-            return () => unsubscribe();
-        }
-    }, [isLoaded]);
-
-
-    useEffect(() => {
-        if (isLoaded && mapInstanceRef.current) {
-            // Clear existing markers
-            markersRef.current.forEach(marker => marker.setMap(null));
-            markersRef.current = [];
-
-            // Add new markers
-            locations.forEach(location => {
-                const marker = new window.google.maps.Marker({
-                    position: { lat: location.lat, lng: location.lng },
-                    map: mapInstanceRef.current,
-                    title: location.name,
-                });
-                markersRef.current.push(marker);
+            marker.addListener('click', () => {
+                setSelectedLocation(location);
+                setShowPrices(false);
             });
-        }
-    }, [isLoaded, locations]);
-
-    useEffect(() => {
-        if (isLoaded && mapInstanceRef.current && searchInputRef.current && window.google && window.google.maps.places) {
-            const autocomplete = new window.google.maps.places.Autocomplete(searchInputRef.current);
-            autocomplete.bindTo("bounds", mapInstanceRef.current);
-            autocomplete.addListener("place_changed", () => {
-                const place = autocomplete.getPlace();
-                if (!place.geometry || !place.geometry.location) {
-                    console.log("Returned place contains no geometry");
-                    return;
-                }
-                const map = mapInstanceRef.current;
-                if (place.geometry.viewport) {
-                    map.fitBounds(place.geometry.viewport);
-                } else {
-                    map.setCenter(place.geometry.location);
-                    map.setZoom(17);
-                }
-                if (searchMarkerRef.current) {
-                    searchMarkerRef.current.setMap(null);
-                }
-                searchMarkerRef.current = new window.google.maps.Marker({
-                    map,
-                    position: place.geometry.location,
-                    title: place.name,
-                });
-            });
-        }
-    }, [isLoaded]);
-
+            markersRef.current.push(marker);
+        });
+    }, [isLoaded, locations, filterType]);
+    
     const moveToCurrentLocation = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition((position) => {
                 const { latitude, longitude } = position.coords;
                 const currentLocation = { lat: latitude, lng: longitude };
-                const map = mapInstanceRef.current;
-                if (map) {
-                    map.setCenter(currentLocation);
-                    map.setZoom(16);
-                    if (userMarkerRef.current) {
-                        userMarkerRef.current.setMap(null);
-                    }
-                    userMarkerRef.current = new window.google.maps.Marker({
-                        position: currentLocation,
-                        map: map,
-                        title: "Your Location",
-                        icon: {
-                            path: window.google.maps.SymbolPath.CIRCLE,
-                            scale: 8,
-                            fillColor: "#4285F4",
-                            fillOpacity: 1,
-                            strokeColor: "white",
-                            strokeWeight: 2,
-                        },
-                    });
-                }
-            }, (error) => {
-                console.error("Error getting user location:", error);
-                alert("ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้ กรุณาตรวจสอบการตั้งค่าเบราว์เซอร์");
-            });
+                if (!mapInstanceRef.current) return;
+                mapInstanceRef.current.setCenter(currentLocation);
+                mapInstanceRef.current.setZoom(16);
+                if (userMarkerRef.current) userMarkerRef.current.setMap(null);
+                userMarkerRef.current = new window.google.maps.Marker({
+                    position: currentLocation,
+                    map: mapInstanceRef.current,
+                    title: "Your Location",
+                    icon: {
+                        path: window.google.maps.SymbolPath.CIRCLE,
+                        scale: 8,
+                        fillColor: "#4285F4",
+                        fillOpacity: 1,
+                        strokeColor: "white",
+                        strokeWeight: 2,
+                    },
+                });
+            }, (error) => alert("ไม่สามารถเข้าถึงตำแหน่งปัจจุบันได้"));
         } else {
             alert("เบราว์เซอร์ของคุณไม่รองรับ Geolocation");
         }
+    };
+    
+    const handleSearchResultClick = (location) => {
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setCenter({ lat: location.lat, lng: location.lng });
+            mapInstanceRef.current.setZoom(17);
+        }
+        setSearchQuery('');
+    };
+    
+    const searchResults = searchQuery ? locations.filter(loc => loc.name.toLowerCase().includes(searchQuery.toLowerCase())) : [];
+
+    const handleConfirmPin = () => {
+        setIsAddLocationModalOpen(true);
+        setPinningMode(false);
+        if (tempMarkerRef.current) tempMarkerRef.current.setMap(null);
+    }
+    
+    const handleCancelPin = () => {
+        setPinningMode(false);
+        setTempPin(null);
+        if (tempMarkerRef.current) tempMarkerRef.current.setMap(null);
+    }
+
+    const handleSubmissionSuccess = () => {
+        setIsAddLocationModalOpen(false);
+        setTempPin(null);
+        setSubmissionStatus('waiting');
+        setTimeout(() => setSubmissionStatus(''), 4000);
     };
 
     if (loadError) return <div className="flex items-center justify-center h-screen">{loadError.message}</div>;
@@ -677,10 +1203,174 @@ function MapScreen() {
             <div ref={mapRef} className="w-full h-full">
                 {!isLoaded && <div className="flex items-center justify-center h-full">Loading Maps...</div>}
             </div>
+            
+            {selectedLocation && (
+                <div className="absolute inset-0 z-40 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+                    <div className="bg-white rounded-lg shadow-xl w-full max-w-lg overflow-hidden">
+                        <div className="p-5 border-b">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <h3 className="text-2xl font-bold">{selectedLocation.name}</h3>
+                                    <StarRatingDisplay rating={selectedLocation.avgRating} count={selectedLocation.reviewCount} />
+                                </div>
+                                <button onClick={() => setSelectedLocation(null)} className="text-gray-500 hover:text-gray-800">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        {showPrices ? (
+                             <div className="p-5 max-h-64 h-64 overflow-y-auto">
+                                <h4 className="font-semibold text-lg mb-3">Destinations & Prices</h4>
+                                <ul>
+                                    {selectedLocation.routes?.map((route, index) => (
+                                        <li key={index} className="flex justify-between items-center py-2 border-b last:border-b-0">
+                                            <span>{route.destination}</span>
+                                            <span className="font-semibold">{route.price} บาท</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        ) : (
+                             <div className="w-full h-64 bg-gray-200">
+                                 <img 
+                                    src={selectedLocation.imageUrl || "https://placehold.co/600x400/cccccc/666666?text=Location+Image"} 
+                                    alt={selectedLocation.name} 
+                                    className="w-full h-full object-cover"
+                                 />
+                            </div>
+                        )}
+
+                        <div className="p-3 grid grid-cols-4 gap-2 border-t bg-gray-50">
+                            <button 
+                                onClick={() => handleLike(selectedLocation)}
+                                className="flex flex-col items-center justify-center hover:bg-gray-200 rounded-md p-1 transition-colors"
+                            >
+                                <LikeIcon isLiked={userLikes.has(selectedLocation.id)} />
+                                <span className={`text-xs font-semibold ${userLikes.has(selectedLocation.id) ? 'text-blue-600' : 'text-gray-700'}`}>
+                                    {selectedLocation.likeCount || 0}
+                                </span>
+                            </button>
+                            <button onClick={() => setIsReviewsModalOpen(true)} className="flex flex-col items-center justify-center text-gray-700 hover:bg-gray-200 rounded-md p-1 transition-colors">
+                                <ReviewIcon /> 
+                                <span className="text-xs">Review</span>
+                            </button>
+                             <button onClick={() => setShowPrices(prev => !prev)} className="flex flex-col items-center justify-center text-gray-700 hover:bg-gray-200 rounded-md p-1 transition-colors">
+                                {showPrices ? <ImageIcon /> : <PriceIcon />}
+                                <span className="text-xs">{showPrices ? 'Info' : 'Prices'}</span>
+                            </button>
+                            <button onClick={() => {if (user) {setIsReportModalOpen(true)} else {alert('Please log in to report.')}}} className="flex flex-col items-center justify-center text-gray-700 hover:bg-gray-200 rounded-md p-1 transition-colors">
+                                <ReportIcon />
+                                <span className="text-xs">Report</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {isReviewsModalOpen && selectedLocation && (
+                <ReviewsModal 
+                    location={selectedLocation} 
+                    user={user} 
+                    onClose={() => setIsReviewsModalOpen(false)} 
+                />
+            )}
+
+             {isReportModalOpen && selectedLocation && (
+                <ReportModal
+                    location={selectedLocation}
+                    user={user}
+                    onClose={() => setIsReportModalOpen(false)}
+                />
+            )}
+
+            {pinningMode && (
+                <div className="absolute top-0 left-0 right-0 p-4 bg-blue-600 text-white text-center z-20 flex justify-center items-center shadow-lg">
+                    <p className="font-semibold text-lg">
+                        {tempPin ? 'You have selected a location. Confirm or Cancel below.' : 'Click on the map to place a new pin.'}
+                    </p>
+                    <button onClick={handleCancelPin} className="ml-6 bg-white text-blue-600 font-bold py-1 px-4 rounded-full text-sm hover:bg-blue-100">Cancel</button>
+                </div>
+            )}
+            
+            {tempPin && (
+                 <div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-4">
+                    <button onClick={handleConfirmPin} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 text-lg rounded-full shadow-lg">Confirm Pin</button>
+                    <button onClick={handleCancelPin} className="bg-white hover:bg-gray-100 text-gray-700 font-bold py-3 px-8 text-lg rounded-full shadow-lg">Cancel</button>
+                </div>
+            )}
+            
+            {isAddLocationModalOpen && (
+                <LocationFormModal 
+                    initialCoords={tempPin}
+                    onSuccess={handleSubmissionSuccess}
+                    onClose={() => {
+                        setIsAddLocationModalOpen(false);
+                        setTempPin(null);
+                    }} 
+                />
+            )}
+
+            {submissionStatus === 'waiting' && (
+                <div className="absolute inset-0 bg-white bg-opacity-90 z-50 flex items-center justify-center">
+                    <div className="text-center p-8">
+                        <h2 className="text-2xl font-bold text-gray-800">Waiting for approval</h2>
+                        <p className="text-gray-600 mt-2">Your new location has been submitted and is waiting for an admin to approve it.</p>
+                    </div>
+                </div>
+            )}
+            
+             {searchQuery.length > 0 && (
+                <div className="absolute top-0 right-0 h-full w-96 bg-white z-40 shadow-lg p-6 flex flex-col">
+                    <div className="relative flex items-center mb-4">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><SearchIcon/></span>
+                        <input
+                            type="text"
+                            className="w-full pl-10 pr-10 py-2 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-blue-500"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            autoFocus
+                        />
+                         <button
+                            onClick={() => setSearchQuery('')}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-800"
+                        >
+                           <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        </button>
+                    </div>
+
+                    <ul className="space-y-2">
+                        {searchResults.map((loc) => (
+                            <li 
+                                key={loc.id} 
+                                className="flex items-center p-3 hover:bg-gray-100 cursor-pointer rounded-lg"
+                                onClick={() => handleSearchResultClick(loc)}
+                            >
+                                <div className="mr-3 text-gray-400">
+                                    {loc.type === 'motorcycle' ? <MotorcycleIcon/> : <BusIcon/>}
+                                </div>
+                                <span className="text-gray-700">{loc.name}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
+
 
             <div className={`absolute top-0 left-0 h-full bg-white shadow-lg z-30 transform transition-transform duration-300 ease-in-out ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} w-80 p-6`}>
-                 <div className="flex items-center space-x-4"><img src="https://placehold.co/50x50/E2E8F0/4A5568?text=AV" alt="User Avatar" className="w-14 h-14 rounded-full" /><div><h3 className="font-bold text-lg">ธันวา บุญสูงเนิน</h3><p className="text-sm text-gray-500">Joined 1 months ago</p></div></div>
-                <p className="text-sm text-gray-600 mt-4">thetoyzinwza@gmail.com</p><div className="border-t my-6"></div>
+                 <div className="flex items-center space-x-4">
+                    <div className="w-14 h-14 rounded-full bg-gray-200 flex items-center justify-center text-gray-500 text-2xl font-bold">
+                        {user ? user.email.charAt(0).toUpperCase() : 'G'}
+                    </div>
+                    <div>
+                        <h3 className="font-bold text-lg">{user?.displayName || user?.email.split('@')[0] || "Guest"}</h3>
+                        <p className="text-sm text-gray-500">
+                             {user?.metadata?.creationTime ? `Joined ${new Date(user.metadata.creationTime).toLocaleDateString()}` : ''}
+                        </p>
+                    </div>
+                </div>
+                <p className="text-sm text-gray-600 mt-4 break-words">{user?.email}</p>
+                <div className="border-t my-6"></div>
                 <nav className="space-y-4">
                     <div className="flex justify-between items-center"><label htmlFor="dark-mode" className="text-gray-700">Dark mode</label><div className="relative inline-block w-10 mr-2 align-middle select-none transition duration-200 ease-in"><input type="checkbox" name="toggle" id="dark-mode" className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer"/><label htmlFor="dark-mode" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 cursor-pointer"></label></div></div>
                     <a href="#" className="flex items-center space-x-3 text-gray-700 hover:text-blue-600"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg><span>Profile details</span></a>
@@ -688,7 +1378,7 @@ function MapScreen() {
                     <button onClick={handleSignOut} className="w-full flex items-center space-x-3 text-red-500 hover:text-red-700"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg><span>Log out</span></button>
                 </nav>
             </div>
-            {isMenuOpen && <div onClick={() => setMenuOpen(false)} className="absolute inset-0 bg-black bg-opacity-50 z-20"></div>}
+            {isMenuOpen && <div onClick={() => setMenuOpen(false)} className="absolute inset-0 z-20" style={{ backgroundColor: 'rgba(0, 0, 0, 0.5)' }}></div>}
             
             <div className="absolute inset-0 p-4 md:p-6 flex flex-col pointer-events-none">
                 <div className="w-full flex justify-between items-start pointer-events-auto">
@@ -698,7 +1388,13 @@ function MapScreen() {
                 </div>
                 <div className="mt-4 w-full max-w-lg mx-auto pointer-events-auto">
                     <div className="relative flex items-center bg-white rounded-full shadow-lg">
-                        <input ref={searchInputRef} type="text" placeholder="Search..." className="w-full py-3 pl-5 pr-12 rounded-full focus:outline-none"/>
+                        <input 
+                            type="text" 
+                            placeholder="Search..." 
+                            className="w-full py-3 pl-5 pr-12 rounded-full focus:outline-none"
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                         />
                         <button className="absolute right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"><SearchIcon /></button>
                     </div>
                 </div>
@@ -709,11 +1405,17 @@ function MapScreen() {
                         <button className="p-3 block text-gray-700 hover:bg-gray-100 rounded-b-full"><MinusIcon /></button>
                     </div>
                      <div className="bg-white rounded-full shadow-md flex flex-col">
-                        <button className="p-3 text-gray-700 hover:bg-blue-100"><CarIcon /></button><hr/>
-                        <button className="p-3 text-blue-500 bg-blue-100"><MotorcycleIcon /></button>
+                        <button onClick={() => setFilterType(prev => prev === 'songthaew' ? 'all' : 'songthaew')} className={`p-3 rounded-t-full ${filterType === 'songthaew' ? 'bg-blue-100 text-blue-500' : 'text-gray-700 hover:bg-gray-100'}`}><BusIcon /></button><hr/>
+                        <button onClick={() => setFilterType(prev => prev === 'motorcycle' ? 'all' : 'motorcycle')} className={`p-3 rounded-b-full ${filterType === 'motorcycle' ? 'bg-blue-100 text-blue-500' : 'text-gray-700 hover:bg-gray-100'}`}><MotorcycleIcon /></button>
                     </div>
                 </div>
-                <div className="absolute bottom-4 left-4 pointer-events-auto"><img src="https://placehold.co/120x80/ffffff/9CA3AF?text=Preview" alt="Map Preview" className="rounded-lg shadow-lg border-2 border-white" /></div>
+                <div className="absolute bottom-4 left-4 pointer-events-auto">
+                    {user && !pinningMode && (
+                        <button onClick={() => setPinningMode(true)} className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600">
+                            <AddPinIcon />
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
     );
@@ -732,7 +1434,6 @@ export default function App() {
             if (currentUser) {
                 currentUser.getIdTokenResult()
                     .then((idTokenResult) => {
-                        // Check for admin custom claim
                         setIsAdmin(!!idTokenResult.claims.admin);
                         setLoading(false);
                     })
@@ -742,7 +1443,6 @@ export default function App() {
                         setLoading(false);
                     });
             } else {
-                // User is signed out
                 setIsAdmin(false);
                 setLoading(false);
             }
@@ -754,13 +1454,12 @@ export default function App() {
         return <div className="flex justify-center items-center h-screen">Loading...</div>;
     }
 
-    // Main routing logic
     if (user) {
-        return isAdmin ? <AdminDashboard /> : <MapScreen />;
+        return isAdmin ? <AdminDashboard /> : <MapScreen user={user} />;
     }
 
     if (view === 'map') {
-        return <MapScreen />;
+        return <MapScreen user={null} />;
     }
 
     switch (view) {
@@ -773,4 +1472,3 @@ export default function App() {
             return <WelcomeScreen setView={setView} />;
     }
 }
-
