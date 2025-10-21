@@ -1,0 +1,163 @@
+[debug] [2025-10-21T05:58:28.755Z] ----------------------------------------------------------------------
+[debug] [2025-10-21T05:58:28.756Z] Command:       C:\file+game\node.exe C:\Users\User\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy --only functions
+[debug] [2025-10-21T05:58:28.757Z] CLI Version:   14.20.0
+[debug] [2025-10-21T05:58:28.757Z] Platform:      win32
+[debug] [2025-10-21T05:58:28.757Z] Node Version:  v20.10.0
+[debug] [2025-10-21T05:58:28.757Z] Time:          Tue Oct 21 2025 12:58:28 GMT+0700 (เวลาอินโดจีน)
+[debug] [2025-10-21T05:58:28.757Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-10-21T05:58:28.875Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-21T05:58:28.876Z] > authorizing via signed-in user (hatsarak.ice@gmail.com)
+[debug] [2025-10-21T05:58:28.876Z] [iam] checking project easyway-40e1b for permissions ["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]
+[debug] [2025-10-21T05:58:28.876Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:28.876Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:28.877Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions [none]
+[debug] [2025-10-21T05:58:28.877Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions x-goog-quota-user=projects/easyway-40e1b
+[debug] [2025-10-21T05:58:28.877Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-10-21T05:58:30.287Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions 200
+[debug] [2025-10-21T05:58:30.287Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions {"permissions":["cloudfunctions.functions.create","cloudfunctions.functions.delete","cloudfunctions.functions.get","cloudfunctions.functions.list","cloudfunctions.functions.update","cloudfunctions.operations.get","firebase.projects.get"]}
+[debug] [2025-10-21T05:58:30.288Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:30.288Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:30.288Z] >>> [apiv2][query] POST https://iam.googleapis.com/v1/projects/easyway-40e1b/serviceAccounts/easyway-40e1b@appspot.gserviceaccount.com:testIamPermissions [none]
+[debug] [2025-10-21T05:58:30.288Z] >>> [apiv2][body] POST https://iam.googleapis.com/v1/projects/easyway-40e1b/serviceAccounts/easyway-40e1b@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[debug] [2025-10-21T05:58:31.870Z] <<< [apiv2][status] POST https://iam.googleapis.com/v1/projects/easyway-40e1b/serviceAccounts/easyway-40e1b@appspot.gserviceaccount.com:testIamPermissions 200
+[debug] [2025-10-21T05:58:31.870Z] <<< [apiv2][body] POST https://iam.googleapis.com/v1/projects/easyway-40e1b/serviceAccounts/easyway-40e1b@appspot.gserviceaccount.com:testIamPermissions {"permissions":["iam.serviceAccounts.actAs"]}
+[info] 
+[info] === Deploying to 'easyway-40e1b'...
+[info] 
+[info] i  deploying functions 
+[debug] [2025-10-21T05:58:31.872Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:31.872Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:31.873Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b [none]
+[debug] [2025-10-21T05:58:32.181Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b 200
+[debug] [2025-10-21T05:58:32.181Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b {"projectNumber":"371724947061","projectId":"easyway-40e1b","lifecycleState":"ACTIVE","name":"easyway","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-10-14T08:42:20.304550Z"}
+[info] i  functions: preparing codebase default for deployment 
+[info] i  functions: ensuring required API cloudfunctions.googleapis.com is enabled... 
+[info] i  functions: ensuring required API cloudbuild.googleapis.com is enabled... 
+[info] i  artifactregistry: ensuring required API artifactregistry.googleapis.com is enabled... 
+[debug] [2025-10-21T05:58:32.183Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:32.183Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:32.183Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/easyway-40e1b/adminSdkConfig [none]
+[debug] [2025-10-21T05:58:33.473Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/easyway-40e1b/adminSdkConfig 200
+[debug] [2025-10-21T05:58:33.473Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/easyway-40e1b/adminSdkConfig {"projectId":"easyway-40e1b","storageBucket":"easyway-40e1b.firebasestorage.app"}
+[debug] [2025-10-21T05:58:33.474Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:33.474Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:33.474Z] >>> [apiv2][query] GET https://runtimeconfig.googleapis.com/v1beta1/projects/easyway-40e1b/configs [none]
+[debug] [2025-10-21T05:58:34.724Z] <<< [apiv2][status] GET https://runtimeconfig.googleapis.com/v1beta1/projects/easyway-40e1b/configs 200
+[debug] [2025-10-21T05:58:34.724Z] <<< [apiv2][body] GET https://runtimeconfig.googleapis.com/v1beta1/projects/easyway-40e1b/configs {}
+[debug] [2025-10-21T05:58:34.725Z] Validating nodejs source
+[debug] [2025-10-21T05:58:35.474Z] > [functions] package.json contents: {
+  "name": "functions",
+  "description": "Cloud Functions for Firebase",
+  "scripts": {
+    "lint": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint . -c .eslintrc.js",
+    "serve": "firebase emulators:start --only functions",
+    "shell": "firebase functions:shell",
+    "start": "npm run shell",
+    "deploy": "firebase deploy --only functions",
+    "logs": "firebase functions:log"
+  },
+  "engines": {
+    "node": "22"
+  },
+  "main": "index.js",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "firebase-admin": "^13.5.0",
+    "firebase-functions": "^6.6.0"
+  },
+  "devDependencies": {
+    "cross-env": "^10.1.0",
+    "eslint": "^8.57.1",
+    "eslint-config-google": "^0.14.0",
+    "firebase-functions-test": "^3.1.0"
+  },
+  "private": true
+}
+[debug] [2025-10-21T05:58:35.474Z] Building nodejs source
+[info] i  functions: Loading and analyzing source code for codebase default to determine what to deploy 
+[debug] [2025-10-21T05:58:35.475Z] Could not find functions.yaml. Must use http discovery
+[debug] [2025-10-21T05:58:35.481Z] Found firebase-functions binary at 'E:\clone3_easyway\easyway\functions\node_modules\.bin\firebase-functions'
+[info] Serving at port 8662
+
+[debug] [2025-10-21T05:58:35.860Z] Got response from /__/functions.yaml {"endpoints":{"toggleUserStatus":{"availableMemoryMb":null,"timeoutSeconds":null,"minInstances":null,"maxInstances":null,"ingressSettings":null,"concurrency":null,"serviceAccountEmail":null,"vpc":null,"platform":"gcfv2","labels":{},"callableTrigger":{},"entryPoint":"toggleUserStatus"}},"specVersion":"v1alpha1","requiredAPIs":[],"extensions":{}}
+[info] i  extensions: ensuring required API firebaseextensions.googleapis.com is enabled... 
+[debug] [2025-10-21T05:58:40.881Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-10-21T05:58:40.881Z] > authorizing via signed-in user (hatsarak.ice@gmail.com)
+[debug] [2025-10-21T05:58:40.881Z] [iam] checking project easyway-40e1b for permissions ["firebase.projects.get","firebaseextensions.instances.list"]
+[debug] [2025-10-21T05:58:40.881Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:40.881Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:40.882Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions [none]
+[debug] [2025-10-21T05:58:40.882Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions x-goog-quota-user=projects/easyway-40e1b
+[debug] [2025-10-21T05:58:40.882Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-10-21T05:58:42.219Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions 200
+[debug] [2025-10-21T05:58:42.219Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b:testIamPermissions {"permissions":["firebase.projects.get","firebaseextensions.instances.list"]}
+[debug] [2025-10-21T05:58:42.219Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:42.219Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:42.219Z] >>> [apiv2][query] GET https://firebaseextensions.googleapis.com/v1beta/projects/easyway-40e1b/instances pageSize=100&pageToken=
+[debug] [2025-10-21T05:58:43.757Z] <<< [apiv2][status] GET https://firebaseextensions.googleapis.com/v1beta/projects/easyway-40e1b/instances 200
+[debug] [2025-10-21T05:58:43.757Z] <<< [apiv2][body] GET https://firebaseextensions.googleapis.com/v1beta/projects/easyway-40e1b/instances {}
+[info] i  functions: preparing functions directory for uploading... 
+[info] i  functions: packaged E:\clone3_easyway\easyway\functions (78.57 KB) for uploading 
+[debug] [2025-10-21T05:58:43.782Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:43.782Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:43.783Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v1/projects/easyway-40e1b/locations/-/functions [none]
+[debug] [2025-10-21T05:58:44.610Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v1/projects/easyway-40e1b/locations/-/functions 200
+[debug] [2025-10-21T05:58:44.610Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v1/projects/easyway-40e1b/locations/-/functions {}
+[debug] [2025-10-21T05:58:44.610Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:44.610Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:44.611Z] >>> [apiv2][query] GET https://cloudfunctions.googleapis.com/v2/projects/easyway-40e1b/locations/-/functions filter=environment%3D%22GEN_2%22
+[debug] [2025-10-21T05:58:46.182Z] <<< [apiv2][status] GET https://cloudfunctions.googleapis.com/v2/projects/easyway-40e1b/locations/-/functions 200
+[debug] [2025-10-21T05:58:46.182Z] <<< [apiv2][body] GET https://cloudfunctions.googleapis.com/v2/projects/easyway-40e1b/locations/-/functions {"functions":[{"name":"projects/easyway-40e1b/locations/us-central1/functions/checkAuthContext","buildConfig":{"build":"projects/371724947061/locations/us-central1/builds/70d6dbaa-58d6-440d-959d-0e2626c60fb1","runtime":"nodejs22","entryPoint":"checkAuthContext","source":{"storageSource":{"bucket":"gcf-v2-sources-371724947061-us-central1","object":"checkAuthContext/function-source.zip","generation":"1761026055935978"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/easyway-40e1b/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-371724947061-us-central1","object":"checkAuthContext/function-source.zip","generation":"1761026055935978"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/easyway-40e1b/serviceAccounts/371724947061-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/easyway-40e1b/locations/us-central1/services/checkauthcontext","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"easyway-40e1b\",\"storageBucket\":\"easyway-40e1b.firebasestorage.app\"}","GCLOUD_PROJECT":"easyway-40e1b","EVENTARC_CLOUD_EVENT_SOURCE":"projects/easyway-40e1b/locations/us-central1/services/checkAuthContext","FUNCTION_TARGET":"checkAuthContext","LOG_EXECUTION_ID":"true","FUNCTION_SIGNATURE_TYPE":"http"},"maxInstanceCount":20,"ingressSettings":"ALLOW_ALL","uri":"https://checkauthcontext-tidzmi3ovq-uc.a.run.app","serviceAccountEmail":"371724947061-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"checkauthcontext-00002-mev","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2025-10-21T05:54:23.060407953Z","labels":{"deployment-tool":"cli-firebase","deployment-callable":"true","firebase-functions-hash":"863fbcb70d6868fa8e02d50d474bf6c865fda17a"},"environment":"GEN_2","url":"https://us-central1-easyway-40e1b.cloudfunctions.net/checkAuthContext","createTime":"2025-10-21T05:34:37.267132500Z","satisfiesPzi":true},{"name":"projects/easyway-40e1b/locations/us-central1/functions/toggleUserStatus","buildConfig":{"build":"projects/371724947061/locations/us-central1/builds/70d6dbaa-58d6-440d-959d-0e2626c60fb1","runtime":"nodejs22","entryPoint":"toggleUserStatus","source":{"storageSource":{"bucket":"gcf-v2-sources-371724947061-us-central1","object":"toggleUserStatus/function-source.zip","generation":"1761025996685508"}},"environmentVariables":{"GOOGLE_NODE_RUN_SCRIPTS":""},"dockerRepository":"projects/easyway-40e1b/locations/us-central1/repositories/gcf-artifacts","sourceProvenance":{"resolvedStorageSource":{"bucket":"gcf-v2-sources-371724947061-us-central1","object":"toggleUserStatus/function-source.zip","generation":"1761025996685508"}},"dockerRegistry":"ARTIFACT_REGISTRY","serviceAccount":"projects/easyway-40e1b/serviceAccounts/371724947061-compute@developer.gserviceaccount.com","automaticUpdatePolicy":{}},"serviceConfig":{"service":"projects/easyway-40e1b/locations/us-central1/services/toggleuserstatus","timeoutSeconds":60,"environmentVariables":{"FIREBASE_CONFIG":"{\"projectId\":\"easyway-40e1b\",\"storageBucket\":\"easyway-40e1b.firebasestorage.app\"}","GCLOUD_PROJECT":"easyway-40e1b","EVENTARC_CLOUD_EVENT_SOURCE":"projects/easyway-40e1b/locations/us-central1/services/toggleUserStatus","FUNCTION_TARGET":"toggleUserStatus","LOG_EXECUTION_ID":"true","FUNCTION_SIGNATURE_TYPE":"http"},"maxInstanceCount":20,"ingressSettings":"ALLOW_ALL","uri":"https://toggleuserstatus-tidzmi3ovq-uc.a.run.app","serviceAccountEmail":"371724947061-compute@developer.gserviceaccount.com","availableMemory":"256Mi","allTrafficOnLatestRevision":true,"revision":"toggleuserstatus-00008-jay","maxInstanceRequestConcurrency":80,"availableCpu":"1"},"state":"ACTIVE","updateTime":"2025-10-21T05:54:17.475228044Z","labels":{"firebase-functions-hash":"863fbcb70d6868fa8e02d50d474bf6c865fda17a","deployment-tool":"cli-firebase","deployment-callable":"true"},"environment":"GEN_2","url":"https://us-central1-easyway-40e1b.cloudfunctions.net/toggleUserStatus","createTime":"2025-10-19T08:06:16.384995988Z","satisfiesPzi":true}]}
+[info] i  functions: ensuring required API run.googleapis.com is enabled... 
+[info] i  functions: ensuring required API eventarc.googleapis.com is enabled... 
+[info] i  functions: ensuring required API pubsub.googleapis.com is enabled... 
+[info] i  functions: ensuring required API storage.googleapis.com is enabled... 
+[info] i  functions: generating the service identity for pubsub.googleapis.com... 
+[debug] [2025-10-21T05:58:46.185Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:46.186Z] Checked if tokens are valid: true, expires at: 1761027791562
+[info] i  functions: generating the service identity for eventarc.googleapis.com... 
+[debug] [2025-10-21T05:58:46.186Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:46.186Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:46.186Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/pubsub.googleapis.com:generateServiceIdentity [none]
+[debug] [2025-10-21T05:58:46.186Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/pubsub.googleapis.com:generateServiceIdentity x-goog-quota-user=projects/371724947061
+[debug] [2025-10-21T05:58:46.186Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/pubsub.googleapis.com:generateServiceIdentity {}
+[debug] [2025-10-21T05:58:46.187Z] >>> [apiv2][query] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/eventarc.googleapis.com:generateServiceIdentity [none]
+[debug] [2025-10-21T05:58:46.187Z] >>> [apiv2][(partial)header] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/eventarc.googleapis.com:generateServiceIdentity x-goog-quota-user=projects/371724947061
+[debug] [2025-10-21T05:58:46.187Z] >>> [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/eventarc.googleapis.com:generateServiceIdentity {}
+[debug] [2025-10-21T05:58:47.874Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/pubsub.googleapis.com:generateServiceIdentity 200
+[debug] [2025-10-21T05:58:47.874Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/pubsub.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-371724947061@gcp-sa-pubsub.iam.gserviceaccount.com","uniqueId":"109189315008693763550"}}
+[debug] [2025-10-21T05:58:47.956Z] <<< [apiv2][status] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/eventarc.googleapis.com:generateServiceIdentity 200
+[debug] [2025-10-21T05:58:47.956Z] <<< [apiv2][body] POST https://serviceusage.googleapis.com/v1beta1/projects/371724947061/services/eventarc.googleapis.com:generateServiceIdentity {"name":"operations/finished.DONE_OPERATION","done":true,"response":{"@type":"type.googleapis.com/google.api.serviceusage.v1beta1.ServiceIdentity","email":"service-371724947061@gcp-sa-eventarc.iam.gserviceaccount.com","uniqueId":"101105835842563437194"}}
+[debug] [2025-10-21T05:58:47.958Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:47.958Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:47.958Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b [none]
+[debug] [2025-10-21T05:58:49.334Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b 200
+[debug] [2025-10-21T05:58:49.334Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/easyway-40e1b {"projectNumber":"371724947061","projectId":"easyway-40e1b","lifecycleState":"ACTIVE","name":"easyway","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2025-10-14T08:42:20.304550Z"}
+[debug] [2025-10-21T05:58:49.334Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:49.334Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:49.334Z] >>> [apiv2][query] GET https://compute.googleapis.com/compute/v1/projects/371724947061 [none]
+[debug] [2025-10-21T05:58:49.727Z] <<< [apiv2][status] GET https://compute.googleapis.com/compute/v1/projects/371724947061 403
+[debug] [2025-10-21T05:58:49.727Z] <<< [apiv2][body] GET https://compute.googleapis.com/compute/v1/projects/371724947061 {"error":{"code":403,"message":"Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/371724947061","serviceTitle":"Compute Engine API","containerInfo":"371724947061","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061","service":"compute.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061"}]}]}}
+[debug] [2025-10-21T05:58:49.727Z] unable to look up default compute service account. Falling back to 371724947061-compute@developer.gserviceaccount.com. Error: {"name":"FirebaseError","children":[],"context":{"body":{"error":{"code":403,"message":"Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","errors":[{"message":"Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","domain":"usageLimits","reason":"accessNotConfigured","extendedHelp":"https://console.developers.google.com"}],"status":"PERMISSION_DENIED","details":[{"@type":"type.googleapis.com/google.rpc.ErrorInfo","reason":"SERVICE_DISABLED","domain":"googleapis.com","metadata":{"consumer":"projects/371724947061","serviceTitle":"Compute Engine API","containerInfo":"371724947061","activationUrl":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061","service":"compute.googleapis.com"}},{"@type":"type.googleapis.com/google.rpc.LocalizedMessage","locale":"en-US","message":"Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry."},{"@type":"type.googleapis.com/google.rpc.Help","links":[{"description":"Google developers console API activation","url":"https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061"}]}]}},"response":{"statusCode":403}},"exit":1,"message":"Request to https://compute.googleapis.com/compute/v1/projects/371724947061 had HTTP Error: 403, Compute Engine API has not been used in project 371724947061 before or it is disabled. Enable it by visiting https://console.developers.google.com/apis/api/compute.googleapis.com/overview?project=371724947061 then retry. If you enabled this API recently, wait a few minutes for the action to propagate to our systems and retry.","status":403}
+[debug] [2025-10-21T05:58:49.728Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:49.728Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:49.728Z] >>> [apiv2][query] GET https://cloudbilling.googleapis.com/v1/projects/easyway-40e1b/billingInfo [none]
+[debug] [2025-10-21T05:58:51.136Z] <<< [apiv2][status] GET https://cloudbilling.googleapis.com/v1/projects/easyway-40e1b/billingInfo 200
+[debug] [2025-10-21T05:58:51.136Z] <<< [apiv2][body] GET https://cloudbilling.googleapis.com/v1/projects/easyway-40e1b/billingInfo {"name":"projects/easyway-40e1b/billingInfo","projectId":"easyway-40e1b","billingAccountName":"billingAccounts/01A559-DCD722-4BF297","billingEnabled":true}
+[debug] [2025-10-21T05:58:51.137Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:51.137Z] Checked if tokens are valid: true, expires at: 1761027791562
+[debug] [2025-10-21T05:58:51.137Z] >>> [apiv2][query] POST https://cloudfunctions.googleapis.com/v2/projects/easyway-40e1b/locations/us-central1/functions:generateUploadUrl [none]
+[debug] [2025-10-21T05:58:52.453Z] <<< [apiv2][status] POST https://cloudfunctions.googleapis.com/v2/projects/easyway-40e1b/locations/us-central1/functions:generateUploadUrl 200
+[debug] [2025-10-21T05:58:52.454Z] <<< [apiv2][body] POST https://cloudfunctions.googleapis.com/v2/projects/easyway-40e1b/locations/us-central1/functions:generateUploadUrl {"uploadUrl":"https://storage.googleapis.com/gcf-v2-uploads-371724947061.us-central1.cloudfunctions.appspot.com/0e15c781-843f-4748-8fe3-3b86ab145c16.zip?GoogleAccessId=service-371724947061@gcf-admin-robot.iam.gserviceaccount.com&Expires=1761028132&Signature=dnFsT5ULJcsoJR7d9XUi8kDFi0i9utGdGaKzEu%2FCjsyMOENkhN%2FGmmhE9pYggvhNimPX%2BlGoIewNbpw5Gc6nVMmJzU4L1Go1Wn2UUDtLuFQqxDHOfB72Gnk%2FoNk2ad8dYa6s%2BivX2bHu%2BdT9H0RieCAcI0QUONJVBotVppI45oKIzb0IwrRXDMhKk8op7TTqMfxd2Muu79noldUCCQ76KIAoKDnSZzhxvy3Ton0aiA%2BrzTeFuFMPcvahrn1Kafs4breL%2B8Wdu5%2FRzkzK8nLTpXJ95y6sBp5I6Cu5kwf5Hk2EjBkEhNdTB3fNHwcWfCQmglJxm0%2B1%2F7ISJvB%2F5kfe8Q%3D%3D","storageSource":{"bucket":"gcf-v2-uploads-371724947061.us-central1.cloudfunctions.appspot.com","object":"0e15c781-843f-4748-8fe3-3b86ab145c16.zip"}}
+[debug] [2025-10-21T05:58:52.454Z] >>> [apiv2][query] PUT https://storage.googleapis.com/gcf-v2-uploads-371724947061.us-central1.cloudfunctions.appspot.com/0e15c781-843f-4748-8fe3-3b86ab145c16.zip GoogleAccessId=service-371724947061%40gcf-admin-robot.iam.gserviceaccount.com&Expires=1761028132&Signature=dnFsT5ULJcsoJR7d9XUi8kDFi0i9utGdGaKzEu%2FCjsyMOENkhN%2FGmmhE9pYggvhNimPX%2BlGoIewNbpw5Gc6nVMmJzU4L1Go1Wn2UUDtLuFQqxDHOfB72Gnk%2FoNk2ad8dYa6s%2BivX2bHu%2BdT9H0RieCAcI0QUONJVBotVppI45oKIzb0IwrRXDMhKk8op7TTqMfxd2Muu79noldUCCQ76KIAoKDnSZzhxvy3Ton0aiA%2BrzTeFuFMPcvahrn1Kafs4breL%2B8Wdu5%2FRzkzK8nLTpXJ95y6sBp5I6Cu5kwf5Hk2EjBkEhNdTB3fNHwcWfCQmglJxm0%2B1%2F7ISJvB%2F5kfe8Q%3D%3D
+[debug] [2025-10-21T05:58:52.454Z] >>> [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-371724947061.us-central1.cloudfunctions.appspot.com/0e15c781-843f-4748-8fe3-3b86ab145c16.zip [stream]
+[debug] [2025-10-21T05:58:54.590Z] <<< [apiv2][status] PUT https://storage.googleapis.com/gcf-v2-uploads-371724947061.us-central1.cloudfunctions.appspot.com/0e15c781-843f-4748-8fe3-3b86ab145c16.zip 200
+[debug] [2025-10-21T05:58:54.590Z] <<< [apiv2][body] PUT https://storage.googleapis.com/gcf-v2-uploads-371724947061.us-central1.cloudfunctions.appspot.com/0e15c781-843f-4748-8fe3-3b86ab145c16.zip [omitted]
+[info] +  functions: functions source uploaded successfully 
+[info] 
+The following functions are found in your project but do not exist in your local source code:
+	checkAuthContext(us-central1)
+
+If you are renaming a function or changing its region, it is recommended that you create the new function first before deleting the old one to prevent event loss. For more info, visit https://firebase.google.com/docs/functions/manage-functions#modify
+
