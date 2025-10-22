@@ -602,6 +602,13 @@ const ManageLocations = ({ onViewLocation }) => {
                 await Promise.all(deletePromises);
                 console.log(`Deleted ${reportSnapshots.size} reports for: ${locationName}`);
 
+                const reviewsQuery = query(collection(db, "reviews"), where("locationId", "==", locationId));
+                const reviewSnapshots = await getDocs(reviewsQuery);
+                const deleteReviewPromises = reviewSnapshots.docs.map(doc => deleteDoc(doc.ref));
+                await Promise.all(deleteReviewPromises);
+                console.log(`Deleted ${reviewSnapshots.size} reviews for: ${locationName}`);
+                // --- ⭐⭐ จบส่วนที่เพิ่ม ⭐⭐ ---
+
                 // 3. Delete Location Document
                 await deleteDoc(doc(db, "locations", locationId));
                 console.log(`Location document deleted: ${locationName}`);
