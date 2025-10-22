@@ -1081,7 +1081,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     }, [isLoaded, pinningMode]); // Re-run if loaded state or pinning mode changes
 
      // --- ⭐ Fetching Locations (Relies on isLoaded) ⭐ ---
-     useEffect(() => {
+    useEffect(() => {
         if (!isLoaded) return; // Wait for script
         const q = query(collection(db, "locations"), where("status", "==", "approved"));
         const unsubscribe = onSnapshot(q, (snapshot) => {
@@ -1145,6 +1145,45 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             tempMarkerRef.current?.setMap(null);
         };
     }, [tempPin]); // Only depends on tempPin presence/value
+
+    useEffect(() => {
+        let unsubscribe = null;
+        
+        // ตรวจสอบว่ามี Location ถูกเลือก และ Google Maps Script โหลดแล้ว
+        if (!selectedLocation?.id || !isLoaded) {
+            setLocalSelectedLocation(null);
+            return;
+        }
+        
+        // สร้าง Reference ไปยังเอกสาร Location ที่ถูกเลือก
+        const locationRef = doc(db, "locations", selectedLocation.id);
+        
+        // เริ่มฟังการเปลี่ยนแปลงแบบ Real-time
+        unsubscribe = onSnapshot(locationRef, (docSnap) => {
+            if (docSnap.exists()) {
+                // อัปเดต State ของ Location ที่แสดงใน Modal (รวมถึง reviewCount/avgRating ที่อัปเดตแล้ว)
+                const updatedData = { id: docSnap.id, ...docSnap.data() };
+                setLocalSelectedLocation(updatedData);
+                
+                // อัปเดต State หลัก selectedLocation ด้วย เพื่อใช้ในการจัดการ marker/modal
+                setSelectedLocation(updatedData); 
+                
+            } else {
+                // เอกสารถูกลบ (กรณีที่ Admin ลบ)
+                setSelectedLocation(null);
+            }
+        }, (error) => {
+            console.error("Error reading selected location:", error);
+        });
+    
+        // Cleanup: ยกเลิก Listener เมื่อ Component unmounts หรือ ID เปลี่ยน
+        return () => {
+            if (unsubscribe) {
+                unsubscribe();
+            }
+        };
+        
+    }, [isLoaded, selectedLocation?.id]);
 
 
     // --- Other Functions (moveToCurrentLocation, handleSearchResultClick, etc. - Updated Zoom) ---
