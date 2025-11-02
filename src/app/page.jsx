@@ -426,125 +426,62 @@ const ManageUsers = () => {
         user.email.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    return (
-        <div className="dark:text-gray-200">
-            <div className="flex justify-between items-center mb-5">
-                <h2 className="text-3xl font-bold">Manage Users</h2>
-                <div className="flex items-center space-x-4">
-                    <input
-                        type="text"
-                        placeholder="Search by email..."
-                        className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-                        value={searchTerm}
-                        onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add User</button>
-                </div>
+    // ในคอมโพเนนต์ ManageUsers
+
+// ... (โค้ดส่วนต้น) ...
+
+return (
+    <div className="dark:text-gray-200">
+        <div className="flex justify-between items-center mb-5">
+            <h2 className="text-3xl font-bold">Manage Users</h2>
+            {/* ❌ ลบช่อง Search และปุ่ม Add User ออก */}
+            <div className="flex items-center space-x-4">
+                <input
+                    type="text"
+                    placeholder="Search by email..."
+                    className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                />
             </div>
-            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
-                <table className="min-w-full leading-normal">
-                    <thead>
-                        <tr>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Created At</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+        </div>
+        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+            <table className="min-w-full leading-normal">
+                <thead>
+                    <tr>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Display Name</th> 
+                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Created At</th>
+                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {filteredUsers.map(user => (
+                        <tr key={user.id}>
+                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.email}</td>
+                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.displayName}</td> 
+                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.createdAt?.toDate().toLocaleString()}</td>
+                            
+                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                {/* ❌ ลบปุ่ม Edit ออก */}
+                                {/* <button onClick={() => handleOpenModal(user)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">Edit</button> */}
+                                <button
+                                    onClick={() => handleToggleUserStatus(user)}
+                                    className={user.status === 'suspended' ? 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300' : 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'}
+                                >
+                                    {user.status === 'suspended' ? 'Activate' : 'Suspend'}
+                                </button>
+                            </td>
                         </tr>
-                    </thead>
-                    <tbody>
-                        {filteredUsers.map(user => (
-                            <tr key={user.id}>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.email}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.createdAt?.toDate().toLocaleString()}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                        user.status === 'active' || !user.status ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-                                    }`}>
-                                        {user.status || 'active'}
-                                    </span>
-                                </td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <button onClick={() => handleOpenModal(user)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">Edit</button>
-                                    <button
-                                        onClick={() => handleToggleUserStatus(user)}
-                                        className={user.status === 'suspended' ? 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300' : 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'}
-                                    >
-                                        {user.status === 'suspended' ? 'Activate' : 'Suspend'}
-                                    </button>
-                                </td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </div>
-            {isModalOpen && <UserFormModal currentUser={editingUser} onClose={handleCloseModal} />}
+                    ))}
+                </tbody>
+            </table>
         </div>
-    );
+    </div>
+);
 };
 
-const UserFormModal = ({ currentUser, onClose }) => {
-    const [email, setEmail] = useState(currentUser?.email || '');
-    const [password, setPassword] = useState('');
-    const [error, setError] = useState('');
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-
-        if (currentUser) {
-            // Edit mode - Firestore only
-            const userRef = doc(db, "users", currentUser.id);
-            await updateDoc(userRef, { email: email }); // Only updates Firestore email
-            onClose();
-        } else {
-            // Add mode - Auth and Firestore
-            if (password.length < 6) {
-                setError("Password should be at least 6 characters."); return;
-            }
-            try {
-                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                const user = userCredential.user;
-                await setDoc(doc(db, "users", user.uid), {
-                    uid: user.uid, email: user.email, createdAt: serverTimestamp(), status: 'active', displayName: email.split('@')[0]
-                });
-                await updateProfile(user, { displayName: email.split('@')[0] });
-                onClose();
-            } catch (err) {
-                setError("Failed to create user. Email might exist."); console.error(err);
-            }
-        }
-    };
-
-    return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div className="relative p-5 border w-full max-w-md shadow-lg rounded-md bg-white dark:bg-gray-800" onClick={e => e.stopPropagation()}>
-                <form onSubmit={handleSubmit}>
-                    <h3 className="text-xl font-bold mb-4 dark:text-white">{currentUser ? 'Edit User' : 'Add New User'}</h3>
-                    {error && <p className="mb-4 text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300 p-3 rounded">{error}</p>}
-                    <div className="space-y-4">
-                        <div>
-                            <label className="block dark:text-gray-300">Email</label>
-                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" required />
-                        </div>
-                        <div>
-                            <label className="block dark:text-gray-300">Password</label>
-                            <input
-                                type="password" value={password} onChange={e => setPassword(e.target.value)}
-                                className="w-full px-3 py-2 border rounded disabled:bg-gray-200 dark:disabled:bg-gray-600 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
-                                placeholder={currentUser ? "Password cannot be changed here" : ""}
-                                required={!currentUser} disabled={!!currentUser}
-                            />
-                        </div>
-                    </div>
-                    <div className="flex justify-end mt-6">
-                        <button type="button" onClick={onClose} className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded mr-2">Cancel</button>
-                        <button type="submit" className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Save</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    )
-};
 
 
 const ManageLocations = ({ onViewLocation }) => {
@@ -574,53 +511,67 @@ const ManageLocations = ({ onViewLocation }) => {
     };
 
     // --- ⭐ Updated handleDelete for Storage and Reports ⭐ ---
-    const handleDelete = async (locationToDelete) => {
-        if (!locationToDelete || !locationToDelete.id) return;
-        const locationId = locationToDelete.id;
-        const locationName = locationToDelete.name;
+   const handleDelete = async (locationToDelete) => {
+        if (!locationToDelete || !locationToDelete.id) return;
+        const locationId = locationToDelete.id;
+        const locationName = locationToDelete.name;
+        const isPending = locationToDelete.status === 'pending'; // ตรวจสอบว่าเป็นหมุดที่รออนุมัติหรือไม่
 
-        if (window.confirm(`Are you sure you want to delete "${locationName}"? This also deletes its image and reports.`)) {
-            try {
-                // 1. Delete Image from Storage
-                if (locationToDelete.imageUrl) {
-                    try {
-                        const imageRef = storageRef(storage, locationToDelete.imageUrl);
-                        await deleteObject(imageRef);
-                        console.log(`Image deleted from Storage: ${locationName}`);
-                    } catch (storageError) {
-                        console.error(`Error deleting image for ${locationName}:`, storageError);
-                        if (storageError.code !== 'storage/object-not-found') {
-                            alert(`Warning: Could not delete image. Check manually. Error: ${storageError.message}`);
-                        }
-                    }
+        // ปรับข้อความยืนยันตามสถานะ (REJECT สำหรับ pending, DELETE สำหรับ approved/rejected ที่ค้าง)
+        if (window.confirm(`Are you sure you want to ${isPending ? 'REJECT' : 'DELETE'} "${locationName}"?`)) {
+            try {
+                const locationRef = doc(db, "locations", locationId);
+
+                if (isPending) {
+                    // ⭐ กรณี REJECT: เปลี่ยนสถานะเป็น 'rejected' (ข้อมูลยังอยู่เพื่อรอแจ้งเตือน User)
+                    await updateDoc(locationRef, { 
+                        status: 'rejected', 
+                        rejectedAt: serverTimestamp() 
+                    });
+                    alert(`"${locationName}" has been rejected. The user will be notified.`);
+                } else {
+                    // ⭐ กรณี DELETE: สำหรับหมุด Approved (ลบถาวร)
+
+                    // 1. Delete Image from Storage
+                    if (locationToDelete.imageUrl) {
+                        try {
+                            const imageRef = storageRef(storage, locationToDelete.imageUrl);
+                            await deleteObject(imageRef);
+                            console.log(`Image deleted from Storage: ${locationName}`);
+                        } catch (storageError) {
+                            console.error(`Error deleting image for ${locationName}:`, storageError);
+                            // อนุญาตให้ดำเนินการต่อไปแม้ลบรูปไม่ได้ ถ้า error ไม่ใช่ object-not-found
+                            if (storageError.code !== 'storage/object-not-found') {
+                                alert(`Warning: Could not delete image. Check manually. Error: ${storageError.message}`);
+                            }
+                        }
+                    }
+
+                    // 2. Delete Associated Reports & Reviews
+                    const reportsQuery = query(collection(db, "reports"), where("locationId", "==", locationId));
+                    const reportSnapshots = await getDocs(reportsQuery);
+                    const deletePromises = reportSnapshots.docs.map(doc => deleteDoc(doc.ref));
+                    await Promise.all(deletePromises);
+                    console.log(`Deleted ${reportSnapshots.size} reports for: ${locationName}`);
+
+                    const reviewsQuery = query(collection(db, "reviews"), where("locationId", "==", locationId));
+                    const reviewSnapshots = await getDocs(reviewsQuery);
+                    const deleteReviewPromises = reviewSnapshots.docs.map(doc => deleteDoc(doc.ref));
+                    await Promise.all(deleteReviewPromises);
+                    console.log(`Deleted ${reviewSnapshots.size} reviews for: ${locationName}`);
+
+                    // 3. Delete Location Document
+                    await deleteDoc(locationRef);
+                    console.log(`Location document deleted: ${locationName}`);
+                    alert(`"${locationName}", image, and reports deleted.`);
                 }
 
-                // 2. Delete Associated Reports
-                const reportsQuery = query(collection(db, "reports"), where("locationId", "==", locationId));
-                const reportSnapshots = await getDocs(reportsQuery);
-                const deletePromises = reportSnapshots.docs.map(doc => deleteDoc(doc.ref));
-                await Promise.all(deletePromises);
-                console.log(`Deleted ${reportSnapshots.size} reports for: ${locationName}`);
-
-                const reviewsQuery = query(collection(db, "reviews"), where("locationId", "==", locationId));
-                const reviewSnapshots = await getDocs(reviewsQuery);
-                const deleteReviewPromises = reviewSnapshots.docs.map(doc => deleteDoc(doc.ref));
-                await Promise.all(deleteReviewPromises);
-                console.log(`Deleted ${reviewSnapshots.size} reviews for: ${locationName}`);
-                // --- ⭐⭐ จบส่วนที่เพิ่ม ⭐⭐ ---
-
-                // 3. Delete Location Document
-                await deleteDoc(doc(db, "locations", locationId));
-                console.log(`Location document deleted: ${locationName}`);
-
-                alert(`"${locationName}", image, and reports deleted.`);
-
-            } catch (error) {
-                console.error(`Error deleting ${locationName}:`, error);
-                alert(`Failed to fully delete "${locationName}". Check console.`);
-            }
-        }
-    };
+            } catch (error) {
+                console.error(`Error processing ${locationName}:`, error);
+                alert(`Failed to complete action for "${locationName}". Check console.`);
+            }
+        }
+    };
     // --- ⭐ End of Updated handleDelete ⭐ ---
 
     const handleApprove = async (id) => {
@@ -1021,6 +972,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const [fullImageUrl, setFullImageUrl] = useState(''); // For full screen image URL
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // For profile modal
     const [userLikes, setUserLikes] = useState(new Set());
+    const [rejectedPinAlert, setRejectedPinAlert] = useState(null);
 
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
@@ -1130,7 +1082,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
         return () => {
             markersRef.current.forEach(marker => marker?.setMap(null));
         };
-    }, [isLoaded, locations, filterType]); // Redraw if these change
+    }, [isLoaded, locations, filterType, pinningMode]); // Redraw if these change
 
 
     // --- Other useEffects (Pinning, TempPin) - Kept simple ---
@@ -1202,6 +1154,35 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
         };
         
     }, [isLoaded, selectedLocation?.id]);
+    
+    useEffect(() => {
+        if (!user) return;
+        
+        // Query: หาหมุดที่ถูกส่งโดย User คนนี้ AND สถานะเป็น 'rejected'
+        const q = query(
+            collection(db, "locations"), 
+            where("submittedBy", "==", user.uid),
+            where("status", "==", "rejected")
+        );
+
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            snapshot.docChanges().forEach(change => {
+                const loc = { id: change.doc.id, ...change.doc.data() };
+                
+                // แสดงแจ้งเตือนสำหรับหมุดที่ถูก Reject และเพิ่งมีการเปลี่ยนแปลงสถานะ
+                if (change.type === 'added' || change.type === 'modified') { 
+                    setRejectedPinAlert({
+                        id: loc.id,
+                        name: loc.name,
+                        message: `The location "${loc.name}" you submitted has been rejected by the administrator.`,
+                    });
+                }
+            });
+        });
+
+        return () => unsubscribe();
+    }, [user]);
+    
 
 
     // --- Other Functions (moveToCurrentLocation, handleSearchResultClick, etc. - Updated Zoom) ---
@@ -1209,7 +1190,16 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const handleSearchResultClick = (location) => { if (mapInstanceRef.current) { mapInstanceRef.current.setCenter({ lat: location.lat, lng: location.lng }); mapInstanceRef.current.setZoom(17); } setSelectedLocation(location); setSearchQuery(''); };
     const searchResults = searchQuery ? locations.filter(loc => loc.name.toLowerCase().includes(searchQuery.toLowerCase())) : [];
     const handleConfirmPin = () => { setIsAddLocationModalOpen(true); setPinningMode(false); tempMarkerRef.current?.setMap(null); }
-    const handleCancelPin = () => { setPinningMode(false); setTempPin(null); tempMarkerRef.current?.setMap(null); }
+    const handleCancelPin = () => { 
+    setPinningMode(false); 
+    setTempPin(null); 
+    tempMarkerRef.current?.setMap(null); 
+    
+    // ⭐ NEW: กระตุ้นให้ useEffect ที่วาด Marker ทำงานซ้ำ
+    // โดยตั้งค่า filterType ให้เป็นค่าเดิมของมันเอง (เช่น 'all' -> 'all') 
+    // ซึ่งจะทำให้ dependency array เปลี่ยนแปลงในเชิงเทคนิค และสั่งวาดใหม่
+    setFilterType(prev => prev); 
+}
     const handleSubmissionSuccess = () => { setIsAddLocationModalOpen(false); setTempPin(null); setSubmissionStatus('waiting'); setTimeout(() => setSubmissionStatus(''), 4000); };
     // --- ⭐ Updated Zoom Handlers ⭐ ---
     const handleZoomIn = () => { if (mapInstanceRef.current) { mapInstanceRef.current.setZoom(mapInstanceRef.current.getZoom() + 1); } };
@@ -1250,6 +1240,32 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             {isImageModalOpen && (<ImageModal imageUrl={fullImageUrl} onClose={() => setIsImageModalOpen(false)} />)}
             {isProfileModalOpen && user && (<ProfileModal user={user} onClose={() => setIsProfileModalOpen(false)} />)}
 
+            {/* ⭐ Rejected Pin Alert Modal (โค้ดที่ต้องการเพิ่ม) ⭐ */}
+            {rejectedPinAlert && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md text-center">
+                        <h2 className="text-2xl font-bold mb-4 text-red-600 dark:text-red-400">🚫 Submission Rejected</h2>
+                        <p className="text-gray-700 dark:text-gray-300 mb-6">
+                            {rejectedPinAlert.message}
+                        </p>
+                        <button
+                            onClick={async () => {
+                                // ⭐ ลบเอกสารออกจาก Firestore ถาวรเมื่อผู้ใช้รับทราบ
+                                try {
+                                    await deleteDoc(doc(db, "locations", rejectedPinAlert.id));
+                                } catch (e) {
+                                    console.error("Failed to delete rejected pin document:", e);
+                                }
+                                setRejectedPinAlert(null); // เคลียร์ Alert
+                            }}
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
+                        >
+                            Acknowledge and Clear
+                        </button>
+                    </div>
+                </div>
+            )}
+
             {/* Pinning UI */}
             {pinningMode && (<div className="absolute top-0 left-0 right-0 p-4 bg-blue-600 text-white text-center z-20 flex justify-center items-center shadow-lg"><p className="font-semibold text-lg">{tempPin ? 'Location selected. Confirm or Cancel.' : 'Click map to place pin.'}</p><button onClick={handleCancelPin} className="ml-6 bg-white text-blue-600 font-bold py-1 px-4 rounded-full text-sm hover:bg-blue-100">Cancel</button></div>)}
             {tempPin && (<div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-4"><button onClick={handleConfirmPin} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 text-lg rounded-full shadow-lg">Confirm Pin</button><button onClick={handleCancelPin} className="bg-white hover:bg-gray-100 text-gray-700 font-bold py-3 px-8 text-lg rounded-full shadow-lg">Cancel</button></div>)}
@@ -1288,7 +1304,9 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                 <div className="absolute bottom-4 left-4 pointer-events-auto">{user && !pinningMode && (<button onClick={() => setPinningMode(true)} className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600"><AddPinIcon /></button>)}</div>
             </div>
         </div>
+        
     );
+    
 }
 
 // --- App Main Component ---
@@ -1297,6 +1315,7 @@ export default function App() {
     const [isAdmin, setIsAdmin] = useState(false);
     const [view, setView] = useState('welcome');
     const [loading, setLoading] = useState(true);
+    const [suspensionMessage, setSuspensionMessage] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
 
     useEffect(() => { const isDark = localStorage.getItem('darkMode') === 'true'; setDarkMode(isDark); if (isDark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }, []);
@@ -1324,41 +1343,48 @@ export default function App() {
                 
                 // ใช้ onSnapshot เพื่อติดตาม status แบบ real-time
                 // ถ้า Admin กด suspend, ผู้ใช้จะถูกเตะเป็น Guest ทันที
+                // ใน App.js, ภายใน useEffect, ภายใน firestoreUnsubscribe = onSnapshot(userRef, ...)
+
                 firestoreUnsubscribe = onSnapshot(userRef, (userDoc) => {
-                    if (userDoc.exists() && userDoc.data().status === 'suspended') {
-                        // --- ❗❗ จุดสำคัญ ❗❗ ---
-                        // ผู้ใช้คนนี้ถูกระงับ (suspended)
-                        // เราจะตั้งค่า user ในแอปให้เป็น null (เหมือน Guest)
-                        setUser(null); 
-                        setIsAdmin(false);
-                        setLoading(false);
-                        
-                    } else if (userDoc.exists()) {
-                        // ผู้ใช้ไม่ได้ถูกระงับ (active)
-                        // ตั้งค่า user ในแอปตามปกติ และเช็กสิทธิ์ Admin
-                        setUser(currentUser); 
-                        currentUser.getIdTokenResult(true).then((idTokenResult) => {
-                            setIsAdmin(!!idTokenResult.claims.admin);
-                            setLoading(false);
-                        }).catch((error) => {
-                            console.error("Token error:", error);
+                    setSuspensionMessage(null); // ⭐ ล้างข้อความแจ้งเตือนทุกครั้งที่มีการอัปเดตข้อมูล
+
+                    if (userDoc.exists()) {
+                        const firestoreData = userDoc.data();
+
+                        if (firestoreData.status === 'suspended') {
+                            // ⭐ กรณี: ผู้ใช้ถูกระงับ
+                            setSuspensionMessage("บัญชีของคุณถูกระงับการใช้งาน โปรดติดต่อผู้ดูแลระบบเพื่อขอข้อมูลเพิ่มเติม");
+                            
+                            // ตั้งค่า user เป็น null เพื่อยกเลิกสิทธิ์การเข้าถึงส่วนอื่นของแอป
+                            setUser(null); 
                             setIsAdmin(false);
                             setLoading(false);
-                        });
+                            
+                        } else {
+                            // ⭐ กรณี: ผู้ใช้ active (Logic ใช้งานปกติ)
+                            const userWithDisplayName = {
+                                ...currentUser, 
+                                displayName: firestoreData.displayName || currentUser.displayName, 
+                            };
+
+                            setUser(userWithDisplayName);
+
+                            currentUser.getIdTokenResult(true).then((idTokenResult) => {
+                                setIsAdmin(!!idTokenResult.claims.admin);
+                                setLoading(false);
+                            }).catch((error) => {
+                                console.error("Token error:", error);
+                                setIsAdmin(false);
+                                setLoading(false);
+                            });
+                        }
                     } else {
-                        // มี Auth แต่ไม่มีข้อมูลใน Firestore (อาจจะกำลังสมัคร?)
-                        // ปฏิบัติเหมือน Guest เพื่อความปลอดภัย
+                        // มี Auth แต่ไม่มีข้อมูลใน Firestore
                         setUser(null);
                         setIsAdmin(false);
                         setLoading(false);
                     }
-                }, (error) => {
-                    // เกิดข้อผิดพลาดในการอ่าน Firestore
-                    console.error("Error fetching user status:", error);
-                    setUser(null); // ให้เป็น Guest
-                    setIsAdmin(false);
-                    setLoading(false);
-                });
+                }, (error) => { /* ... */ });
 
             } else {
                 // ผู้ใช้ Log out (Auth เป็น null)
@@ -1380,6 +1406,25 @@ export default function App() {
     // --- ⭐⭐ จบ LОGIC ที่แก้ไข ⭐⭐ ---
 
     if (loading) return <div className="flex justify-center items-center h-screen dark:bg-gray-900"><span className="dark:text-white">Loading...</span></div>;
+    if (suspensionMessage) {
+    return (
+        <div className="flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+            <div className="p-8 bg-white dark:bg-gray-800 rounded-lg shadow-2xl text-center max-w-sm">
+                <h1 className="text-2xl font-bold text-red-600 mb-4">⚠️ บัญชีถูกระงับการใช้งาน</h1>
+                <p className="text-gray-700 dark:text-gray-300">
+                    {suspensionMessage}
+                </p>
+                <button 
+                    // ให้ผู้ใช้ Log Out เพื่อเคลียร์สถานะ Auth และล้างข้อความ
+                    onClick={() => signOut(auth).then(() => setSuspensionMessage(null))} 
+                    className="mt-6 w-full px-4 py-2 bg-red-600 text-white font-semibold rounded-lg hover:bg-red-700 transition duration-200"
+                >
+                    ออกจากระบบ
+                </button>
+            </div>
+        </div>
+    );
+}
     if (user) return isAdmin ? <AdminDashboard /> : <MapScreen user={user} setView={setView} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />;
     if (view === 'map') return <MapScreen user={null} setView={setView} darkMode={darkMode} toggleDarkMode={toggleDarkMode} />;
     switch (view) { case 'login': return <LoginScreen setView={setView} />; case 'signup': return <SignUpScreen setView={setView} />; default: return <WelcomeScreen setView={setView} />; }
