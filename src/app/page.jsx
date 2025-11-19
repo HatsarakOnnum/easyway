@@ -512,72 +512,102 @@ const ManageLocations = ({ onViewLocation }) => {
 
     // --- ⭐ Updated handleDelete for Storage and Reports ⭐ ---
    const handleDelete = async (locationToDelete) => {
-        if (!locationToDelete || !locationToDelete.id) return;
-        const locationId = locationToDelete.id;
-        const locationName = locationToDelete.name;
-        const isPending = locationToDelete.status === 'pending'; // ตรวจสอบว่าเป็นหมุดที่รออนุมัติหรือไม่
+        if (!locationToDelete || !locationToDelete.id) return;
+        const locationId = locationToDelete.id;
+        const locationName = locationToDelete.name;
+        const isPending = locationToDelete.status === 'pending';
 
-        // ปรับข้อความยืนยันตามสถานะ (REJECT สำหรับ pending, DELETE สำหรับ approved/rejected ที่ค้าง)
-        if (window.confirm(`Are you sure you want to ${isPending ? 'REJECT' : 'DELETE'} "${locationName}"?`)) {
-            try {
+        const confirmMessage = isPending 
+            ? `Are you sure you want to REJECT "${locationName}"?` 
+            : `Are you sure you want to DELETE "${locationName}"? This cannot be undone.`;
+
+        if (window.confirm(confirmMessage)) {
+            try {
                 const locationRef = doc(db, "locations", locationId);
 
                 if (isPending) {
-                    // ⭐ กรณี REJECT: เปลี่ยนสถานะเป็น 'rejected' (ข้อมูลยังอยู่เพื่อรอแจ้งเตือน User)
+                    // ... (ส่วน REJECT หมุด Pending เหมือนเดิม ไม่ต้องแก้) ...
                     await updateDoc(locationRef, { 
                         status: 'rejected', 
                         rejectedAt: serverTimestamp() 
                     });
-                    alert(`"${locationName}" has been rejected. The user will be notified.`);
+                    // (ไม่ต้องส่ง noti ตรงนี้แล้ว เพราะระบบจะเด้ง Popup ใหญ่จาก App.js เอง)
+
                 } else {
-                    // ⭐ กรณี DELETE: สำหรับหมุด Approved (ลบถาวร)
+                    // =================================================
+                    // 🔴 กรณี 2: DELETE THAVORN (สำหรับ Approved หรือ Rejected เก่า)
+                    // =================================================
 
-                    // 1. Delete Image from Storage
+                    // --- ⭐⭐ 1. เพิ่มส่วนส่งแจ้งเตือนก่อนลบ ⭐⭐ ---
+                    if (locationToDelete.submittedBy) {
+                        await addDoc(collection(db, "users", locationToDelete.submittedBy, "notifications"), {
+                            type: 'deleted', // ใช้ type นี้ก็ได้ หรือจะใช้ rejected ก็ได้
+                            locationName: locationName,
+                            message: `Your location "${locationName}" has been permanently removed by the administrator.`,
+                            createdAt: serverTimestamp(),
+                            read: false
+                        });
+                    }
+                    // ------------------------------------------------
+
+                    // 2. ลบรูปภาพ (เหมือนเดิม)
                     if (locationToDelete.imageUrl) {
-                        try {
-                            const imageRef = storageRef(storage, locationToDelete.imageUrl);
-                            await deleteObject(imageRef);
-                            console.log(`Image deleted from Storage: ${locationName}`);
-                        } catch (storageError) {
-                            console.error(`Error deleting image for ${locationName}:`, storageError);
-                            // อนุญาตให้ดำเนินการต่อไปแม้ลบรูปไม่ได้ ถ้า error ไม่ใช่ object-not-found
-                            if (storageError.code !== 'storage/object-not-found') {
-                                alert(`Warning: Could not delete image. Check manually. Error: ${storageError.message}`);
-                            }
-                        }
-                    }
+                        try {
+                            const imageRef = storageRef(storage, locationToDelete.imageUrl);
+                            await deleteObject(imageRef);
+                        } catch (err) { 
+                            if (err.code !== 'storage/object-not-found') console.error("Image delete error:", err); 
+                        }
+                    }
 
-                    // 2. Delete Associated Reports & Reviews
-                    const reportsQuery = query(collection(db, "reports"), where("locationId", "==", locationId));
-                    const reportSnapshots = await getDocs(reportsQuery);
-                    const deletePromises = reportSnapshots.docs.map(doc => deleteDoc(doc.ref));
-                    await Promise.all(deletePromises);
-                    console.log(`Deleted ${reportSnapshots.size} reports for: ${locationName}`);
+                    // 3. ลบ Sub-collections (เหมือนเดิม)
+                    const deleteSubCollection = async (collName) => {
+                        const q = query(collection(db, collName), where("locationId", "==", locationId));
+                        const snapshot = await getDocs(q);
+                        const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+                        await Promise.all(promises);
+                    };
+                    await deleteSubCollection("reports");
+                    await deleteSubCollection("reviews");
 
-                    const reviewsQuery = query(collection(db, "reviews"), where("locationId", "==", locationId));
-                    const reviewSnapshots = await getDocs(reviewsQuery);
-                    const deleteReviewPromises = reviewSnapshots.docs.map(doc => deleteDoc(doc.ref));
-                    await Promise.all(deleteReviewPromises);
-                    console.log(`Deleted ${reviewSnapshots.size} reviews for: ${locationName}`);
+                    // 4. ลบเอกสาร Location (สุดท้าย)
+                    await deleteDoc(locationRef);
 
-                    // 3. Delete Location Document
-                    await deleteDoc(locationRef);
-                    console.log(`Location document deleted: ${locationName}`);
-                    alert(`"${locationName}", image, and reports deleted.`);
+                    console.log(`Location document deleted: ${locationName}`);
+                    alert(`"${locationName}" has been permanently deleted and the owner notified.`);
                 }
 
-            } catch (error) {
-                console.error(`Error processing ${locationName}:`, error);
-                alert(`Failed to complete action for "${locationName}". Check console.`);
-            }
-        }
-    };
+            } catch (error) {
+                console.error(`Error processing ${locationName}:`, error);
+                alert(`Failed to complete action. Check console.`);
+            }
+        }
+    };
     // --- ⭐ End of Updated handleDelete ⭐ ---
 
-    const handleApprove = async (id) => {
-        const locRef = doc(db, "locations", id);
-        await updateDoc(locRef, { status: 'approved' });
-    };
+    const handleApprove = async (location) => { 
+        try {
+            const locRef = doc(db, "locations", location.id);
+            await updateDoc(locRef, { status: 'approved' });
+
+            // --- ⭐ ส่งแจ้งเตือนเมื่ออนุมัติ ---
+            if (location.submittedBy) {
+                await addDoc(collection(db, "users", location.submittedBy, "notifications"), {
+                    type: 'approved',
+                    locationName: location.name,
+                    message: `Your location "${location.name}" has been approved and is now visible!`,
+                    createdAt: serverTimestamp(),
+                    read: false
+                });
+            }
+            // ----------------------------------------
+            alert(`Approved ${location.name}`);
+        // -------------------------------
+        } catch (error) {
+            console.error("Error approving:", error);
+            alert("Failed to approve.");
+        }
+  };
 
     const filteredLocations = locations.filter(loc =>
         loc.name.toLowerCase().includes(searchTerm.toLowerCase())
@@ -624,7 +654,7 @@ const ManageLocations = ({ onViewLocation }) => {
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
                                     <button onClick={() => onViewLocation(loc)} className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4">View</button>
                                     {statusFilter === 'pending' && (
-                                         <button onClick={() => handleApprove(loc.id)} className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-4">Approve</button>
+                                         <button onClick={() => handleApprove(loc)} className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-4">Approve</button>
                                     )}
                                     <button onClick={() => handleOpenModal(loc)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">Edit</button>
                                     <button onClick={() => handleDelete(loc)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
@@ -922,6 +952,34 @@ const ReportModal = ({ location, user, onClose }) => {
     const handleReportSubmit = async (e) => { e.preventDefault(); if (!user) { setError('Log in to report.'); return; } if (reportText.trim() === '') { setError('Please describe issue.'); return; } setError(''); setIsSubmitting(true); try { await addDoc(collection(db, 'reports'), { locationId: location.id, locationName: location.name, reportText: reportText, userId: user.uid, userEmail: user.email, createdAt: serverTimestamp(), status: 'pending' }); alert('Report submitted.'); onClose(); } catch (err) { console.error('Report error:', err); setError('Failed to submit.'); } finally { setIsSubmitting(false); } };
     return ( <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}> <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}> <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center"><h2 className="text-2xl font-bold dark:text-white">Report Issue</h2><button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-3xl font-bold">&times;</button></div> <form onSubmit={handleReportSubmit} className="p-4"><p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Reporting: <span className="font-semibold dark:text-gray-200">{location.name}</span></p><textarea value={reportText} onChange={(e) => setReportText(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="4" placeholder="Describe problem..." required></textarea>{error && <p className="text-red-500 dark:text-red-400 text-sm mt-2">{error}</p>}<div className="flex justify-end mt-4"><button type="button" onClick={onClose} className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded transition duration-300 mr-2">Cancel</button><button type="submit" disabled={isSubmitting} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded disabled:bg-red-300 dark:disabled:bg-red-800 transition duration-300">{isSubmitting ? 'Submitting...' : 'Submit Report'}</button></div></form> </div> </div> );
 };
+// --- Notification Modal (Component ใหม่) ---
+const NotificationModal = ({ notifications, onClose }) => {
+  if (!notifications || notifications.length === 0) return null;
+
+  return (
+    <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={onClose}>
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
+        <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">🔔 Updates</h3>
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+          {notifications.map((noti) => (
+            <div key={noti.id} className={`p-3 rounded-lg border-l-4 shadow-sm ${
+              noti.type === 'approved' ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+            }`}>
+              <h4 className={`font-bold ${noti.type === 'approved' ? 'text-green-700' : 'text-red-700'}`}>
+                {noti.type === 'approved' ? '✅ Approved' : '❌ Rejected'}
+              </h4>
+              <p className="text-gray-700 text-sm mt-1"><strong>{noti.locationName}</strong></p>
+              <p className="text-gray-600 text-xs">{noti.message}</p>
+            </div>
+          ))}
+        </div>
+        <button onClick={onClose} className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+          Got it
+        </button>
+      </div>
+    </div>
+  );
+};
 
 // --- ⭐ Image Modal (New Component) ⭐ ---
 const ImageModal = ({ imageUrl, onClose }) => {
@@ -972,12 +1030,38 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const [fullImageUrl, setFullImageUrl] = useState(''); // For full screen image URL
     const [isProfileModalOpen, setIsProfileModalOpen] = useState(false); // For profile modal
     const [userLikes, setUserLikes] = useState(new Set());
+    const [notifications, setNotifications] = useState([]);
+    const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [rejectedPinAlert, setRejectedPinAlert] = useState(null);
 
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
     useEffect(() => { if (!user) { setUserLikes(new Set()); return; } const likesRef = collection(db, "users", user.uid, "likes"); const unsubscribe = onSnapshot(likesRef, (snapshot) => { setUserLikes(new Set(snapshot.docs.map(doc => doc.id))); }); return () => unsubscribe(); }, [user]);
     const handleLike = async (location) => { if (!user) { alert("Log in to like."); return; } if (!location || !location.id) return; const locationId = location.id; const locationRef = doc(db, "locations", locationId); const likeRef = doc(db, "users", user.uid, "likes", locationId); const isLiked = userLikes.has(locationId); const newLikes = new Set(userLikes); const currentCount = localSelectedLocation?.likeCount || locations.find(l => l.id === locationId)?.likeCount || 0; let updatedCount; if (isLiked) { newLikes.delete(locationId); updatedCount = currentCount - 1; } else { newLikes.add(locationId); updatedCount = currentCount + 1; } setLocalSelectedLocation(prev => prev ? { ...prev, likeCount: updatedCount < 0 ? 0 : updatedCount } : null); setUserLikes(newLikes); try { if (isLiked) { await deleteDoc(likeRef); await updateDoc(locationRef, { likeCount: increment(-1) }); } else { await setDoc(likeRef, { createdAt: serverTimestamp() }); await updateDoc(locationRef, { likeCount: increment(1) }); } } catch (error) { console.error("Like error:", error); setUserLikes(userLikes); setLocalSelectedLocation(location); alert("Failed to update like."); } };
+
+    // ⭐ ฟังการแจ้งเตือน Real-time
+    useEffect(() => {
+        if (!user) return;
+        const q = query(collection(db, "users", user.uid, "notifications"));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+        const notiData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (notiData.length > 0) {
+            setNotifications(notiData);
+            setIsNotificationOpen(true); // เปิด Modal ทันทีที่มีแจ้งเตือน
+        }
+        });
+        return () => unsubscribe();
+    }, [user]);
+
+    // ⭐ ฟังก์ชันปิดและลบแจ้งเตือน (User รับทราบแล้ว)
+    const handleCloseNotification = async () => {
+        setIsNotificationOpen(false);
+        notifications.forEach(async (noti) => {
+            try { await deleteDoc(doc(db, "users", user.uid, "notifications", noti.id)); } 
+            catch (err) { console.error(err); }
+        });
+        setNotifications([]);
+    };
 
     // --- ⭐ Simplified Map Loading Logic ⭐ ---
     useEffect(() => {
@@ -1031,6 +1115,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                     center: { lat: 13.7563, lng: 100.5018 },
                     zoom: 12,
                     disableDefaultUI: true,
+                    gestureHandling: 'greedy',
                     clickableIcons: !pinningMode, // Reflect pinning mode
                     draggableCursor: pinningMode ? 'crosshair' : 'grab' // Reflect pinning mode
                 });
@@ -1239,6 +1324,14 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             {isReportModalOpen && selectedLocation && user && (<ReportModal location={selectedLocation} user={user} onClose={() => setIsReportModalOpen(false)} />)}
             {isImageModalOpen && (<ImageModal imageUrl={fullImageUrl} onClose={() => setIsImageModalOpen(false)} />)}
             {isProfileModalOpen && user && (<ProfileModal user={user} onClose={() => setIsProfileModalOpen(false)} />)}
+
+            {/* ⭐ เพิ่ม NotificationModal เข้าไป */}
+            {isNotificationOpen && (
+                <NotificationModal 
+                    notifications={notifications} 
+                    onClose={handleCloseNotification} 
+                />
+            )}
 
             {/* ⭐ Rejected Pin Alert Modal (โค้ดที่ต้องการเพิ่ม) ⭐ */}
             {rejectedPinAlert && (
