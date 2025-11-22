@@ -738,24 +738,75 @@ const ManageReports = () => {
 };
 
 const LocationMapView = ({ location, onBack }) => {
-     const mapRef = useRef(null);
+    const mapRef = useRef(null);
     const isLoaded = window.google && window.google.maps;
+    const [existingLocations, setExistingLocations] = useState([]);
 
+    // 1. ดึงข้อมูลหมุดที่ Approved แล้วมาเพื่อเป็น Context
+    useEffect(() => {
+        const fetchExistingLocations = async () => {
+            try {
+                // ดึงเฉพาะหมุดที่อนุมัติแล้ว (approved)
+                const q = query(collection(db, "locations"), where("status", "==", "approved"));
+                const querySnapshot = await getDocs(q);
+                const locs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                setExistingLocations(locs);
+            } catch (error) {
+                console.error("Error fetching context locations:", error);
+            }
+        };
+
+        fetchExistingLocations();
+    }, []);
+
+    // 2. วาดแผนที่และหมุด
     useEffect(() => {
         if (isLoaded && mapRef.current) {
             const map = new window.google.maps.Map(mapRef.current, {
-                center: { lat: location.lat, lng: location.lng }, zoom: 17, disableDefaultUI: true,
+                center: { lat: location.lat, lng: location.lng },
+                zoom: 16, // ซูมเข้าไปใกล้หน่อยเพื่อให้เห็นชัด
+                disableDefaultUI: true,
             });
+
+            // --- A. วาดหมุด Context (หมุดอื่นๆ ที่อนุมัติแล้ว) ---
+            // ให้เป็นสีฟ้า (Blue) หรือสีเทา เพื่อไม่ให้เด่นแย่งซีน
+            existingLocations.forEach(loc => {
+                // อย่าเพิ่งวาด ถ้ามันคือหมุดตัวเดียวกับที่เรากำลังดูอยู่ (ป้องกันซ้อนทับ)
+                if (loc.id === location.id) return;
+
+                new window.google.maps.Marker({
+                    position: { lat: loc.lat, lng: loc.lng },
+                    map: map,
+                    title: `(Approved) ${loc.name}`,
+                    // ใช้ไอคอนสีฟ้า
+                    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", 
+                    opacity: 0.7 // ทำให้จางลงหน่อยจะได้รู้ว่าเป็นแค่พื้นหลัง
+                });
+            });
+
+            // --- B. วาดหมุด Target (หมุดที่เรากำลังตรวจสอบ) ---
+            // ให้เป็นสีแดง (Red) และเด้งดึ๋งๆ (Bounce) จะได้เด่นที่สุด
             new window.google.maps.Marker({
-                position: { lat: location.lat, lng: location.lng }, map: map, title: location.name,
+                position: { lat: location.lat, lng: location.lng },
+                map: map,
+                title: `Checking: ${location.name}`,
+                animation: window.google.maps.Animation.BOUNCE, // ใส่ Animation ให้เด้ง
+                icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // สีแดงชัดเจน
+                zIndex: 999 // ให้มันอยู่บนสุดเสมอ
             });
         }
-    }, [isLoaded, location]);
+    }, [isLoaded, location, existingLocations]);
 
     return (
         <div className="dark:text-gray-200">
             <div className="flex justify-between items-center mb-5">
-                <h2 className="text-3xl font-bold">Viewing: {location.name}</h2>
+                <div>
+                    <h2 className="text-3xl font-bold">Viewing: {location.name}</h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>Target Pin (Checking)
+                        <span className="ml-4 inline-block w-3 h-3 bg-blue-400 rounded-full mr-2"></span>Existing Pins (Context)
+                    </p>
+                </div>
                 <button onClick={onBack} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Back</button>
             </div>
             <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md bg-gray-300 dark:bg-gray-700">
@@ -1003,6 +1054,7 @@ const ProfileModal = ({ user, onClose }) => {
 // --- Main App Screen (Map View) ---
 // ⭐⭐ REVERTED Map Loading/Cleanup Logic ⭐⭐
 function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
+    
     const [isMenuOpen, setMenuOpen] = useState(false);
     const [isLoaded, setIsLoaded] = useState(false); // Indicates if Google Maps script is loaded
     const [loadError, setLoadError] = useState(null);
@@ -1077,7 +1129,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             const script = document.createElement('script');
             script.id = 'google-maps-script';
             // Use your API Key here
-            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDCOw5hM4WqkOfqKElOqrZag0QAiJO68HY&libraries=places&callback=initMap`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyDCOw5hM4WqkOfqKElOqrZag0QAiJO68HY&libraries=places,,geometry&callback=initMap`;
             script.async = true;
             script.defer = true; // Added defer
 
@@ -1107,33 +1159,43 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     }, []); // Run only once
 
     // --- ⭐ Simplified Map Initialization & Basic Cleanup ⭐ ---
+    // --- 1. Map Initialization (แก้ตรงนี้) ---
     useEffect(() => {
+        // ถ้าโหลดแล้ว และยังไม่มี map instance ให้สร้างใหม่
         if (isLoaded && mapRef.current && !mapInstanceRef.current) {
             console.log("Initializing map instance...");
             try {
                 const map = new window.google.maps.Map(mapRef.current, {
-                    center: { lat: 13.7563, lng: 100.5018 },
+                    center: { lat: 13.7563, lng: 100.5018 }, // เริ่มต้นที่กรุงเทพ
                     zoom: 12,
                     disableDefaultUI: true,
-                    gestureHandling: 'greedy',
-                    clickableIcons: !pinningMode, // Reflect pinning mode
-                    draggableCursor: pinningMode ? 'crosshair' : 'grab' // Reflect pinning mode
+                    gestureHandling: 'greedy', // (ที่เราเพิ่งเพิ่มไป)
+                    // เอาค่าเริ่มต้นปกติใส่ไว้เลย
+                    clickableIcons: true,
+                    draggableCursor: 'grab'
                 });
                 mapInstanceRef.current = map;
-                 // No sophisticated tilesloaded check here
             } catch (error) {
                 console.error("Error creating map instance:", error);
                 setLoadError(new Error("Failed to create map instance."));
             }
         }
+        // ❌ ลบ cleanup function ออก เพื่อไม่ให้ map หายตอน re-render
+        // return () => { mapInstanceRef.current = null; }; 
+    }, [isLoaded]); // <--- ❌ เอา pinningMode ออก ให้เหลือแค่ isLoaded
 
-        // --- Basic Cleanup Attempt ---
-        return () => {
-            // When the component unmounts, try to nullify the instance
-            // This does NOT guarantee prevention of the removeChild error
-            mapInstanceRef.current = null;
-        };
-    }, [isLoaded, pinningMode]); // Re-run if loaded state or pinning mode changes
+    // --- 2. Handle Pinning Mode Changes (เพิ่มอันนี้เข้าไปใหม่) ---
+    useEffect(() => {
+        if (mapInstanceRef.current) {
+            console.log("Updating map options for pinning mode:", pinningMode);
+            mapInstanceRef.current.setOptions({
+                // ถ้ากำลังปักหมุด: เมาส์เป็นกากบาท, กดไอคอนสถานที่ไม่ได้
+                // ถ้าปกติ: เมาส์เป็นมือจับ, กดไอคอนสถานที่ได้
+                draggableCursor: pinningMode ? 'crosshair' : 'grab',
+                clickableIcons: !pinningMode, 
+            });
+        }
+    }, [pinningMode]); // ทำงานเฉพาะตอน pinningMode เปลี่ยน
 
      // --- ⭐ Fetching Locations (Relies on isLoaded) ⭐ ---
     useEffect(() => {
@@ -1274,11 +1336,47 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const moveToCurrentLocation = () => { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { const { latitude, longitude } = pos.coords; const current = { lat: latitude, lng: longitude }; if (!mapInstanceRef.current) return; mapInstanceRef.current.setCenter(current); mapInstanceRef.current.setZoom(16); if (userMarkerRef.current) userMarkerRef.current.setMap(null); userMarkerRef.current = new window.google.maps.Marker({ position: current, map: mapInstanceRef.current, title: "Your Location", icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 }, }); }, (error) => alert("Cannot get location."), { enableHighAccuracy: true }); } else { alert("Geolocation not supported."); } };
     const handleSearchResultClick = (location) => { if (mapInstanceRef.current) { mapInstanceRef.current.setCenter({ lat: location.lat, lng: location.lng }); mapInstanceRef.current.setZoom(17); } setSelectedLocation(location); setSearchQuery(''); };
     const searchResults = searchQuery ? locations.filter(loc => loc.name.toLowerCase().includes(searchQuery.toLowerCase())) : [];
-    const handleConfirmPin = () => { setIsAddLocationModalOpen(true); setPinningMode(false); tempMarkerRef.current?.setMap(null); }
+
+    // --- ⭐ เพิ่มฟังก์ชันนี้เข้าไปครับ (วางไว้ก่อน handleConfirmPin) ⭐ ---
+    const isTooCloseToExistingMarker = (newLat, newLng) => {
+        // เช็กว่าโหลด Library geometry มาหรือยัง
+        if (!window.google || !window.google.maps || !window.google.maps.geometry) {
+            console.warn("Google Maps Geometry library not loaded!");
+            return false; 
+        }
+
+        const MIN_DISTANCE_METERS = 25; // 👈 กำหนดระยะห่างขั้นต่ำ (เช่น 50 เมตร)
+        const newPoint = new window.google.maps.LatLng(newLat, newLng);
+
+        for (const loc of locations) {
+            const existingPoint = new window.google.maps.LatLng(loc.lat, loc.lng);
+            // คำนวณระยะทางเป็นเมตร
+            const distance = window.google.maps.geometry.spherical.computeDistanceBetween(existingPoint, newPoint);
+            
+            if (distance < MIN_DISTANCE_METERS) {
+                return true; // เจอจุดที่ใกล้เกินไป
+            }
+        }
+        return false; // ไม่มีจุดใกล้เคียง
+    };
+
+    const handleConfirmPin = () => { 
+        // --- ⭐ เพิ่มส่วนเช็กระยะห่าง ⭐ ---
+        if (isTooCloseToExistingMarker(tempPin.lat, tempPin.lng)) {
+            alert("ไม่สามารถปักหมุดได้: จุดนี้อยู่ใกล้กับหมุดที่มีอยู่แล้วเกินไป (กรุณาห่างอย่างน้อย 25 เมตร)");
+            return; // หยุดการทำงาน ไม่เปิดฟอร์ม
+        }
+        // ----------------------------------
+
+        setIsAddLocationModalOpen(true); 
+        setPinningMode(false); 
+        tempMarkerRef.current?.setMap(null); 
+    }
     const handleCancelPin = () => { 
     setPinningMode(false); 
     setTempPin(null); 
     tempMarkerRef.current?.setMap(null); 
+    
     
     // ⭐ NEW: กระตุ้นให้ useEffect ที่วาด Marker ทำงานซ้ำ
     // โดยตั้งค่า filterType ให้เป็นค่าเดิมของมันเอง (เช่น 'all' -> 'all') 
@@ -1374,8 +1472,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                 {user && <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 break-words">{user.email}</p>}
                 <div className="border-t dark:border-gray-700 my-6"></div>
                 <nav className="space-y-4">
-                    {/* Dark Mode Toggle */}
-                    <div className="flex justify-between items-center"><label htmlFor="dark-mode" className="text-gray-700 dark:text-gray-300">Dark mode</label><div className="relative inline-block w-10 mr-2 align-middle select-none"><input type="checkbox" name="toggle" id="dark-mode" checked={darkMode} onChange={toggleDarkMode} className="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white dark:bg-gray-900 border-4 dark:border-gray-700 appearance-none cursor-pointer checked:right-0 checked:border-blue-600 dark:checked:border-blue-400"/><label htmlFor="dark-mode" className="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer"></label></div></div>
+                    
                     {/* Profile Button */}
                     {user && (<button onClick={() => {setIsProfileModalOpen(true); setMenuOpen(false);}} className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 w-full text-left"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg><span>Profile</span></button>)}
                     {/* Logout / Login Button */}
@@ -1411,8 +1508,34 @@ export default function App() {
     const [suspensionMessage, setSuspensionMessage] = useState(null);
     const [darkMode, setDarkMode] = useState(false);
 
-    useEffect(() => { const isDark = localStorage.getItem('darkMode') === 'true'; setDarkMode(isDark); if (isDark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); }, []);
-    const toggleDarkMode = () => { const isDark = !darkMode; setDarkMode(isDark); localStorage.setItem('darkMode', isDark); if (isDark) document.documentElement.classList.add('dark'); else document.documentElement.classList.remove('dark'); };
+    useEffect(() => {
+        // เช็กว่าเคยบันทึกไว้ไหม? หรือเช็กว่าเป็นกลางคืนไหม?
+        const isDarkStored = localStorage.getItem('darkMode') === 'true';
+        const isSystemDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        
+        // ถ้าเคยบันทึกไว้ใช้ค่าบันทึก ถ้าไม่เคยให้ใช้ค่าระบบ
+        const shouldUseDark = localStorage.getItem('darkMode') !== null ? isDarkStored : isSystemDark;
+
+        setDarkMode(shouldUseDark);
+
+        // สั่งเปลี่ยน Class ของ HTML
+        if (shouldUseDark) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }, []);
+    const toggleDarkMode = () => {
+        const newMode = !darkMode;
+        setDarkMode(newMode);
+        localStorage.setItem('darkMode', newMode); // บันทึกค่า
+        
+        if (newMode) {
+            document.documentElement.classList.add('dark'); // เพิ่ม class dark
+        } else {
+            document.documentElement.classList.remove('dark'); // ลบ class dark
+        }
+    };
 
     // --- ⭐⭐ LОGIC ที่แก้ไข ⭐⭐ ---
     // เราจะใช้ onSnapshot เพื่อเช็ก status ของผู้ใช้ใน Firestore แบบ Real-time
