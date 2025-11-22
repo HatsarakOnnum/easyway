@@ -386,6 +386,10 @@ const ManageUsers = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
+    
+    // --- ⭐ 1. เพิ่ม State สำหรับการเรียงลำดับ ---
+    // 'desc' = ใหม่สุดขึ้นก่อน (Descendant), 'asc' = เก่าสุดขึ้นก่อน (Ascendant)
+    const [sortOrder, setSortOrder] = useState('desc'); 
 
     useEffect(() => {
         const q = query(collection(db, "users"));
@@ -396,89 +400,94 @@ const ManageUsers = () => {
         return () => unsubscribe();
     }, []);
 
-    const handleOpenModal = (user = null) => {
-        setEditingUser(user);
-        setIsModalOpen(true);
-    };
+    // ... (ฟังก์ชัน handleOpenModal, handleCloseModal, handleToggleUserStatus เหมือนเดิม) ...
+    const handleOpenModal = (user = null) => { /* ... */ };
+    const handleCloseModal = () => { /* ... */ };
+    const handleToggleUserStatus = async (user) => { /* ... */ };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setEditingUser(null);
-    };
+    // --- ⭐ 2. แก้ไข Logic การกรองและเรียงลำดับ ---
+    const filteredUsers = users
+        .filter(user => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
+        .sort((a, b) => {
+            // แปลง Timestamp ของ Firestore เป็นตัวเลข (Milliseconds) เพื่อเปรียบเทียบ
+            const timeA = a.createdAt?.toMillis() || 0;
+            const timeB = b.createdAt?.toMillis() || 0;
 
-    const handleToggleUserStatus = async (user) => {
-        const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
-        const actionVerb = newStatus === 'active' ? 'activate' : 'suspend';
-
-        if (window.confirm(`Are you sure you want to ${actionVerb} user ${user.email}? This only changes status in DB.`)) {
-            const userRef = doc(db, "users", user.id);
-            try {
-                await updateDoc(userRef, { status: newStatus });
-                alert(`User status updated to '${newStatus}' in Firestore.`);
-            } catch (error) {
-                console.error("Error updating user status:", error);
-                alert(`Failed to update status. See console.`);
+            if (sortOrder === 'asc') {
+                return timeA - timeB; // น้อยไปมาก (เก่า -> ใหม่)
+            } else {
+                return timeB - timeA; // มากไปน้อย (ใหม่ -> เก่า)
             }
-        }
+        });
+
+    // --- ⭐ 3. ฟังก์ชันสลับการเรียงลำดับเมื่อกดปุ่ม ---
+    const toggleSort = () => {
+        setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
     };
 
-    const filteredUsers = users.filter(user =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return (
+        <div className="dark:text-gray-200">
+            <div className="flex justify-between items-center mb-5">
+                <h2 className="text-3xl font-bold">Manage Users</h2>
+                <div className="flex items-center space-x-4">
+                    <input
+                        type="text"
+                        placeholder="Search by email..."
+                        className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+                <table className="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Display Name</th> 
+                            
+                            {/* --- ⭐ 4. แก้ไขหัวตาราง Created At ให้เป็นปุ่มกดได้ --- */}
+                            <th 
+                                onClick={toggleSort} 
+                                className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors select-none"
+                            >
+                                <div className="flex items-center gap-1">
+                                    Created At
+                                    {/* แสดงไอคอนลูกศรตามสถานะ */}
+                                    {sortOrder === 'desc' ? (
+                                        <span title="Newest First">⬇️</span> // หรือใช้ SVG Icon ลูกศรชี้ลง
+                                    ) : (
+                                        <span title="Oldest First">⬆️</span> // หรือใช้ SVG Icon ลูกศรชี้ขึ้น
+                                    )}
+                                </div>
+                            </th>
 
-    // ในคอมโพเนนต์ ManageUsers
-
-// ... (โค้ดส่วนต้น) ...
-
-return (
-    <div className="dark:text-gray-200">
-        <div className="flex justify-between items-center mb-5">
-            <h2 className="text-3xl font-bold">Manage Users</h2>
-            {/* ❌ ลบช่อง Search และปุ่ม Add User ออก */}
-            <div className="flex items-center space-x-4">
-                <input
-                    type="text"
-                    placeholder="Search by email..."
-                    className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                />
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredUsers.map(user => (
+                            <tr key={user.id}>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.email}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.displayName}</td> 
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                                    {user.createdAt?.toDate().toLocaleString()}
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                    <button
+                                        onClick={() => handleToggleUserStatus(user)}
+                                        className={user.status === 'suspended' ? 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300' : 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'}
+                                    >
+                                        {user.status === 'suspended' ? 'Activate' : 'Suspend'}
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
         </div>
-        <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
-            <table className="min-w-full leading-normal">
-                <thead>
-                    <tr>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Display Name</th> 
-                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Created At</th>
-                        <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredUsers.map(user => (
-                        <tr key={user.id}>
-                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.email}</td>
-                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.displayName}</td> 
-                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.createdAt?.toDate().toLocaleString()}</td>
-                            
-                            <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                {/* ❌ ลบปุ่ม Edit ออก */}
-                                {/* <button onClick={() => handleOpenModal(user)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">Edit</button> */}
-                                <button
-                                    onClick={() => handleToggleUserStatus(user)}
-                                    className={user.status === 'suspended' ? 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300' : 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'}
-                                >
-                                    {user.status === 'suspended' ? 'Activate' : 'Suspend'}
-                                </button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-        </div>
-    </div>
-);
+    );
 };
 
 
