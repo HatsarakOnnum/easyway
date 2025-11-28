@@ -1,6 +1,7 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
+import toast, { Toaster } from 'react-hot-toast';
 // --- Firebase Initialization ---
 // --- Firebase Initialization ---
 import { initializeApp } from "firebase/app";
@@ -97,6 +98,10 @@ const PhotoIcon = () => (
   <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
     <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
   </svg>
+);
+// Skeleton Component (ก๊อปไปวางไว้แถวๆ Icons)
+const Skeleton = ({ className }) => (
+    <div className={`animate-pulse bg-gray-300 dark:bg-gray-700 rounded ${className}`}></div>
 );
 
 
@@ -611,12 +616,14 @@ const ManageLocations = ({ onViewLocation }) => {
             if (window.confirm(confirmMessage)) {
                 try {
                     const locationRef = doc(db, "locations", locationId);
+                    
 
                     // 1. ส่งแจ้งเตือนหาเจ้าของหมุด (ทำทั้งกรณี Reject และ Delete)
                     if (locationToDelete.submittedBy) {
                         const message = isPending 
                             ? `Your location submission "${locationName}" was rejected by admin.`
                             : `Your location "${locationName}" has been removed by the administrator.`;
+                            
                         
                         // ใช้ type 'rejected' ทั้งคู่เพื่อให้ขึ้นสีแดง
                         await addDoc(collection(db, "users", locationToDelete.submittedBy, "notifications"), {
@@ -675,7 +682,7 @@ const ManageLocations = ({ onViewLocation }) => {
                 });
             }
             // ----------------------------------------
-            alert(`Approved ${location.name}`);
+            toast.success(`อนุมัติ "${location.name}" เรียบร้อย!`);
         // -------------------------------
         } catch (error) {
             console.error("Error approving:", error);
@@ -938,6 +945,7 @@ function AdminDashboard() {
     return (
         // เปลี่ยน layout: มือถือเป็นแนวตั้ง (col), จอคอมเป็นแนวนอน (row)
         <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
+            <Toaster position="bottom-right" reverseOrder={false} />
             
             {/* Sidebar / Topbar */}
             <div className="w-full md:w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col flex-shrink-0">
@@ -974,6 +982,7 @@ function AdminDashboard() {
 // ... (วางทับ LocationFormModal ตัวเดิม) ...
 // ... (วางทับ LocationFormModal ตัวเดิมทั้งหมด) ...
 
+// --- Location Form Modal (Updated with Skeleton on Upload) ---
 const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess }) => {
     const [name, setName] = useState(currentLocation?.name || '');
     const [lat, setLat] = useState(currentLocation?.lat || initialCoords?.lat || '');
@@ -1004,81 +1013,54 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
         }
     };
 
-    // --- ⭐ ฟังก์ชัน Save (แบบ Manual Click) ⭐ ---
     const handleSubmit = async (e) => {
-        if (e) e.preventDefault(); // กันเหนียว
-        
-        console.log("🔥 1. ฟังก์ชัน handleSubmit ถูกเรียกแล้ว!"); 
-        // alert("ปุ่มถูกกดแล้ว! (Test)"); // <-- ถ้าเห็นอันนี้แสดงว่าปุ่มใช้ได้
-
+        e.preventDefault();
         setError('');
 
-        // Validation
-        if (!imageFile && !currentLocation?.imageUrl) {
-            console.log("❌ ติด Validation: ไม่มีรูปภาพ");
-            setError("Please upload an image for the location."); 
+        if (!name || name.trim() === '') {
+            setError("Please enter a Pin Name.");
             return;
+        }
+        if (!imageFile && !currentLocation?.imageUrl) {
+            setError("Please upload an image for the location."); return;
         }
         if (!auth.currentUser) {
-            console.log("❌ ติด Validation: ไม่ได้ Login");
-            setError("You must be logged in to submit a location."); 
-            return;
-        }
-        if (!name || name.trim() === '') {
-            setError("Please enter a Pin Name."); // แจ้งเตือนถ้าไม่ได้ใส่ชื่อ
-            return; // หยุดการทำงานทันที
+            setError("You must be logged in to submit a location."); return;
         }
 
         setUploading(true);
-        console.log("2. เริ่มกระบวนการ Upload...");
-        
         let imageUrl = currentLocation?.imageUrl || '';
 
         try {
-            // 1. Upload Image
             if (imageFile) {
-                console.log("   - กำลังอัปโหลดรูปใหม่...");
                 if (currentLocation?.imageUrl) { 
                     try {
                         const oldImageRef = storageRef(storage, currentLocation.imageUrl);
                         await deleteObject(oldImageRef);
-                    } catch (deleteError) { console.warn("   - ลบรูปเก่าไม่ได้:", deleteError); }
+                    } catch (deleteError) { console.warn("Could not delete old image:", deleteError); }
                 }
                 const imageRef = storageRef(storage, `locations/${Date.now()}-${imageFile.name}`);
                 const snapshot = await uploadBytes(imageRef, imageFile);
                 imageUrl = await getDownloadURL(snapshot.ref);
-                console.log("   - ได้ URL รูปใหม่:", imageUrl);
             }
 
-            // 2. Prepare Data
             const locationData = {
-                name, 
-                lat: Number(lat), 
-                lng: Number(lng), 
-                type, 
-                routes, 
-                imageUrl,
+                name, lat: Number(lat), lng: Number(lng), type, routes, imageUrl,
                 status: currentLocation?.status || 'pending',
                 submittedBy: auth.currentUser.uid,
                 createdAt: currentLocation?.createdAt || serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
 
-            // 3. Save to Firestore
-            console.log("3. กำลังบันทึกลง Firestore...");
             if (currentLocation) {
                 await setDoc(doc(db, "locations", currentLocation.id), locationData, { merge: true });
             } else {
                 await addDoc(collection(db, "locations"), locationData);
             }
-            
-            console.log("✅ สำเร็จ! กำลังปิด Modal...");
-            onSuccess(); // ปิด Modal
-
+            onSuccess(); 
         } catch (err) {
-            console.error("❌❌ Error ในขณะทำงาน:", err); 
-            setError("Failed to submit: " + err.message);
-            alert("Error: " + err.message); // แจ้งเตือน Error ให้เห็นชัดๆ
+            console.error("Error submitting location:", err); 
+            setError("Failed to submit. Please try again.");
         } finally { 
             setUploading(false); 
         }
@@ -1092,7 +1074,6 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                     <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
                         {currentLocation ? '✏️ Edit Location' : '📍 Add New Location'}
                     </h3>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in the details to share this spot.</p>
                 </div>
 
                 <div className="p-8 overflow-y-auto custom-scrollbar space-y-6">
@@ -1102,12 +1083,16 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                         </div>
                     )}
 
-                    {/* Image Upload */}
+                    {/* Image Upload with Skeleton Overlay */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location Image</label>
-                        <div className="relative group">
-                            <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
-                            <div className={`border-2 border-dashed rounded-2xl h-48 flex flex-col items-center justify-center transition-all duration-300 ${imagePreview ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                        <div className="relative group h-48 w-full">
+                            
+                            {/* Input File (ซ่อนไว้) */}
+                            <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" disabled={uploading}/>
+                            
+                            {/* ส่วนแสดงผล (Preview หรือ Placeholder) */}
+                            <div className={`absolute inset-0 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${imagePreview ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
                                 {imagePreview ? (
                                     <img src={imagePreview} alt="Preview" className="h-full w-full object-cover rounded-2xl" />
                                 ) : (
@@ -1117,6 +1102,19 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                                     </>
                                 )}
                             </div>
+
+                            {/* --- ☠️ Skeleton Overlay (แสดงตอนกำลังอัปโหลด) --- */}
+                            {uploading && (
+                                <div className="absolute inset-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm flex items-center justify-center rounded-2xl">
+                                    <div className="w-full h-full p-4">
+                                        <Skeleton className="w-full h-full rounded-xl" />
+                                        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-300 font-bold animate-pulse">
+                                            Uploading...
+                                        </p>
+                                    </div>
+                                </div>
+                            )}
+                            {/* ------------------------------------------------ */}
                         </div>
                     </div>
 
@@ -1131,7 +1129,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                         <div className="md:col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Vehicle Type</label>
                             <div className="relative">
-                                <select value={type} onChange={e => setType(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white">
+                                <select value={type} onChange={e => setType(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white appearance-none">
                                     <option value="motorcycle">🛵 Win Motorbike</option>
                                     <option value="songthaew">🚌 Songthaew</option>
                                 </select>
@@ -1142,30 +1140,18 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                     {/* Places & Prices */}
                     <div className="bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-6 border border-gray-100 dark:border-gray-700/50">
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
-                                Places & Prices
-                            </h4>
-                            
-                            {/* ปุ่ม Add Route ย้ายมาตรงนี้ */}
-                            <button 
-                                type="button" 
-                                onClick={addRoute} 
-                                className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition flex items-center"
-                            >
-                                {/* ใช้ PlusIcon เล็กๆ หน้าตัวหนังสือ */}
-                                <span className="mr-1"><PlusIcon /></span> 
-                                Add Route
-                            </button>
+                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Destinations & Prices</h4>
+                            <button type="button" onClick={addRoute} className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg flex items-center"><span className="mr-1"><PlusIcon /></span> Add Route</button>
                         </div>
                         <div className="space-y-3">
                             {routes.map((route, index) => (
-                                <div key={index} className="flex items-center space-x-3">
-                                    <input type="text" placeholder="Destination" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white" />
-                                    <div className="relative w-28">
-                                        <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white" />
+                                <div key={index} className="flex items-center space-x-3 animate-fadeIn">
+                                    <input type="text" placeholder="Destination" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
+                                    <div className="relative w-36">
+                                        <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">฿</span>
                                     </div>
-                                    {routes.length > 1 && (<button type="button" onClick={() => removeRoute(index)} className="p-2.5 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl"><TrashIcon /></button>)}
+                                    {routes.length > 1 && (<button type="button" onClick={() => removeRoute(index)} className="p-2.5 text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition"><TrashIcon /></button>)}
                                 </div>
                             ))}
                         </div>
@@ -1173,15 +1159,13 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                 </div>
 
                 {/* Footer */}
-                <div className="px-8 py-5 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
-                    <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700">Cancel</button>
-                    
-                    {/* --- ⭐ ปุ่ม Save เปลี่ยนมาใช้ onClick แทน type="submit" ⭐ --- */}
+                <div className="px-8 py-5 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end space-x-3">
+                    <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
                     <button 
-                        type="button" // เปลี่ยนเป็น button ธรรมดา ไม่ใช่ submit
-                        onClick={handleSubmit} // เรียกฟังก์ชันโดยตรง
+                        type="button"
+                        onClick={handleSubmit}
                         disabled={uploading} 
-                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center"
+                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed transition transform active:scale-95 flex items-center"
                     >
                         {uploading ? 'Saving...' : 'Save Location'}
                     </button>
@@ -1218,27 +1202,142 @@ const StarRatingInput = ({ rating, setRating }) => {
     );
 };
 
+// --- Reviews Modal (Updated with Skeleton) ---
 const ReviewsModal = ({ location, user, onClose }) => {
-    const [reviews, setReviews] = useState([]); const [loading, setLoading] = useState(true); const [newReviewText, setNewReviewText] = useState(''); const [newRating, setNewRating] = useState(0); const [error, setError] = useState('');
-    useEffect(() => { if (!location) return; setLoading(true); const q = query(collection(db, "reviews"), where("locationId", "==", location.id)); const unsubscribe = onSnapshot(q, (snapshot) => { setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }))); setLoading(false); }); return () => unsubscribe(); }, [location]);
-    const handleSubmitReview = async (e) => { e.preventDefault(); if (!user) { setError("Please log in."); return; } if (newRating === 0) { setError("Please select rating."); return; } if (newReviewText.trim() === '') { setError("Please write review."); return; } setError(''); const reviewData = { locationId: location.id, userId: user.uid, userEmail: user.email, userName: user.displayName || user.email.split('@')[0], rating: newRating, text: newReviewText, createdAt: serverTimestamp() }; await addDoc(collection(db, "reviews"), reviewData); const locationRef = doc(db, "locations", location.id); const newCount = (location.reviewCount || 0) + 1; const newAvg = ((location.avgRating || 0) * (location.reviewCount || 0) + newRating) / newCount; await updateDoc(locationRef, { reviewCount: newCount, avgRating: newAvg }); setNewReviewText(''); setNewRating(0); };
-    return ( <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}> <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}> <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center"><h2 className="text-2xl font-bold dark:text-white">Reviews for {location.name}</h2><button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-3xl font-bold">&times;</button></div> <div className="p-4 overflow-y-auto">{loading && <p className="dark:text-gray-300">Loading...</p>}{!loading && reviews.length === 0 && <p className="text-gray-500 dark:text-gray-400">No reviews yet.</p>}<div className="space-y-4">{reviews.map(review => (<div key={review.id} className="border-b dark:border-gray-700 pb-3 last:border-b-0">
-    <div className="flex items-center mb-1"><div className="flex">
-                                    {[...Array(5)].map((_, i) => {
-                                        const ratingValue = i + 1;
-                                        // ใช้ StarIcon โดยตรง เช็กค่า rating ของ review นี้
-                                        return <StarIcon
-                                                    key={i}
-                                                    className={`h-5 w-5 ${ratingValue <= review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`}
-                                                    filled
-                                                />;
-                                    })}
-                                </div><p className="ml-auto text-sm text-gray-500 dark:text-gray-400">{review.createdAt?.toDate().toLocaleDateString()}</p></div><p className="font-semibold text-sm dark:text-gray-200">{review.userName || review.userEmail.split('@')[0]}</p><p className="text-gray-700 dark:text-gray-300 mt-1">{review.text}</p></div>))}</div></div> <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900"><h3 className="font-bold text-lg mb-2 dark:text-white">Write a Review</h3>{user ? (<form onSubmit={handleSubmitReview}>{error && <p className="text-red-500 dark:text-red-400 text-sm mb-2">{error}</p>}<div className="mb-2"><StarRatingInput rating={newRating} setRating={setNewRating} /></div><textarea value={newReviewText} onChange={(e) => setNewReviewText(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="3" placeholder="Share your experience..."></textarea><button type="submit" className="mt-2 bg-blue-500 text-white font-bold py-2 px-4 rounded hover:bg-blue-600">Submit</button></form>) : (<p className="text-gray-600 dark:text-gray-400">Log in to write review.</p>)}</div> </div> </div> );
+    const [reviews, setReviews] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [newReviewText, setNewReviewText] = useState('');
+    const [newRating, setNewRating] = useState(0);
+    const [error, setError] = useState('');
+
+    useEffect(() => {
+        if (!location) return;
+        setLoading(true);
+        const q = query(collection(db, "reviews"), where("locationId", "==", location.id));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+            setLoading(false); // โหลดเสร็จแล้ว ปิด Skeleton
+        });
+        return () => unsubscribe();
+    }, [location]);
+
+    const handleSubmitReview = async (e) => {
+        e.preventDefault();
+        if (!user) { setError("Please log in."); return; }
+        if (newRating === 0) { setError("Please select rating."); return; }
+        if (newReviewText.trim() === '') { setError("Please write review."); return; }
+        setError('');
+
+        const reviewData = {
+            locationId: location.id,
+            userId: user.uid,
+            userEmail: user.email,
+            userName: user.displayName || user.email.split('@')[0],
+            rating: newRating,
+            text: newReviewText,
+            createdAt: serverTimestamp()
+        };
+
+        try {
+            await addDoc(collection(db, "reviews"), reviewData);
+            
+            // เคลียร์ค่าทันที
+            setNewReviewText('');
+            setNewRating(0);
+
+            // อัปเดตค่าเฉลี่ยใน Location (แยก try-catch)
+            try {
+                const locationRef = doc(db, "locations", location.id);
+                const currentReviewCount = location.reviewCount || 0;
+                const currentAvgRating = location.avgRating || 0;
+                const newCount = currentReviewCount + 1;
+                const newAvg = (currentAvgRating * currentReviewCount + newRating) / newCount;
+
+                await updateDoc(locationRef, {
+                    reviewCount: newCount,
+                    avgRating: isNaN(newAvg) ? currentAvgRating : newAvg
+                });
+            } catch (updateError) {
+                console.error("Error updating stats:", updateError);
+            }
+        } catch (addError) {
+            console.error("Error adding review:", addError);
+            setError("Failed to submit review.");
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+                <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center">
+                    <h2 className="text-2xl font-bold dark:text-white">Reviews for {location.name}</h2>
+                    <button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-3xl font-bold">&times;</button>
+                </div>
+                
+                <div className="p-4 overflow-y-auto custom-scrollbar">
+                    {loading ? (
+                        // --- ☠️ ส่วน Skeleton Loading ---
+                        <div className="space-y-6">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="border-b dark:border-gray-700 pb-4">
+                                    <div className="flex items-center mb-3">
+                                        <Skeleton className="h-5 w-24 mr-2" /> {/* ดาวปลอม */}
+                                        <Skeleton className="h-4 w-20 ml-auto" /> {/* วันที่ปลอม */}
+                                    </div>
+                                    <Skeleton className="h-4 w-32 mb-2" /> {/* ชื่อคนปลอม */}
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-full" /> {/* ข้อความบรรทัด 1 */}
+                                        <Skeleton className="h-4 w-3/4" />  {/* ข้อความบรรทัด 2 */}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        // -----------------------------
+                    ) : (
+                        // --- ส่วนเนื้อหาจริง ---
+                        <>
+                            {reviews.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-4">No reviews yet. Be the first!</p>}
+                            <div className="space-y-4">
+                                {reviews.map(review => (
+                                    <div key={review.id} className="border-b dark:border-gray-700 pb-3 last:border-b-0">
+                                        <div className="flex items-center mb-1">
+                                            <div className="flex">
+                                                {[...Array(5)].map((_, i) => (
+                                                    <StarIcon key={i} className={`h-5 w-5 ${i + 1 <= review.rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'}`} filled />
+                                                ))}
+                                            </div>
+                                            <p className="ml-auto text-sm text-gray-500 dark:text-gray-400">{review.createdAt?.toDate().toLocaleDateString()}</p>
+                                        </div>
+                                        <p className="font-semibold text-sm dark:text-gray-200">{review.userName || review.userEmail.split('@')[0]}</p>
+                                        <p className="text-gray-700 dark:text-gray-300 mt-1">{review.text}</p>
+                                    </div>
+                                ))}
+                            </div>
+                        </>
+                    )}
+                </div>
+
+                <div className="p-4 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900">
+                    <h3 className="font-bold text-lg mb-2 dark:text-white">Write a Review</h3>
+                    {user ? (
+                        <form onSubmit={handleSubmitReview}>
+                            {error && <p className="text-red-500 dark:text-red-400 text-sm mb-2">{error}</p>}
+                            <div className="mb-2"><StarRatingInput rating={newRating} setRating={setNewRating} /></div>
+                            <textarea value={newReviewText} onChange={(e) => setNewReviewText(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" rows="3" placeholder="Share your experience..."></textarea>
+                            <button type="submit" className="mt-2 bg-blue-600 text-white font-bold py-2 px-4 rounded hover:bg-blue-700 transition">Submit</button>
+                        </form>
+                    ) : (
+                        <p className="text-gray-600 dark:text-gray-400">Log in to write review.</p>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
 };
 
 const ReportModal = ({ location, user, onClose }) => {
     const [reportText, setReportText] = useState(''); const [isSubmitting, setIsSubmitting] = useState(false); const [error, setError] = useState('');
-    const handleReportSubmit = async (e) => { e.preventDefault(); if (!user) { setError('Log in to report.'); return; } if (reportText.trim() === '') { setError('Please describe issue.'); return; } setError(''); setIsSubmitting(true); try { await addDoc(collection(db, 'reports'), { locationId: location.id, locationName: location.name, reportText: reportText, userId: user.uid, userEmail: user.email, createdAt: serverTimestamp(), status: 'pending' }); alert('Report submitted.'); onClose(); } catch (err) { console.error('Report error:', err); setError('Failed to submit.'); } finally { setIsSubmitting(false); } };
+    const handleReportSubmit = async (e) => { e.preventDefault(); if (!user) { setError('Log in to report.'); return; } if (reportText.trim() === '') { setError('Please describe issue.'); return; } setError(''); setIsSubmitting(true); try { await addDoc(collection(db, 'reports'), { locationId: location.id, locationName: location.name, reportText: reportText, userId: user.uid, userEmail: user.email, createdAt: serverTimestamp(), status: 'pending' }); toast.success("ส่งรายงานเรียบร้อยแล้ว ขอบคุณครับ!"); onClose(); } catch (err) { console.error('Report error:', err); setError('Failed to submit.'); } finally { setIsSubmitting(false); } };
     return ( <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}> <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg" onClick={(e) => e.stopPropagation()}> <div className="p-4 border-b dark:border-gray-700 flex justify-between items-center"><h2 className="text-2xl font-bold dark:text-white">Report Issue</h2><button onClick={onClose} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 text-3xl font-bold">&times;</button></div> <form onSubmit={handleReportSubmit} className="p-4"><p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Reporting: <span className="font-semibold dark:text-gray-200">{location.name}</span></p><textarea value={reportText} onChange={(e) => setReportText(e.target.value)} className="w-full p-2 border rounded-md dark:bg-gray-700 dark:border-gray-600 dark:text-white" rows="4" placeholder="Describe problem..." required></textarea>{error && <p className="text-red-500 dark:text-red-400 text-sm mt-2">{error}</p>}<div className="flex justify-end mt-4"><button type="button" onClick={onClose} className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded transition duration-300 mr-2">Cancel</button><button type="submit" disabled={isSubmitting} className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded disabled:bg-red-300 dark:disabled:bg-red-800 transition duration-300">{isSubmitting ? 'Submitting...' : 'Submit Report'}</button></div></form> </div> </div> );
 };
 // --- Notification Modal (Component ใหม่) ---
@@ -1329,6 +1428,16 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
     useEffect(() => { if (!user) { setUserLikes(new Set()); return; } const likesRef = collection(db, "users", user.uid, "likes"); const unsubscribe = onSnapshot(likesRef, (snapshot) => { setUserLikes(new Set(snapshot.docs.map(doc => doc.id))); }); return () => unsubscribe(); }, [user]);
     const handleLike = async (location) => { if (!user) { alert("Log in to like."); return; } if (!location || !location.id) return; const locationId = location.id; const locationRef = doc(db, "locations", locationId); const likeRef = doc(db, "users", user.uid, "likes", locationId); const isLiked = userLikes.has(locationId); const newLikes = new Set(userLikes); const currentCount = localSelectedLocation?.likeCount || locations.find(l => l.id === locationId)?.likeCount || 0; let updatedCount; if (isLiked) { newLikes.delete(locationId); updatedCount = currentCount - 1; } else { newLikes.add(locationId); updatedCount = currentCount + 1; } setLocalSelectedLocation(prev => prev ? { ...prev, likeCount: updatedCount < 0 ? 0 : updatedCount } : null); setUserLikes(newLikes); try { if (isLiked) { await deleteDoc(likeRef); await updateDoc(locationRef, { likeCount: increment(-1) }); } else { await setDoc(likeRef, { createdAt: serverTimestamp() }); await updateDoc(locationRef, { likeCount: increment(1) }); } } catch (error) { console.error("Like error:", error); setUserLikes(userLikes); setLocalSelectedLocation(location); alert("Failed to update like."); } };
+
+    // ฟังก์ชันสร้างรูปหมุด SVG ตามสีที่กำหนด
+    const getMarkerIcon = (color) => {
+        const svg = `
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40" fill="${color}">
+            <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+        </svg>`;
+        return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    };
 
     // ⭐ ฟังการแจ้งเตือน Real-time
     useEffect(() => {
@@ -1456,8 +1565,17 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
         const filtered = locations.filter(loc => filterType === 'all' || loc.type === filterType);
         filtered.forEach(location => {
+            const markerColor = location.type === 'motorcycle' ? '#DC0000' : '#001BB7';
             const marker = new window.google.maps.Marker({
-                position: { lat: location.lat, lng: location.lng }, map: mapInstanceRef.current, title: location.name,
+                position: { lat: location.lat, lng: location.lng },
+                map: mapInstanceRef.current,
+                title: location.name,
+                // ⭐ ใช้ฟังก์ชันสร้างไอคอนที่นี่
+                icon: {
+                    url: getMarkerIcon(markerColor),
+                    scaledSize: new window.google.maps.Size(40, 40), // ปรับขนาดหมุด
+                    anchor: new window.google.maps.Point(20, 40) // จุดชี้อยู่ตรงกลางล่าง
+                }
             });
             marker.addListener('click', () => { setSelectedLocation(location); setShowPrices(false); });
             markersRef.current.push(marker); // Add new marker to ref
@@ -1607,6 +1725,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     // --- ⭐ JSX Structure (Includes Dark Mode, Profile, Full Screen Image, Guest Login Button) ⭐ ---
     return (
         <div className="relative w-screen h-[100dvh] overflow-hidden touch-none">
+            <Toaster position="bottom-right" reverseOrder={false} />
             {/* Map Container */}
             <div ref={mapRef} className="w-full h-full bg-gray-300 dark:bg-gray-700">
                 {/* Basic Loading based only on script load */}
