@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
-
+import { motion, AnimatePresence } from "framer-motion";
 // --- Firebase Initialization ---
 // --- Firebase Initialization ---
 import { initializeApp } from "firebase/app";
@@ -1094,6 +1094,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const [notifications, setNotifications] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
     const [rejectedPinAlert, setRejectedPinAlert] = useState(null);
+    const [showTooCloseAlert, setShowTooCloseAlert] = useState(false);
 
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
@@ -1372,7 +1373,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const handleConfirmPin = () => { 
         // --- ⭐ เพิ่มส่วนเช็กระยะห่าง ⭐ ---
         if (isTooCloseToExistingMarker(tempPin.lat, tempPin.lng)) {
-            alert("ไม่สามารถปักหมุดได้: จุดนี้อยู่ใกล้กับหมุดที่มีอยู่แล้วเกินไป (กรุณาห่างอย่างน้อย 25 เมตร)");
+            setShowTooCloseAlert(true);
             return; // หยุดการทำงาน ไม่เปิดฟอร์ม
         }
         // ----------------------------------
@@ -1415,16 +1416,133 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             </div>
 
             {/* Selected Location Modal (with Full Screen Image capability) */}
-            {localSelectedLocation && (
-                <div className="fixed inset-0 z-40 flex items-center justify-center p-4" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }} onClick={() => {setSelectedLocation(null); setLocalSelectedLocation(null);}}>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-lg overflow-hidden" onClick={(e) => e.stopPropagation()}>
-                        <div className="p-5 border-b dark:border-gray-700"><div className="flex justify-between items-start"><div><h3 className="text-2xl font-bold dark:text-white">{localSelectedLocation.name}</h3><StarRatingDisplay rating={localSelectedLocation.avgRating} count={localSelectedLocation.reviewCount} /></div><button onClick={() => {setSelectedLocation(null); setLocalSelectedLocation(null);}} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div></div>
-                        {showPrices ? (<div className="p-5 max-h-64 h-64 overflow-y-auto dark:text-gray-300"><h4 className="font-semibold text-lg mb-3 dark:text-white">Prices</h4><ul>{localSelectedLocation.routes?.map((route, index) => (<li key={index} className="flex justify-between items-center py-2 border-b dark:border-gray-700 last:border-b-0"><span>{route.destination}</span><span className="font-semibold">{route.price} บาท</span></li>))}{(!localSelectedLocation.routes || localSelectedLocation.routes.length === 0) && <p className="text-gray-500 dark:text-gray-400">No prices.</p>}</ul></div>)
-                        : (<div className="w-full h-64 bg-gray-200 dark:bg-gray-700 relative"><img src={localSelectedLocation.imageUrl || "https://placehold.co/600x400?text=Image"} alt={localSelectedLocation.name} className="w-full h-full object-cover cursor-pointer" onClick={() => openImageModal(localSelectedLocation.imageUrl)} />{localSelectedLocation.imageUrl && (<button onClick={() => openImageModal(localSelectedLocation.imageUrl)} className="absolute bottom-2 right-2 bg-black/50 text-white p-1.5 rounded-full hover:bg-black/70" title="View full screen"><FullScreenIcon /></button>)}</div>)}
-                        <div className="p-3 grid grid-cols-4 gap-2 border-t dark:border-gray-700 bg-gray-50 dark:bg-gray-900"><button onClick={() => handleLike(localSelectedLocation)} className="flex flex-col items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1"><LikeIcon isLiked={userLikes.has(localSelectedLocation.id)} /><span className={`text-xs font-semibold ${userLikes.has(localSelectedLocation.id) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300'}`}>{localSelectedLocation.likeCount || 0}</span></button><button onClick={() => setIsReviewsModalOpen(true)} className="flex flex-col items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1"><ReviewIcon /><span className="text-xs">Review</span></button><button onClick={() => setShowPrices(prev => !prev)} className="flex flex-col items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1">{showPrices ? <ImageIcon /> : <PriceIcon />}<span className="text-xs">{showPrices ? 'Info' : 'Prices'}</span></button><button onClick={() => {if (user) {setIsReportModalOpen(true)} else {alert('Log in to report.')}}} className="flex flex-col items-center justify-center text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-md p-1"><ReportIcon /><span className="text-xs">Report</span></button></div>
-                    </div>
-                </div>
-            )}
+            {/* Selected Location Modal (Glassmorphism + Navigation) */}
+            {/* Selected Location Modal (Glassmorphism + Navigation + Animations ✨) */}
+            <AnimatePresence>
+                {localSelectedLocation && (
+                    <motion.div
+                        key="modal-backdrop"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                        className="fixed inset-0 z-40 flex items-end sm:items-center justify-center p-4 sm:p-6"
+                        style={{ backgroundColor: 'rgba(0,0,0,0.3)' }} // สีพื้นหลังแบบเดิม
+                        onClick={() => setSelectedLocation(null)}
+                    >
+                        <motion.div
+                            key="modal-content"
+                            // ✨ ตั้งค่า Animation ตอนเข้าและออก ✨
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.95, opacity: 0, y: 10 }}
+                            transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            // Class เดิม (Glassmorphism)
+                            className="bg-white/90 dark:bg-gray-900/90 backdrop-blur-md border border-white/20 dark:border-gray-700 rounded-3xl shadow-2xl w-full max-w-md overflow-hidden"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            {/* Header ส่วนรูปภาพ */}
+                            <div className="relative h-48 sm:h-56">
+                                <img
+                                    src={localSelectedLocation.imageUrl || "https://placehold.co/600x400?text=Image"}
+                                    alt={localSelectedLocation.name}
+                                    className="w-full h-full object-cover"
+                                    onClick={() => openImageModal(localSelectedLocation.imageUrl)}
+                                />
+                                {/* ปุ่มปิด X */}
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} // ✨ เพิ่ม effect ตอนเอาเมาส์ชี้/กด
+                                    onClick={() => setSelectedLocation(null)}
+                                    className="absolute top-3 right-3 bg-black/50 text-white p-2 rounded-full backdrop-blur-sm"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+                                </motion.button>
+                                {/* ปุ่มขยายรูป */}
+                                {localSelectedLocation.imageUrl && (
+                                    <motion.button
+                                        whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                        onClick={() => openImageModal(localSelectedLocation.imageUrl)}
+                                        className="absolute bottom-3 right-3 bg-black/50 text-white p-2 rounded-full backdrop-blur-sm"
+                                    >
+                                        <FullScreenIcon />
+                                    </motion.button>
+                                )}
+                            </div>
+
+                            {/* เนื้อหา */}
+                            <div className="p-5 space-y-4">
+                                <div>
+                                    <h3 className="text-2xl font-bold dark:text-white leading-tight">{localSelectedLocation.name}</h3>
+                                    <div className="flex items-center mt-1 space-x-2">
+                                        <StarRatingDisplay rating={localSelectedLocation.avgRating} count={localSelectedLocation.reviewCount} />
+                                        <span className="text-gray-400">|</span>
+                                        <span className="text-sm text-gray-500 dark:text-gray-400 capitalize">{localSelectedLocation.type}</span>
+                                    </div>
+                                </div>
+
+                                {/* ปุ่มนำทาง (Navigation Button) */}
+                                <motion.a
+                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} // ✨ effect ปุ่มกด
+                                    href={`https://www.google.com/maps/dir/?api=1&destination=${localSelectedLocation.lat},${localSelectedLocation.lng}`}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center justify-center w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl shadow-lg"
+                                >
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
+                                        <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                    </svg>
+                                    นำทาง (Get Directions)
+                                </motion.a>
+
+                                {/* ส่วนแสดงราคา */}
+                                <AnimatePresence>
+                                    {showPrices && (
+                                        <motion.div
+                                            initial={{ opacity: 0, height: 0 }}
+                                            animate={{ opacity: 1, height: 'auto' }}
+                                            exit={{ opacity: 0, height: 0 }}
+                                            className="bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700 max-h-40 overflow-y-auto"
+                                        >
+                                           {/* ... เนื้อหาราคา เหมือนเดิม ... */}
+                                            <h4 className="font-semibold text-sm mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Service Rates</h4>
+                                            <ul className="space-y-2">
+                                                {localSelectedLocation.routes?.map((route, index) => (
+                                                    <li key={index} className="flex justify-between items-center text-sm">
+                                                        <span className="text-gray-700 dark:text-gray-200">{route.destination}</span>
+                                                        <span className="font-bold text-blue-600 dark:text-blue-400">{route.price} ฿</span>
+                                                    </li>
+                                                ))}
+                                                {(!localSelectedLocation.routes || localSelectedLocation.routes.length === 0) && <p className="text-xs text-gray-400">No price info.</p>}
+                                            </ul>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* Action Buttons ด้านล่าง */}
+                                <div className="grid grid-cols-4 gap-2 pt-2">
+                                    {/* ผมเปลี่ยน button ธรรมดาเป็น motion.button และเพิ่ม whileHover/whileTap ให้ดูมีชีวิตชีวา */}
+                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleLike(localSelectedLocation)} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition">
+                                        <LikeIcon isLiked={userLikes.has(localSelectedLocation.id)} />
+                                        <span className={`text-xs mt-1 font-medium ${userLikes.has(localSelectedLocation.id) ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`}>{localSelectedLocation.likeCount || 0}</span>
+                                    </motion.button>
+                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsReviewsModalOpen(true)} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
+                                        <ReviewIcon />
+                                        <span className="text-xs mt-1 font-medium">Review</span>
+                                    </motion.button>
+                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowPrices(prev => !prev)} className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${showPrices ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400'}`}>
+                                        {showPrices ? <ImageIcon /> : <PriceIcon />}
+                                        <span className="text-xs mt-1 font-medium">{showPrices ? 'Info' : 'Prices'}</span>
+                                    </motion.button>
+                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => { if (user) { setIsReportModalOpen(true) } else { alert('Log in to report.') } }} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
+                                        <ReportIcon />
+                                        <span className="text-xs mt-1 font-medium">Report</span>
+                                    </motion.button>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Other Modals (Reviews, Report, Image, Profile) */}
             {isReviewsModalOpen && selectedLocation && (<ReviewsModal location={selectedLocation} user={user} onClose={() => setIsReviewsModalOpen(false)} />)}
@@ -1464,6 +1582,35 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                         </button>
                     </div>
                 </div>
+            )}
+            {/* ⭐ Pop-up แจ้งเตือนระยะห่าง (Too Close Alert) ⭐ */}
+            {showTooCloseAlert && (
+                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setShowTooCloseAlert(false)}>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm text-center transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+                        
+                        {/* ไอคอนตกใจสีส้ม */}
+                        <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 dark:bg-orange-900/30 mb-4">
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-10 w-10 text-orange-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+
+                        <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">
+                            ใกล้เกินไป!
+                        </h3>
+                        <p className="text-gray-500 dark:text-gray-300 mb-6 text-sm">
+                            จุดที่คุณเลือกอยู่ใกล้กับหมุดที่มีอยู่แล้วมากเกินไป <br/>
+                            กรุณาขยับออกห่างอย่างน้อย 25-50 เมตร
+                        </p>
+
+                        <button
+                            onClick={() => setShowTooCloseAlert(false)}
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 px-4 rounded-xl transition-colors duration-200"
+                        >
+                            ตกลง
+                        </button>
+                    </div>
+                </div>
             )}
 
             {/* Pinning UI */}
