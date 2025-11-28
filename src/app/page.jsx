@@ -93,7 +93,7 @@ const CloseButton = ({ onClick }) => (
 // ... (WelcomeScreen, SignUpScreen - No changes) ...
 function WelcomeScreen({ setView }) {
     return (
-        <div className="relative w-full h-screen bg-cover bg-center text-white dark:text-gray-200" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
+        <div className="relative w-full h-[100dvh] bg-cover bg-center text-white dark:text-gray-200" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
             <div className="absolute inset-0 flex flex-col justify-center items-center p-8 bg-black/50">
                 <div className="text-center"><h1 className="text-6xl md:text-8xl font-bold tracking-wider">EW</h1><p className="text-2xl md:text-3xl font-light tracking-widest mt-2">EASYWAY</p></div>
                 <div className="mt-16 text-center"><h2 className="text-3xl md:text-4xl font-semibold">Welcome To The App EasyWay</h2><p className="mt-4 text-lg md:text-xl italic text-gray-300">"Every Journey Starts With A Single Pin."</p></div>
@@ -136,7 +136,7 @@ function SignUpScreen({ setView }) {
         }
     };
     return (
-        <div className="w-screen h-screen flex bg-white dark:bg-gray-900 bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800 dark:to-blue-900">
+        <div className="w-screen h-[100dvh] flex bg-white dark:bg-gray-900 bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800 dark:to-blue-900">
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 ">
                 <div className="w-full max-w-md">
                     <header className="flex justify-between items-center mb-10"><h1 className="text-5xl font-bold text-blue-800 dark:text-blue-300">EasyWay</h1><div><button onClick={() => setView('login')} className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-800 dark:hover:text-blue-400">Login</button><button onClick={() => setView('welcome')} className="px-4 py-2 text-sm font-semibold bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600">Welcome</button></div></header>
@@ -255,7 +255,7 @@ function LoginScreen({ setView }) {
 
     return (
         <>
-            <div className="w-screen h-screen flex bg-white dark:bg-gray-900 bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800 dark:to-blue-900">
+            <div className="w-screen h-[100dvh] flex bg-white dark:bg-gray-900 bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800 dark:to-blue-900">
                 <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 ">
                     <div className="w-full max-w-md">
                         <header className="flex justify-between items-center mb-10">
@@ -1404,7 +1404,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
     // --- ⭐ JSX Structure (Includes Dark Mode, Profile, Full Screen Image, Guest Login Button) ⭐ ---
     return (
-        <div className="relative w-screen h-screen overflow-hidden">
+        <div className="relative w-screen h-[100dvh] overflow-hidden touch-none">
             {/* Map Container */}
             <div ref={mapRef} className="w-full h-full bg-gray-300 dark:bg-gray-700">
                 {/* Basic Loading based only on script load */}
