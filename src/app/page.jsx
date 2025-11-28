@@ -1147,7 +1147,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                             {routes.map((route, index) => (
                                 <div key={index} className="flex items-center space-x-3 animate-fadeIn">
                                     <input type="text" placeholder="Destination" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
-                                    <div className="relative w-36">
+                                    <div className="relative w-50">
                                         <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
                                         <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">฿</span>
                                     </div>
