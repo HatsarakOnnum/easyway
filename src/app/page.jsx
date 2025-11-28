@@ -88,6 +88,17 @@ const CloseButton = ({ onClick }) => (
         </svg>
     </button>
 );
+const TrashIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+  </svg>
+);
+const PhotoIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+  </svg>
+);
+
 
 // --- Authentication Screens ---
 // ... (WelcomeScreen, SignUpScreen - No changes) ...
@@ -386,10 +397,9 @@ const ManageUsers = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    
-    // --- ⭐ 1. เพิ่ม State สำหรับการเรียงลำดับ ---
-    // 'desc' = ใหม่สุดขึ้นก่อน (Descendant), 'asc' = เก่าสุดขึ้นก่อน (Ascendant)
-    const [sortOrder, setSortOrder] = useState('desc'); 
+
+    // --- ⭐ 1. เพิ่ม State สำหรับเรียงลำดับ ---
+    const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = ใหม่->เก่า, 'asc' = เก่า->ใหม่
 
     useEffect(() => {
         const q = query(collection(db, "users"));
@@ -400,68 +410,125 @@ const ManageUsers = () => {
         return () => unsubscribe();
     }, []);
 
-    // ... (ฟังก์ชัน handleOpenModal, handleCloseModal, handleToggleUserStatus เหมือนเดิม) ...
-    const handleOpenModal = (user = null) => { /* ... */ };
-    const handleCloseModal = () => { /* ... */ };
-    const handleToggleUserStatus = async (user) => { /* ... */ };
+    const handleOpenModal = (user = null) => {
+        setEditingUser(user);
+        setIsModalOpen(true);
+    };
 
-    // --- ⭐ 2. แก้ไข Logic การกรองและเรียงลำดับ ---
-    const filteredUsers = users
-        .filter(user => user.email.toLowerCase().includes(searchTerm.toLowerCase()))
-        .sort((a, b) => {
-            // แปลง Timestamp ของ Firestore เป็นตัวเลข (Milliseconds) เพื่อเปรียบเทียบ
-            const timeA = a.createdAt?.toMillis() || 0;
-            const timeB = b.createdAt?.toMillis() || 0;
+    const handleCloseModal = () => {
+        setIsModalOpen(false);
+        setEditingUser(null);
+    };
 
-            if (sortOrder === 'asc') {
-                return timeA - timeB; // น้อยไปมาก (เก่า -> ใหม่)
-            } else {
-                return timeB - timeA; // มากไปน้อย (ใหม่ -> เก่า)
+    const handleToggleUserStatus = async (user) => {
+        const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
+        const actionVerb = newStatus === 'active' ? 'activate' : 'suspend';
+
+        if (window.confirm(`Are you sure you want to ${actionVerb} user ${user.email}?`)) {
+            try {
+                const userRef = doc(db, "users", user.id);
+                await updateDoc(userRef, { status: newStatus });
+                alert(`User status updated to '${newStatus}'.`);
+            } catch (error) {
+                console.error("Error updating user status:", error);
+                alert(`Failed to update status.`);
             }
-        });
+        }
+    };
 
-    // --- ⭐ 3. ฟังก์ชันสลับการเรียงลำดับเมื่อกดปุ่ม ---
-    const toggleSort = () => {
+    // --- ⭐ 2. Logic การเรียงลำดับข้อมูล (Sorting) ---
+    const sortedUsers = [...users].sort((a, b) => {
+        const dateA = a.createdAt?.toMillis() || 0;
+        const dateB = b.createdAt?.toMillis() || 0;
+        if (sortOrder === 'desc') {
+            return dateB - dateA; // ใหม่ไปเก่า
+        } else {
+            return dateA - dateB; // เก่าไปใหม่
+        }
+    });
+
+    // กรองข้อมูลจากการค้นหา (ใช้ sortedUsers มากรองต่อ)
+    const filteredUsers = sortedUsers.filter(user =>
+        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    // ฟังก์ชันสลับโหมด
+    const toggleSortOrder = () => {
         setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
     };
 
     return (
         <div className="dark:text-gray-200">
-            <div className="flex justify-between items-center mb-5">
-                <h2 className="text-3xl font-bold">Manage Users</h2>
-                <div className="flex items-center space-x-4">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+                <h2 className="text-2xl md:text-3xl font-bold">Manage Users</h2>
+                <div className="flex w-full md:w-auto space-x-2">
                     <input
                         type="text"
                         placeholder="Search by email..."
-                        className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                        className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
+
+                    {/* --- ⭐ 3. ปุ่ม Sort Date --- */}
+                    <button 
+                        onClick={toggleSortOrder} 
+                        className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2 px-4 rounded flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap"
+                        title={sortOrder === 'desc' ? "Newest joined first" : "Oldest joined first"}
+                    >
+                        {/* ถ้ายังไม่มี SortIcon ให้ใช้ Text แทน หรือไปเพิ่ม Icon ตามที่เคยบอกครับ */}
+                        <span className="mr-2">{sortOrder === 'desc' ? '⬇' : '⬆'}</span>
+                        Date
+                    </button>
+
+                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">Add User</button>
                 </div>
             </div>
-            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+
+            {/* 📱 Mobile View (Cards) */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredUsers.map(user => (
+                    <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                        <div className="flex justify-between items-start mb-2">
+                            <div className="overflow-hidden">
+                                <p className="font-bold text-gray-800 dark:text-white truncate">{user.email}</p>
+                                <p className="text-xs text-gray-500 dark:text-gray-400">Name: {user.displayName || '-'}</p>
+                            </div>
+                            <span className={`px-2 py-1 text-xs font-semibold rounded-full flex-shrink-0 ${
+                                user.status === 'active' || !user.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                            }`}>
+                                {user.status || 'active'}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-400 mb-3">Joined: {user.createdAt?.toDate().toLocaleString()}</p>
+                        
+                        <div className="flex gap-2 pt-2 border-t dark:border-gray-700">
+                            {/* ปุ่ม Edit เอาออกตามที่คุณเคยคอมเมนต์ไว้ หรือจะใส่กลับก็ได้ */}
+                             <button
+                                onClick={() => handleToggleUserStatus(user)}
+                                className={`flex-1 py-1.5 rounded-lg text-sm font-semibold text-white ${
+                                    user.status === 'suspended' ? 'bg-green-600' : 'bg-red-500'
+                                }`}
+                            >
+                                {user.status === 'suspended' ? 'Activate' : 'Suspend'}
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* 💻 Desktop View (Table) */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
                             <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Display Name</th> 
-                            
-                            {/* --- ⭐ 4. แก้ไขหัวตาราง Created At ให้เป็นปุ่มกดได้ --- */}
-                            <th 
-                                onClick={toggleSort} 
-                                className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors select-none"
-                            >
-                                <div className="flex items-center gap-1">
-                                    Created At
-                                    {/* แสดงไอคอนลูกศรตามสถานะ */}
-                                    {sortOrder === 'desc' ? (
-                                        <span title="Newest First">⬇️</span> // หรือใช้ SVG Icon ลูกศรชี้ลง
-                                    ) : (
-                                        <span title="Oldest First">⬆️</span> // หรือใช้ SVG Icon ลูกศรชี้ขึ้น
-                                    )}
-                                </div>
+                            {/* --- ⭐ 4. เพิ่มลูกศรบอกที่ Header --- */}
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={toggleSortOrder}>
+                                Created At {sortOrder === 'desc' ? '↓' : '↑'}
                             </th>
-
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
@@ -473,10 +540,19 @@ const ManageUsers = () => {
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
                                     {user.createdAt?.toDate().toLocaleString()}
                                 </td>
+                                
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                        user.status === 'active' || !user.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                                    }`}>
+                                        {user.status || 'active'}
+                                    </span>
+                                </td>
+
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
                                     <button
                                         onClick={() => handleToggleUserStatus(user)}
-                                        className={user.status === 'suspended' ? 'text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300' : 'text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300'}
+                                        className={user.status === 'suspended' ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}
                                     >
                                         {user.status === 'suspended' ? 'Activate' : 'Suspend'}
                                     </button>
@@ -486,6 +562,7 @@ const ManageUsers = () => {
                     </tbody>
                 </table>
             </div>
+            {isModalOpen && <UserFormModal currentUser={editingUser} onClose={handleCloseModal} />}
         </div>
     );
 };
@@ -520,46 +597,37 @@ const ManageLocations = ({ onViewLocation }) => {
     };
 
     // --- ⭐ Updated handleDelete for Storage and Reports ⭐ ---
-   const handleDelete = async (locationToDelete) => {
-        if (!locationToDelete || !locationToDelete.id) return;
-        const locationId = locationToDelete.id;
-        const locationName = locationToDelete.name;
-        const isPending = locationToDelete.status === 'pending';
+    const handleDelete = async (locationToDelete) => {
+            if (!locationToDelete || !locationToDelete.id) return;
+            const locationId = locationToDelete.id;
+            const locationName = locationToDelete.name;
+            const isPending = locationToDelete.status === 'pending';
 
-        const confirmMessage = isPending 
-            ? `Are you sure you want to REJECT "${locationName}"?` 
-            : `Are you sure you want to DELETE "${locationName}"? This cannot be undone.`;
+            // ปรับข้อความยืนยัน
+            const confirmMessage = isPending 
+                ? `Are you sure you want to REJECT "${locationName}"? This will notify the user and remove the pin.` 
+                : `Are you sure you want to DELETE "${locationName}"? This cannot be undone.`;
 
-        if (window.confirm(confirmMessage)) {
-            try {
-                const locationRef = doc(db, "locations", locationId);
+            if (window.confirm(confirmMessage)) {
+                try {
+                    const locationRef = doc(db, "locations", locationId);
 
-                if (isPending) {
-                    // ... (ส่วน REJECT หมุด Pending เหมือนเดิม ไม่ต้องแก้) ...
-                    await updateDoc(locationRef, { 
-                        status: 'rejected', 
-                        rejectedAt: serverTimestamp() 
-                    });
-                    // (ไม่ต้องส่ง noti ตรงนี้แล้ว เพราะระบบจะเด้ง Popup ใหญ่จาก App.js เอง)
-
-                } else {
-                    // =================================================
-                    // 🔴 กรณี 2: DELETE THAVORN (สำหรับ Approved หรือ Rejected เก่า)
-                    // =================================================
-
-                    // --- ⭐⭐ 1. เพิ่มส่วนส่งแจ้งเตือนก่อนลบ ⭐⭐ ---
+                    // 1. ส่งแจ้งเตือนหาเจ้าของหมุด (ทำทั้งกรณี Reject และ Delete)
                     if (locationToDelete.submittedBy) {
+                        const message = isPending 
+                            ? `Your location submission "${locationName}" was rejected by admin.`
+                            : `Your location "${locationName}" has been removed by the administrator.`;
+                        
+                        // ใช้ type 'rejected' ทั้งคู่เพื่อให้ขึ้นสีแดง
                         await addDoc(collection(db, "users", locationToDelete.submittedBy, "notifications"), {
-                            type: 'deleted', // ใช้ type นี้ก็ได้ หรือจะใช้ rejected ก็ได้
+                            type: 'rejected', 
                             locationName: locationName,
-                            message: `Your location "${locationName}" has been permanently removed by the administrator.`,
+                            message: message,
                             createdAt: serverTimestamp(),
                             read: false
                         });
                     }
-                    // ------------------------------------------------
-
-                    // 2. ลบรูปภาพ (เหมือนเดิม)
+                    // 2. ลบรูปภาพ (ถ้ามี)
                     if (locationToDelete.imageUrl) {
                         try {
                             const imageRef = storageRef(storage, locationToDelete.imageUrl);
@@ -569,7 +637,7 @@ const ManageLocations = ({ onViewLocation }) => {
                         }
                     }
 
-                    // 3. ลบ Sub-collections (เหมือนเดิม)
+                    // 3. ลบ Sub-collections (Reports & Reviews)
                     const deleteSubCollection = async (collName) => {
                         const q = query(collection(db, collName), where("locationId", "==", locationId));
                         const snapshot = await getDocs(q);
@@ -579,21 +647,18 @@ const ManageLocations = ({ onViewLocation }) => {
                     await deleteSubCollection("reports");
                     await deleteSubCollection("reviews");
 
-                    // 4. ลบเอกสาร Location (สุดท้าย)
+                    // 4. ลบเอกสาร Location ถาวร (ทำเป็นขั้นตอนสุดท้าย)
                     await deleteDoc(locationRef);
 
-                    console.log(`Location document deleted: ${locationName}`);
-                    alert(`"${locationName}" has been permanently deleted and the owner notified.`);
+                    console.log(`Location deleted: ${locationName}`);
+                    // alert("Deleted successfully."); // (เลือกได้ว่าจะใส่หรือไม่)
+
+                } catch (error) {
+                    console.error(`Error processing ${locationName}:`, error);
+                    alert(`Failed to delete. Check console.`);
                 }
-
-            } catch (error) {
-                console.error(`Error processing ${locationName}:`, error);
-                alert(`Failed to complete action. Check console.`);
             }
-        }
-    };
-    // --- ⭐ End of Updated handleDelete ⭐ ---
-
+        };
     const handleApprove = async (location) => { 
         try {
             const locRef = doc(db, "locations", location.id);
@@ -622,33 +687,56 @@ const ManageLocations = ({ onViewLocation }) => {
         loc.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
+    // ... ใน const ManageLocations ...
+
     return (
         <div className="dark:text-gray-200">
-            <div className="flex justify-between items-center mb-5">
-                <h2 className="text-3xl font-bold">Manage Locations</h2>
-                <div className="flex items-center space-x-4">
-                     <input
-                        type="text" placeholder="Search by name..." className="px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
-                        value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)}
-                    />
-                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">Add Location</button>
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+                <h2 className="text-2xl md:text-3xl font-bold">Manage Locations</h2>
+                <div className="flex w-full md:w-auto space-x-2">
+                    <input type="text" placeholder="Search..." className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">Add Location</button>
                 </div>
             </div>
 
-            <div className="mb-4 border-b border-gray-200 dark:border-gray-700">
+            <div className="mb-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
                 <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button onClick={() => setStatusFilter('approved')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'approved' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'}`}>
-                        Approved Locations
-                    </button>
-                    <button onClick={() => setStatusFilter('pending')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'pending' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:border-gray-300 dark:hover:border-gray-600'}`}>
-                        Pending Requests
-                    </button>
+                    <button onClick={() => setStatusFilter('approved')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'approved' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Approved Locations</button>
+                    <button onClick={() => setStatusFilter('pending')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'pending' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Pending Requests</button>
                 </nav>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+            {/* 📱 Mobile View */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredLocations.map(loc => (
+                    <div key={loc.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                        <div className="flex items-center space-x-3 mb-3">
+                            <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+                                <img src={loc.imageUrl || "https://placehold.co/100"} alt={loc.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                                <h3 className="font-bold text-gray-800 dark:text-white truncate">{loc.name}</h3>
+                                <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300 capitalize">{loc.type}</span>
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2 mt-2">
+                            <button onClick={() => onViewLocation(loc)} className="bg-blue-50 text-blue-600 py-1.5 rounded-lg text-sm font-medium">View</button>
+                            <button onClick={() => handleOpenModal(loc)} className="bg-gray-100 text-gray-600 py-1.5 rounded-lg text-sm font-medium">Edit</button>
+                            {statusFilter === 'pending' && (
+                                <button onClick={() => handleApprove(loc)} className="col-span-2 bg-green-600 text-white py-1.5 rounded-lg text-sm font-bold">Approve</button>
+                            )}
+                            <button onClick={() => handleDelete(loc)} className="col-span-2 bg-red-50 text-red-600 py-1.5 rounded-lg text-sm font-medium border border-red-100">
+                                {statusFilter === 'pending' ? 'Reject' : 'Delete'}
+                            </button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* 💻 Desktop View (ตารางเดิม) */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
                 <table className="min-w-full leading-normal">
-                      <thead>
+                    <thead>
                         <tr>
                             <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Pin Name</th>
                             <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Type</th>
@@ -661,14 +749,12 @@ const ManageLocations = ({ onViewLocation }) => {
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{loc.name}</td>
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm capitalize">{loc.type}</td>
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <button onClick={() => onViewLocation(loc)} className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 mr-4">View</button>
-                                    {statusFilter === 'pending' && (
-                                         <button onClick={() => handleApprove(loc)} className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 mr-4">Approve</button>
-                                    )}
-                                    <button onClick={() => handleOpenModal(loc)} className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-900 dark:hover:text-indigo-300 mr-4">Edit</button>
-                                    <button onClick={() => handleDelete(loc)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                                        {statusFilter === 'pending' ? 'Reject' : 'Delete'}
-                                    </button>
+                                    <div className="flex justify-center items-center space-x-2">
+                                        <button onClick={() => onViewLocation(loc)} className="text-blue-600 hover:text-blue-900">View</button>
+                                        {statusFilter === 'pending' && <button onClick={() => handleApprove(loc)} className="text-green-600 hover:text-green-900">Approve</button>}
+                                        <button onClick={() => handleOpenModal(loc)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
+                                        <button onClick={() => handleDelete(loc)} className="text-red-600 hover:text-red-900">{statusFilter === 'pending' ? 'Reject' : 'Delete'}</button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
@@ -847,21 +933,36 @@ function AdminDashboard() {
         }
     };
 
+    // ... ใน function AdminDashboard ...
+
     return (
-        <div className="flex h-screen bg-gray-100 dark:bg-gray-900">
-            <div className="w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col">
-                <h1 className="text-2xl font-bold mb-10">Admin Panel</h1>
-                <nav className="flex flex-col space-y-2">
-                    {/* Link removed */}
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'users' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Manage Users</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'locations' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Manage Locations</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded ${view === 'reports' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Manage Reports</a>
+        // เปลี่ยน layout: มือถือเป็นแนวตั้ง (col), จอคอมเป็นแนวนอน (row)
+        <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
+            
+            {/* Sidebar / Topbar */}
+            <div className="w-full md:w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col flex-shrink-0">
+                <div className="flex justify-between items-center md:block">
+                    <h1 className="text-2xl font-bold mb-0 md:mb-10">Admin Panel</h1>
+                </div>
+                
+                {/* เมนู: มือถือเรียงแนวนอน, คอมเรียงแนวตั้ง */}
+                <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 mt-4 md:mt-0 overflow-x-auto pb-2 md:pb-0">
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'users' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Users</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'locations' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Locations</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reports' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Reports</a>
                 </nav>
-                <button onClick={handleSignOut} className="mt-auto w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+
+                <button onClick={handleSignOut} className="mt-auto w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hidden md:block">
+                    Sign Out
+                </button>
+                {/* ปุ่ม Logout มือถือ (แยกออกมาเพื่อให้จัดวางง่าย) */}
+                <button onClick={handleSignOut} className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded md:hidden">
                     Sign Out
                 </button>
             </div>
-            <div className="flex-1 p-10 overflow-y-auto">
+
+            {/* Content Area */}
+            <div className="flex-1 p-4 md:p-10 overflow-y-auto">
                 {renderView()}
             </div>
         </div>
@@ -869,13 +970,20 @@ function AdminDashboard() {
 }
 
 // ... (LocationFormModal - No changes needed) ...
+// ... (LocationFormModal ตัวใหม่) ...
+// ... (วางทับ LocationFormModal ตัวเดิม) ...
+// ... (วางทับ LocationFormModal ตัวเดิมทั้งหมด) ...
+
 const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess }) => {
     const [name, setName] = useState(currentLocation?.name || '');
     const [lat, setLat] = useState(currentLocation?.lat || initialCoords?.lat || '');
     const [lng, setLng] = useState(currentLocation?.lng || initialCoords?.lng || '');
     const [type, setType] = useState(currentLocation?.type || 'motorcycle');
     const [routes, setRoutes] = useState(currentLocation?.routes || [{ destination: '', price: '' }]);
+    
     const [imageFile, setImageFile] = useState(null);
+    const [imagePreview, setImagePreview] = useState(currentLocation?.imageUrl || null);
+
     const [uploading, setUploading] = useState(false);
     const [error, setError] = useState('');
 
@@ -890,73 +998,194 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
 
     const handleImageChange = (e) => {
         if (e.target.files[0]) {
-            setImageFile(e.target.files[0]);
+            const file = e.target.files[0];
+            setImageFile(file);
+            setImagePreview(URL.createObjectURL(file));
         }
     };
 
+    // --- ⭐ ฟังก์ชัน Save (แบบ Manual Click) ⭐ ---
     const handleSubmit = async (e) => {
-        e.preventDefault();
+        if (e) e.preventDefault(); // กันเหนียว
+        
+        console.log("🔥 1. ฟังก์ชัน handleSubmit ถูกเรียกแล้ว!"); 
+        // alert("ปุ่มถูกกดแล้ว! (Test)"); // <-- ถ้าเห็นอันนี้แสดงว่าปุ่มใช้ได้
+
         setError('');
+
+        // Validation
         if (!imageFile && !currentLocation?.imageUrl) {
-            setError("Please upload an image for the location."); return;
+            console.log("❌ ติด Validation: ไม่มีรูปภาพ");
+            setError("Please upload an image for the location."); 
+            return;
         }
         if (!auth.currentUser) {
-             setError("You must be logged in to submit a location."); return;
+            console.log("❌ ติด Validation: ไม่ได้ Login");
+            setError("You must be logged in to submit a location."); 
+            return;
+        }
+        if (!name || name.trim() === '') {
+            setError("Please enter a Pin Name."); // แจ้งเตือนถ้าไม่ได้ใส่ชื่อ
+            return; // หยุดการทำงานทันที
         }
 
         setUploading(true);
+        console.log("2. เริ่มกระบวนการ Upload...");
+        
         let imageUrl = currentLocation?.imageUrl || '';
 
         try {
+            // 1. Upload Image
             if (imageFile) {
-                if (currentLocation?.imageUrl) { // Delete old image if editing and uploading new one
+                console.log("   - กำลังอัปโหลดรูปใหม่...");
+                if (currentLocation?.imageUrl) { 
                     try {
-                         const oldImageRef = storageRef(storage, currentLocation.imageUrl);
-                         await deleteObject(oldImageRef);
-                    } catch (deleteError) { console.warn("Could not delete old image:", deleteError); }
+                        const oldImageRef = storageRef(storage, currentLocation.imageUrl);
+                        await deleteObject(oldImageRef);
+                    } catch (deleteError) { console.warn("   - ลบรูปเก่าไม่ได้:", deleteError); }
                 }
                 const imageRef = storageRef(storage, `locations/${Date.now()}-${imageFile.name}`);
                 const snapshot = await uploadBytes(imageRef, imageFile);
                 imageUrl = await getDownloadURL(snapshot.ref);
+                console.log("   - ได้ URL รูปใหม่:", imageUrl);
             }
 
+            // 2. Prepare Data
             const locationData = {
-                name, lat: Number(lat), lng: Number(lng), type, routes, imageUrl,
+                name, 
+                lat: Number(lat), 
+                lng: Number(lng), 
+                type, 
+                routes, 
+                imageUrl,
                 status: currentLocation?.status || 'pending',
                 submittedBy: auth.currentUser.uid,
                 createdAt: currentLocation?.createdAt || serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
 
+            // 3. Save to Firestore
+            console.log("3. กำลังบันทึกลง Firestore...");
             if (currentLocation) {
                 await setDoc(doc(db, "locations", currentLocation.id), locationData, { merge: true });
             } else {
                 await addDoc(collection(db, "locations"), locationData);
             }
-            onSuccess();
+            
+            console.log("✅ สำเร็จ! กำลังปิด Modal...");
+            onSuccess(); // ปิด Modal
+
         } catch (err) {
-            console.error("Error submitting location:", err); setError("Failed to submit. Please try again.");
-        } finally { setUploading(false); }
+            console.error("❌❌ Error ในขณะทำงาน:", err); 
+            setError("Failed to submit: " + err.message);
+            alert("Error: " + err.message); // แจ้งเตือน Error ให้เห็นชัดๆ
+        } finally { 
+            setUploading(false); 
+        }
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
-            <div className="relative mx-auto p-5 border w-full max-w-2xl shadow-lg rounded-md bg-white dark:bg-gray-800" onClick={(e) => e.stopPropagation()}>
-                <form onSubmit={handleSubmit}>
-                    <h3 className="text-xl font-bold mb-4 dark:text-white">{currentLocation ? 'Edit Location' : 'Add New Location'}</h3>
-                    {error && <p className="text-red-500 dark:text-red-400 text-sm mb-2">{error}</p>}
-                    <div className="space-y-4 max-h-[70vh] overflow-y-auto pr-2">
-                        <div><label className="block dark:text-gray-300">Pin Name</label><input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" required /></div>
-                        <div className="flex space-x-4">
-                            <div className="w-1/2"><label className="block dark:text-gray-300">Latitude</label><input type="number" step="any" value={lat} onChange={e => setLat(e.target.value)} className="w-full px-3 py-2 border rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" readOnly required /></div>
-                            <div className="w-1/2"><label className="block dark:text-gray-300">Longitude</label><input type="number" step="any" value={lng} onChange={e => setLng(e.target.value)} className="w-full px-3 py-2 border rounded bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300" readOnly required /></div>
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="relative bg-white dark:bg-gray-800 w-full max-w-2xl rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
+                
+                <div className="px-8 py-6 border-b border-gray-100 dark:border-gray-700 bg-white dark:bg-gray-800 z-10">
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
+                        {currentLocation ? '✏️ Edit Location' : '📍 Add New Location'}
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in the details to share this spot.</p>
+                </div>
+
+                <div className="p-8 overflow-y-auto custom-scrollbar space-y-6">
+                    {error && (
+                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm font-medium border border-red-100 dark:border-red-800 flex items-center">
+                            {error}
                         </div>
-                        <div><label className="block dark:text-gray-300">Type</label><select value={type} onChange={e => setType(e.target.value)} className="w-full px-3 py-2 border rounded bg-white dark:bg-gray-700 dark:border-gray-600 dark:text-white"><option value="motorcycle">วินมอเตอร์ไซค์</option><option value="songthaew">สองแถว</option></select></div>
-                        <div><label className="block dark:text-gray-300">Location Image</label><input type="file" accept="image/*" onChange={handleImageChange} className="w-full text-sm text-gray-500 dark:text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900 file:text-blue-700 dark:file:text-blue-300 hover:file:bg-blue-100 dark:hover:file:bg-blue-800"/>{imageFile ? <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Selected: {imageFile.name}</p> : (currentLocation?.imageUrl && <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Current image exists. Upload new to replace.</p>)}</div>
-                        <div><h4 className="font-semibold mt-4 dark:text-white">Places & Prices</h4>{routes.map((route, index) => (<div key={index} className="flex items-center space-x-2 mt-2"><input type="text" placeholder="Place" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="w-1/2 px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" /><input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-1/3 px-3 py-2 border rounded dark:bg-gray-700 dark:border-gray-600 dark:text-white" /><button type="button" onClick={() => removeRoute(index)} className="bg-red-500 text-white p-2 rounded hover:bg-red-600">-</button></div>))}<button type="button" onClick={addRoute} className="mt-2 bg-gray-200 dark:bg-gray-600 px-4 py-2 rounded text-sm dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-500">+ Add Route</button></div>
+                    )}
+
+                    {/* Image Upload */}
+                    <div>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location Image</label>
+                        <div className="relative group">
+                            <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"/>
+                            <div className={`border-2 border-dashed rounded-2xl h-48 flex flex-col items-center justify-center transition-all duration-300 ${imagePreview ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
+                                {imagePreview ? (
+                                    <img src={imagePreview} alt="Preview" className="h-full w-full object-cover rounded-2xl" />
+                                ) : (
+                                    <>
+                                        <div className="bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 p-3 rounded-full mb-3"><PhotoIcon /></div>
+                                        <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Click to upload image</p>
+                                    </>
+                                )}
+                            </div>
+                        </div>
                     </div>
-                    <div className="flex justify-end mt-6 pt-4 border-t dark:border-gray-700"><button type="button" onClick={onClose} className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded mr-2">Cancel</button><button type="submit" disabled={uploading} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-blue-300 dark:disabled:bg-blue-800">{uploading ? 'Saving...' : 'Save'}</button></div>
-                </form>
+
+                    {/* Inputs */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pin Name</label>
+                            <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white" required />
+                        </div>
+                        <div><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latitude</label><input type="number" value={lat} readOnly className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" /></div>
+                        <div><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Longitude</label><input type="number" value={lng} readOnly className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" /></div>
+                        <div className="md:col-span-2">
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Vehicle Type</label>
+                            <div className="relative">
+                                <select value={type} onChange={e => setType(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 text-gray-800 dark:text-white">
+                                    <option value="motorcycle">🛵 Win Motorbike</option>
+                                    <option value="songthaew">🚌 Songthaew</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Places & Prices */}
+                    <div className="bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-6 border border-gray-100 dark:border-gray-700/50">
+                        <div className="flex justify-between items-center mb-4">
+                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">
+                                Places & Prices
+                            </h4>
+                            
+                            {/* ปุ่ม Add Route ย้ายมาตรงนี้ */}
+                            <button 
+                                type="button" 
+                                onClick={addRoute} 
+                                className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition flex items-center"
+                            >
+                                {/* ใช้ PlusIcon เล็กๆ หน้าตัวหนังสือ */}
+                                <span className="mr-1"><PlusIcon /></span> 
+                                Add Route
+                            </button>
+                        </div>
+                        <div className="space-y-3">
+                            {routes.map((route, index) => (
+                                <div key={index} className="flex items-center space-x-3">
+                                    <input type="text" placeholder="Destination" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white" />
+                                    <div className="relative w-28">
+                                        <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white" />
+                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">฿</span>
+                                    </div>
+                                    {routes.length > 1 && (<button type="button" onClick={() => removeRoute(index)} className="p-2.5 text-red-500 bg-red-50 dark:bg-red-900/20 rounded-xl"><TrashIcon /></button>)}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Footer */}
+                <div className="px-8 py-5 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex justify-end space-x-3">
+                    <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700">Cancel</button>
+                    
+                    {/* --- ⭐ ปุ่ม Save เปลี่ยนมาใช้ onClick แทน type="submit" ⭐ --- */}
+                    <button 
+                        type="button" // เปลี่ยนเป็น button ธรรมดา ไม่ใช่ submit
+                        onClick={handleSubmit} // เรียกฟังก์ชันโดยตรง
+                        disabled={uploading} 
+                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed flex items-center"
+                    >
+                        {uploading ? 'Saving...' : 'Save Location'}
+                    </button>
+                </div>
             </div>
         </div>
     );
@@ -1093,7 +1322,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const [userLikes, setUserLikes] = useState(new Set());
     const [notifications, setNotifications] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
-    const [rejectedPinAlert, setRejectedPinAlert] = useState(null);
+
     const [showTooCloseAlert, setShowTooCloseAlert] = useState(false);
 
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
@@ -1312,33 +1541,6 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
         
     }, [isLoaded, selectedLocation?.id]);
     
-    useEffect(() => {
-        if (!user) return;
-        
-        // Query: หาหมุดที่ถูกส่งโดย User คนนี้ AND สถานะเป็น 'rejected'
-        const q = query(
-            collection(db, "locations"), 
-            where("submittedBy", "==", user.uid),
-            where("status", "==", "rejected")
-        );
-
-        const unsubscribe = onSnapshot(q, (snapshot) => {
-            snapshot.docChanges().forEach(change => {
-                const loc = { id: change.doc.id, ...change.doc.data() };
-                
-                // แสดงแจ้งเตือนสำหรับหมุดที่ถูก Reject และเพิ่งมีการเปลี่ยนแปลงสถานะ
-                if (change.type === 'added' || change.type === 'modified') { 
-                    setRejectedPinAlert({
-                        id: loc.id,
-                        name: loc.name,
-                        message: `The location "${loc.name}" you submitted has been rejected by the administrator.`,
-                    });
-                }
-            });
-        });
-
-        return () => unsubscribe();
-    }, [user]);
     
 
 
@@ -1355,7 +1557,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             return false; 
         }
 
-        const MIN_DISTANCE_METERS = 25; // 👈 กำหนดระยะห่างขั้นต่ำ (เช่น 50 เมตร)
+        const MIN_DISTANCE_METERS = 30; // 👈 กำหนดระยะห่างขั้นต่ำ (เช่น 50 เมตร)
         const newPoint = new window.google.maps.LatLng(newLat, newLng);
 
         for (const loc of locations) {
@@ -1557,32 +1759,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                     onClose={handleCloseNotification} 
                 />
             )}
-
-            {/* ⭐ Rejected Pin Alert Modal (โค้ดที่ต้องการเพิ่ม) ⭐ */}
-            {rejectedPinAlert && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md text-center">
-                        <h2 className="text-2xl font-bold mb-4 text-red-600 dark:text-red-400">🚫 Submission Rejected</h2>
-                        <p className="text-gray-700 dark:text-gray-300 mb-6">
-                            {rejectedPinAlert.message}
-                        </p>
-                        <button
-                            onClick={async () => {
-                                // ⭐ ลบเอกสารออกจาก Firestore ถาวรเมื่อผู้ใช้รับทราบ
-                                try {
-                                    await deleteDoc(doc(db, "locations", rejectedPinAlert.id));
-                                } catch (e) {
-                                    console.error("Failed to delete rejected pin document:", e);
-                                }
-                                setRejectedPinAlert(null); // เคลียร์ Alert
-                            }}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300"
-                        >
-                            Acknowledge and Clear
-                        </button>
-                    </div>
-                </div>
-            )}
+            
             {/* ⭐ Pop-up แจ้งเตือนระยะห่าง (Too Close Alert) ⭐ */}
             {showTooCloseAlert && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={() => setShowTooCloseAlert(false)}>
@@ -1600,7 +1777,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                         </h3>
                         <p className="text-gray-500 dark:text-gray-300 mb-6 text-sm">
                             จุดที่คุณเลือกอยู่ใกล้กับหมุดที่มีอยู่แล้วมากเกินไป <br/>
-                            กรุณาขยับออกห่างอย่างน้อย 25-50 เมตร
+                            กรุณาขยับออกห่างอย่างน้อย 30 เมตร
                         </p>
 
                         <button
