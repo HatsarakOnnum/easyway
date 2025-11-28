@@ -1143,15 +1143,49 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                             <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Destinations & Prices</h4>
                             <button type="button" onClick={addRoute} className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg flex items-center"><span className="mr-1"><PlusIcon /></span> Add Route</button>
                         </div>
-                        <div className="space-y-3">
+                        <div className="space-y-4"> {/* เพิ่มระยะห่างระหว่างการ์ด */}
                             {routes.map((route, index) => (
-                                <div key={index} className="flex items-center space-x-3 animate-fadeIn">
-                                    <input type="text" placeholder="Destination" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="flex-1 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
-                                    <div className="relative w-50">
-                                        <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm dark:text-white focus:ring-2 focus:ring-blue-500 outline-none" />
-                                        <span className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">฿</span>
+                                <div key={index} className="flex flex-col sm:flex-row gap-3 sm:items-end animate-fadeIn bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
+                                    
+                                    {/* 1. ช่อง Destination (บนมือถือเต็มความกว้าง / บนคอมยืดหยุ่น) */}
+                                    <div className="flex-1 w-full">
+                                        {/* Label โชว์เฉพาะมือถือ เพื่อให้อ่านง่าย */}
+                                        <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block sm:hidden ml-1">Destination</label>
+                                        <input 
+                                            type="text" 
+                                            placeholder="Destination (e.g. BTS Station)" 
+                                            value={route.destination} 
+                                            onChange={e => handleRouteChange(index, 'destination', e.target.value)} 
+                                            className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-500 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white transition" 
+                                        />
                                     </div>
-                                    {routes.length > 1 && (<button type="button" onClick={() => removeRoute(index)} className="p-2.5 text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition"><TrashIcon /></button>)}
+
+                                    {/* 2. ช่อง Price & ปุ่ม Delete (บนมือถืออยู่บรรทัดล่างคู่กัน) */}
+                                    <div className="flex items-end gap-3 w-full sm:w-auto">
+                                        <div className="relative flex-1 sm:w-40"> {/* ยืดเต็มในมือถือ, กว้าง 40 ในคอม */}
+                                            <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block sm:hidden ml-1">Price</label>
+                                            <input 
+                                                type="number" 
+                                                placeholder="Price" 
+                                                value={route.price} 
+                                                onChange={e => handleRouteChange(index, 'price', e.target.value)} 
+                                                className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-500 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white transition" 
+                                            />
+                                            <span className="absolute right-3 bottom-2.5 text-gray-400 text-xs font-bold">฿</span>
+                                        </div>
+                                        
+                                        {/* ปุ่มลบ */}
+                                        {routes.length > 1 && (
+                                            <button 
+                                                type="button" 
+                                                onClick={() => removeRoute(index)} 
+                                                className="p-2.5 mb-[1px] text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition flex-shrink-0"
+                                                title="Remove route"
+                                            >
+                                                <TrashIcon />
+                                            </button>
+                                        )}
+                                    </div>
                                 </div>
                             ))}
                         </div>
