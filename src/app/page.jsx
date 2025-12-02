@@ -199,7 +199,7 @@ function WelcomeScreen({ setView }) {
 
             {/* --- Space Background Layers (พื้นหลังอวกาศ) --- */}
             {/* Layer A: Nebula Blobs (แสงเนบิวลา) */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+            <div className="absolute inset-0 w-full h-[100dvh] overflow-hidden pointer-events-none">
                 <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
                 <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
                 <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
