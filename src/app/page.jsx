@@ -103,231 +103,555 @@ const PhotoIcon = () => (
 const Skeleton = ({ className }) => (
     <div className={`animate-pulse bg-gray-300 dark:bg-gray-700 rounded ${className}`}></div>
 );
+const BackIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+  </svg>
+);
+const EnvelopeIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+  </svg>
+);
 
+const LockIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+  </svg>
+);
 
 // --- Authentication Screens ---
-// ... (WelcomeScreen, SignUpScreen - No changes) ...
+// --- Welcome Screen (Creative Animated Style) ---
+// --- Welcome Screen (Cosmic Space Theme matched with Login) ---
+// --- Welcome Screen (Cosmic Theme + Space Clouds + Page Transition) ---
+// --- Welcome Screen (Cosmic Theme - Simple) ---
 function WelcomeScreen({ setView }) {
+    // ฟังก์ชันช่วยเปลี่ยนหน้า (เตรียมไว้เผื่ออนาคต)
+    const handleSetView = (view) => {
+        setView(view);
+    }
+
     return (
-        <div className="relative w-full h-[100dvh] bg-cover bg-center text-white dark:text-gray-200" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')" }}>
-            <div className="absolute inset-0 flex flex-col justify-center items-center p-8 bg-black/50">
-                <div className="text-center"><h1 className="text-6xl md:text-8xl font-bold tracking-wider">EW</h1><p className="text-2xl md:text-3xl font-light tracking-widest mt-2">EASYWAY</p></div>
-                <div className="mt-16 text-center"><h2 className="text-3xl md:text-4xl font-semibold">Welcome To The App EasyWay</h2><p className="mt-4 text-lg md:text-xl italic text-gray-300">"Every Journey Starts With A Single Pin."</p></div>
-                <div className="mt-16 flex flex-col items-center w-full max-w-xs">
-                    <button onClick={() => setView('login')} className="w-full bg-white text-black font-bold py-3 px-6 rounded-lg shadow-lg hover:bg-gray-200 transition duration-300">Login</button>
-                    <button onClick={() => setView('map')} className="w-full mt-4 bg-transparent border-2 border-white text-white font-bold py-3 px-6 rounded-lg hover:bg-white hover:text-black transition duration-300">Continue As Guest</button>
-                    <button onClick={() => setView('signup')} className="mt-8 text-white underline hover:text-gray-300 transition">Create an Account</button>
+        <div className="relative w-full h-[100dvh] overflow-hidden bg-[#0f172a] flex flex-col justify-between text-white animate-page-enter">
+            
+            {/* --- CSS Animations & Global Styles (ฝังไว้ที่นี่ที่เดียวพอ) --- */}
+            <style>{`
+                /* Page Transition */
+                @keyframes fadeInUp {
+                    from { opacity: 0; transform: translateY(30px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-page-enter {
+                    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+                }
+
+                /* Blobs Animation */
+                @keyframes blob {
+                    0% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
+                    100% { transform: translate(0px, 0px) scale(1); }
+                }
+                .animate-blob { animation: blob 10s infinite; }
+                .animation-delay-2000 { animation-delay: 2s; }
+                .animation-delay-4000 { animation-delay: 4s; }
+
+                /* Road & Bike Animation */
+                @keyframes moveRoad {
+                    0% { background-position: 0px 0; }
+                    100% { background-position: -100px 0; }
+                }
+                @keyframes bounceBike {
+                    0%, 100% { transform: translateY(0) rotate(0deg) scaleX(-1); }
+                    50% { transform: translateY(-5px) rotate(1deg) scaleX(-1); }
+                }
+                .road-stripe {
+                    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%);
+                    background-size: 100px 20px;
+                    animation: moveRoad 0.5s linear infinite;
+                }
+                .bike-bounce { animation: bounceBike 0.5s ease-in-out infinite; }
+
+                /* Stars Animation */
+                @keyframes twinkle {
+                    0%, 100% { opacity: 0.8; transform: scale(1); }
+                    50% { opacity: 0.3; transform: scale(0.8); }
+                }
+                .star {
+                    position: absolute; background: white; border-radius: 50%;
+                    animation: twinkle 3s infinite ease-in-out;
+                }
+
+                /* Cloud Animation */
+                @keyframes floatingCloud {
+                    0% { transform: translateX(100vw); opacity: 0; }
+                    10% { opacity: var(--cloud-opacity); }
+                    90% { opacity: var(--cloud-opacity); }
+                    100% { transform: translateX(-200px); opacity: 0; }
+                }
+                .cloud-space {
+                    position: absolute; fill: rgba(200, 220, 255, 0.15); filter: blur(8px);
+                }
+                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 45s linear infinite; top: 15%; }
+                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 60s linear infinite; top: 30%; animation-delay: -20s; scale: 1.5; }
+                .cloud-3 { --cloud-opacity: 0.3; animation: floatingCloud 50s linear infinite; top: 5%; animation-delay: -5s; scale: 0.8; }
+            `}</style>
+
+            {/* --- Space Background Layers (พื้นหลังอวกาศ) --- */}
+            {/* Layer A: Nebula Blobs (แสงเนบิวลา) */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
+                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
+            </div>
+
+            {/* Layer B: Stars (ดาวระยิบระยับ) */}
+            <div className="absolute inset-0 pointer-events-none">
+                <div className="star w-1 h-1 top-10 left-10" style={{animationDelay: '0s'}}></div>
+                <div className="star w-0.5 h-0.5 top-20 right-20" style={{animationDelay: '1s'}}></div>
+                <div className="star w-1 h-1 top-1/2 left-1/3" style={{animationDelay: '2s'}}></div>
+                <div className="star w-0.5 h-0.5 bottom-1/3 right-1/4" style={{animationDelay: '0.5s'}}></div>
+                <div className="star w-1 h-1 top-1/4 right-1/3" style={{animationDelay: '1.5s'}}></div>
+                <div className="star w-0.5 h-0.5 top-5 left-1/2 opacity-40"></div>
+                <div className="star w-0.5 h-0.5 bottom-20 left-10 opacity-40"></div>
+                <div className="star w-1 h-1 top-2/3 right-10 opacity-50" style={{animationDelay: '3s'}}></div>
+            </div>
+
+             {/* Layer C: Space Clouds (กลุ่มก๊าซ) */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden">
+                <svg className="cloud-space cloud-1" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                <svg className="cloud-space cloud-2" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                <svg className="cloud-space cloud-3" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+            </div>
+
+            {/* --- Content & Action Area --- */}
+            <div className="relative z-10 flex flex-col items-center pt-24 px-6 text-center space-y-6">
+                <div className="relative">
+                    <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-20 rounded-full"></div>
+                    <h1 className="relative text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 tracking-tighter drop-shadow-sm">EW</h1>
+                </div>
+                <div>
+                    <h2 className="text-3xl font-bold tracking-widest text-blue-100">EASYWAY</h2>
+                    <p className="text-slate-400 text-sm mt-2 uppercase tracking-widest">The Future of Transit</p>
+                </div>
+            </div>
+
+            <div className="relative z-10 w-full flex flex-col items-center pb-0">
+                <div className="bike-bounce text-9xl mb-2 relative z-20">
+                    🛵
+                    <div className="absolute top-2/3 -right-2 w-16 h-6 bg-gradient-to-r from-cyan-400 to-transparent blur-md rounded-full opacity-80"></div>
+                </div>
+
+                <div className="w-full max-w-md px-6 pb-10 z-30">
+                    <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl space-y-3">
+                        <button onClick={() => handleSetView('login')} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform active:scale-95">
+                            Login
+                        </button>
+                        <button onClick={() => handleSetView('signup')} className="w-full py-3.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold text-lg transition-all transform active:scale-95">
+                            Create Account
+                        </button>
+                        <button onClick={() => handleSetView('map')} className="w-full py-2 text-sm text-slate-400 hover:text-white transition-colors">
+                            Continue as Guest &rarr;
+                        </button>
+                    </div>
+                </div>
+
+                <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-slate-900 to-transparent z-0"></div>
+                <div className="w-full h-32 bg-slate-800 relative overflow-hidden border-t border-blue-500/30 shadow-[0_-10px_50px_rgba(59,130,246,0.2)]">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                    <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%]"></div>
                 </div>
             </div>
         </div>
     );
 }
+// --- Sign Up Screen (Modern Glassmorphism Design) ---
+// --- Sign Up Screen (Updated with Cosmic Space Background) ---
+// --- Sign Up Screen (Cosmic Space Theme) ---
+// --- Sign Up Screen (Fixed: Animation & Icons match Login) ---
 function SignUpScreen({ setView }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
+    const [passwordVisible, setPasswordVisible] = useState(false);
+
     const handleSignUp = async (e) => {
-        e.preventDefault();
+        e.preventDefault(); 
         setError('');
         if (password.length < 6) {
-            setError("Password should be at least 6 characters.");
+            setError("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
             return;
         }
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
+            
             await setDoc(doc(db, "users", user.uid), {
                 uid: user.uid,
                 email: user.email,
-                createdAt: serverTimestamp(), // Use server timestamp
+                createdAt: serverTimestamp(),
                 status: 'active',
-                displayName: email.split('@')[0] // Default display name
+                displayName: email.split('@')[0]
             });
-            // Optionally update Auth profile display name
+            
             await updateProfile(user, { displayName: email.split('@')[0] });
-
+            
+            // สมัครเสร็จแล้วอาจจะให้ไปหน้าไหนต่อ? (ปกติระบบ Auth จะพาไปหน้า Map อัตโนมัติถ้าใช้ onAuthStateChanged)
         } catch (err) {
-            setError("Failed to create an account. The email may already be in use.");
             console.error(err);
+            setError("ไม่สามารถสร้างบัญชีได้ อีเมลนี้อาจถูกใช้ไปแล้ว");
         }
     };
+
+    // สไตล์ (ชุดเดียวกับ LoginScreen)
+    const inputContainerStyle = "relative group transition-all duration-300 transform hover:-translate-y-0.5";
+    const inputStyle = "w-full pl-12 pr-12 py-3.5 rounded-xl bg-white/10 border-2 border-transparent focus:border-blue-500 focus:bg-slate-900/50 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-sm group-hover:shadow-md";
+    const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-500 transition-colors duration-300";
+
     return (
-        <div className="w-screen h-[100dvh] flex bg-white dark:bg-gray-900 bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800 dark:to-blue-900">
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 ">
-                <div className="w-full max-w-md">
-                    <header className="flex justify-between items-center mb-10"><h1 className="text-5xl font-bold text-blue-800 dark:text-blue-300">EasyWay</h1><div><button onClick={() => setView('login')} className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-800 dark:hover:text-blue-400">Login</button><button onClick={() => setView('welcome')} className="px-4 py-2 text-sm font-semibold bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600">Welcome</button></div></header>
-                    <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Create Account</h2><p className="mt-2 text-gray-600 dark:text-gray-400">"Welcome to the app EasyWay"</p>
-                     {error && <p className="mt-4 text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300 p-3 rounded">{error}</p>}
-                    <form className="mt-8 space-y-6" onSubmit={handleSignUp}>
-                        <div><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Email (Username)</label><input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50" placeholder="Enter your email"/></div>
-                        <div><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label><input type="password" value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50" placeholder="Create a password (min. 6 characters)"/></div>
-                        <div><button type="submit" className="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-lg shadow-md hover:bg-blue-700 dark:hover:bg-blue-500 transition duration-300">Sign Up</button></div>
-                    </form>
+        <div className="relative min-h-[100dvh] w-full flex items-center justify-center bg-[#0f172a] overflow-hidden animate-page-enter">
+            
+            {/* --- CSS Animations (ต้องใส่ไว้เพื่อให้หน้านี้ขยับได้ด้วย) --- */}
+            <style>{`
+                @keyframes blob {
+                    0% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
+                    100% { transform: translate(0px, 0px) scale(1); }
+                }
+                .animate-blob { animation: blob 10s infinite; }
+                .animation-delay-2000 { animation-delay: 2s; }
+                .animation-delay-4000 { animation-delay: 4s; }
+                @keyframes moveRoad {
+                    0% { background-position: 0px 0; }
+                    100% { background-position: -100px 0; }
+                }
+                .road-stripe {
+                    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%);
+                    background-size: 100px 20px;
+                    animation: moveRoad 0.5s linear infinite;
+                }
+                /* Cloud Animation */
+                @keyframes floatingCloud {
+                    0% { transform: translateX(100vw); opacity: 0; }
+                    10% { opacity: var(--cloud-opacity); }
+                    90% { opacity: var(--cloud-opacity); }
+                    100% { transform: translateX(-200px); opacity: 0; }
+                }
+                .cloud-space {
+                    position: absolute; fill: rgba(200, 220, 255, 0.15); filter: blur(8px);
+                }
+                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 45s linear infinite; top: 15%; }
+                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 60s linear infinite; top: 30%; animation-delay: -20s; scale: 1.5; }
+                .cloud-3 { --cloud-opacity: 0.3; animation: floatingCloud 50s linear infinite; top: 5%; animation-delay: -5s; scale: 0.8; }
+            `}</style>
+
+            {/* --- Background Layers (เหมือนหน้า Login เป๊ะๆ) --- */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                {/* 1. Blobs */}
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
+                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
+
+                {/* Clouds */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <svg className="cloud-space cloud-1" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                    <svg className="cloud-space cloud-2" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                    <svg className="cloud-space cloud-3" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                </div>
+
+                {/* 3. Moving Road */}
+                <div className="absolute bottom-0 w-full z-0">
+                     <div className="w-full h-40 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                     <div className="w-full h-32 bg-slate-800 relative overflow-hidden border-t border-blue-500/30 shadow-[0_-10px_50px_rgba(59,130,246,0.2)]">
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                        <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%]"></div>
+                    </div>
                 </div>
             </div>
-            <div className="hidden lg:flex w-1/2 relative items-center justify-center">
-            <CloseButton onClick={() => setView('welcome')} />
-            <img src="https://www.brandbuffet.in.th/wp-content/uploads/2022/09/shutterstock_motorbike-%E0%B8%A7%E0%B8%B4%E0%B8%99-%E0%B8%A1%E0%B8%AD%E0%B9%80%E0%B8%95%E0%B8%AD%E0%B8%A3%E0%B9%8C%E0%B9%84%E0%B8%8B%E0%B8%84%E0%B9%8C.jpg" alt="Person working on laptop" className="w-full h-full object-cover rounded-[100px] rounded-tr-[350px] pt-[25px] pb-[15px] pr-[15px]"/></div>
+
+            {/* --- Glass Card Form --- */}
+            <div className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10">
+                
+                {/* Back Button */}
+                <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                    <BackIcon />
+                </button>
+
+                <div className="text-center mb-8 pt-2">
+                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2 tracking-tight pb-2 pr-2 inline-block">
+                        Create Account
+                    </h1>
+                    <p className="text-slate-300 font-medium">Join EasyWay today!</p>
+                </div>
+
+                {error && (
+                    <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">
+                       ⚠️ {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSignUp} className="space-y-5">
+                    {/* Email Input */}
+                    <div className={inputContainerStyle}>
+                        <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Email</label>
+                        <div className="relative">
+                            <div className={iconStyle}><EnvelopeIcon /></div>
+                            <input 
+                                type="email" 
+                                value={email} 
+                                onChange={e => setEmail(e.target.value)} 
+                                className={inputStyle} 
+                                placeholder="name@example.com" 
+                                required 
+                            />
+                        </div>
+                    </div>
+
+                    {/* Password Input */}
+                    <div className={inputContainerStyle}>
+                        <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Password</label>
+                        <div className="relative">
+                            <div className={iconStyle}><LockIcon /></div>
+                            <input 
+                                type={passwordVisible ? "text" : "password"} 
+                                value={password} 
+                                onChange={e => setPassword(e.target.value)} 
+                                className={`${inputStyle} pr-12`} 
+                                placeholder="Min. 6 characters" 
+                                required 
+                            />
+                            
+                            {/* ปุ่มดูรหัสผ่าน (ใช้ EyeSlashIcon / EyeIcon) */}
+                            <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
+                                {passwordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon closed={true} />}
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Submit Button */}
+                    <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-1 active:scale-[0.98]">
+                        Sign Up
+                    </button>
+                </form>
+
+                <p className="mt-8 text-center text-slate-400 text-sm">
+                    Already have an account?{' '}
+                    <button onClick={() => setView('login')} className="text-blue-400 font-bold hover:underline transition-colors">
+                        Login
+                    </button>
+                </p>
+            </div>
         </div>
     );
 }
 
-// --- Login Screen (Added Password Reset) ---
+// --- Login Screen (Modern Glassmorphism Design) ---
+// --- Login Screen (Updated with Cosmic Space Background) ---
+// --- Login Screen (Modern Glassmorphism Design) ---
 function LoginScreen({ setView }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
     const [passwordVisible, setPasswordVisible] = useState(false);
-    const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false); // <-- State for reset modal
+    const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
 
     const handleLogin = async (e) => {
-        console.log("handleLogin: เริ่มทำงาน");
-        e.preventDefault();
-        setError('');
-        try {
-            console.log("handleLogin: กำลังเรียก signInWithEmailAndPassword...");
-            // 1. ล็อกอิน Auth ก่อน
-            const userCredential = await signInWithEmailAndPassword(auth, email, password);
-            const user = userCredential.user;
-            console.log("handleLogin: signInWithEmailAndPassword สำเร็จ!");
+        e.preventDefault(); 
+        setError('');
+        try { 
+            await signInWithEmailAndPassword(auth, email, password); 
+        } catch (err) { 
+            console.error(err); 
+            setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); 
+        }
+    };
 
-            // --- ⭐ จุดที่เพิ่มเข้ามา ⭐ ---
-            // 2. เช็ก status ใน Firestore ทันที
-            console.log("handleLogin: กำลังเช็ก status ใน Firestore...");
-            const userRef = doc(db, "users", user.uid);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists() && userSnap.data().status === 'suspended') {
-                // 3. ถ้าถูกระงับ
-                console.log("handleLogin: ตรวจพบ status 'suspended'");
-                // 3a. แสดง Error
-                setError("บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแล");
-                // 3b. และ!! สั่ง Log out ทันที
-                await signOut(auth); 
-                return; // จบการทำงานตรงนี้
-            }
-            // --- ⭐ จบส่วนที่เพิ่ม ⭐ ---
-
-            // 4. ถ้าไม่ถูกระงับ (ก็คือผ่าน)
-            // onAuthStateChanged ใน App.js จะทำงานต่อตามปกติ
-            console.log("handleLogin: สถานะปกติ, ให้ App.js ทำงานต่อ");
-
-        } catch (err) {
-            console.error("Login Error Code:", err.code); 
-            if (err.code === 'auth/user-disabled') {
-                // นี่คือการ Disabled จากหน้า Auth (คนละส่วนกับ Suspend)
-                setError("บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแล");
-            } else {
-                // Error อื่นๆ (เช่น รหัสผิด, ไม่มี user นี้)
-                setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง กรุณาลองใหม่อีกครั้ง");
-            }
-        }
-    };
-    const handleGoogleSignIn = async () => {
+    // (Keep your existing handleGoogleSignIn logic here if needed)
+     const handleGoogleSignIn = async () => {
         setError('');
         const provider = new GoogleAuthProvider(); 
         try {
-            console.log("Google Sign-In: เริ่มทำงาน...");
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
-            console.log("Google Sign-In: Auth สำเร็จ, กำลังเช็ก Firestore...");
-
             const userRef = doc(db, "users", user.uid);
             const userSnap = await getDoc(userRef);
 
             if (!userSnap.exists()) {
-                // --- 1. ผู้ใช้ใหม่: สร้างเอกสาร ---
-                console.log("Google Sign-In: ผู้ใช้ใหม่, กำลังสร้างเอกสาร...");
                 await setDoc(userRef, {
-                    uid: user.uid,
-                    email: user.email,
-                    displayName: user.displayName || user.email.split('@')[0],
-                    createdAt: serverTimestamp(),
-                    status: 'active' 
+                    uid: user.uid, email: user.email, displayName: user.displayName || user.email.split('@')[0],
+                    createdAt: serverTimestamp(), status: 'active' 
                 });
-                console.log("Google Sign-In: สร้างเอกสารเรียบร้อย");
-
-            // --- ⭐⭐ 2. จุดที่เพิ่มเข้ามา: เช็กผู้ใช้เดิม ⭐⭐ ---
             } else if (userSnap.data().status === 'suspended') {
-                // --- 3. ถ้าผู้ใช้ถูกระงับ ---
-                console.log("Google Sign-In: ตรวจพบ status 'suspended', กำลังเตะออก...");
                 setError("บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแล");
-                await signOut(auth); // <-- สั่ง Log out ทันที
-                return; // <-- จบการทำงาน
-
-            } else {
-                // --- 4. ถ้าผู้ใช้เดิม และ status 'active' ---
-                console.log("Google Sign-In: ผู้ใช้เดิม สถานะ 'active', ล็อกอินปกติ");
-                // (ไม่ต้องทำอะไร ให้ App.js จัดการต่อ)
+                await signOut(auth); return;
             }
-            
         } catch (err) {
             console.error("Google Sign-In Error:", err);
-            if (err.code !== 'auth/popup-closed-by-user') {
-                 setError("Failed to sign in with Google. Please try again.");
-            }
+            if (err.code !== 'auth/popup-closed-by-user') setError("Failed to sign in with Google.");
         }
     };
 
-    return (
-        <>
-            <div className="w-screen h-[100dvh] flex bg-white dark:bg-gray-900 bg-gradient-to-br from-sky-200 to-blue-300 dark:from-sky-800 dark:to-blue-900">
-                <div className="w-full lg:w-1/2 flex items-center justify-center p-8 sm:p-12 ">
-                    <div className="w-full max-w-md">
-                        <header className="flex justify-between items-center mb-10">
-                            <h1 className="text-5xl font-bold text-blue-800 dark:text-blue-300">EasyWay</h1>
-                            <div>
-                                <button onClick={() => setView('welcome')} className="px-4 py-2 text-sm font-semibold text-gray-700 dark:text-gray-300 hover:text-blue-800 dark:hover:text-blue-400">Welcome</button>
-                                <button onClick={() => setView('signup')} className="px-4 py-2 text-sm font-semibold bg-white dark:bg-gray-700 text-blue-700 dark:text-blue-300 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-gray-600">Create an Account</button>
-                            </div>
-                        </header>
-                        <h2 className="text-3xl font-bold text-gray-800 dark:text-gray-100">Login</h2>
-                        <p className="mt-2 text-gray-600 dark:text-gray-400">"Welcome back to the app EasyWay"</p>
-                        {error && <p className="mt-4 text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300 p-3 rounded">{error}</p>}
-                        <form className="mt-8 space-y-6" onSubmit={handleLogin}>
-                            <div>
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Email (Username)</label>
-                                <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-1 w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50" placeholder="Enter your email"/>
-                            </div>
-                            <div className="relative">
-                                <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Password</label>
-                                <input type={passwordVisible ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-1 w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-800 dark:text-gray-100 border border-gray-300 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50" placeholder="Enter your password"/>
-                                <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute inset-y-0 right-0 top-6 flex items-center px-4 text-gray-500 dark:text-gray-400"><EyeIcon closed={passwordVisible} /></button>
-                            </div>
-                            <div className="flex justify-end">
-                                <button type="button" onClick={() => setIsPasswordResetOpen(true)} className="text-sm text-blue-600 dark:text-blue-400 hover:underline">Forgot Password?</button>
-                            </div>
-                            <div><button type="submit" className="w-full bg-white dark:bg-gray-700 text-gray-800 dark:text-gray-100 font-bold py-3 px-4 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-300">Login</button></div>
-                        </form>
-                        <div className="mt-6 relative">
-                            <div className="absolute inset-0 flex items-center">
-                                <div className="w-full"></div>
-                            </div>
-                            <div className="relative flex justify-center text-sm">
-                                <span className="px-2  text-gray-600 dark:text-gray-400 font-bold">
-                                    Or continue with
-                                </span>
-                            </div>
-                        </div>
+    // Define styles for inputs
+    const inputContainerStyle = "relative group transition-all duration-300 transform hover:-translate-y-0.5";
+    const inputStyle = "w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/10 border-2 border-transparent focus:border-blue-500 focus:bg-slate-900/50 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-sm group-hover:shadow-md";
+    const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-500 transition-colors duration-300";
 
-                        <div className="mt-6">
-                            <button
-                                type="button"
-                                onClick={handleGoogleSignIn}
-                                className="w-full flex items-center justify-center bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-gray-100 dark:hover:bg-gray-600 transition duration-300"
-                            >
-                                <GoogleIcon />
-                                Sign in with Google
+
+    return (
+        <div className="relative min-h-[100dvh] w-full flex items-center justify-center bg-[#0f172a] overflow-hidden animate-page-enter">
+            
+            {/* --- Animation Styles --- */}
+            <style>{`
+                @keyframes blob {
+                    0% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
+                    100% { transform: translate(0px, 0px) scale(1); }
+                }
+                .animate-blob { animation: blob 10s infinite; }
+                .animation-delay-2000 { animation-delay: 2s; }
+                .animation-delay-4000 { animation-delay: 4s; }
+                @keyframes twinkle {
+                    0%, 100% { opacity: 0.8; transform: scale(1); }
+                    50% { opacity: 0.3; transform: scale(0.8); }
+                }
+                .star {
+                    position: absolute; background: white; border-radius: 50%;
+                    animation: twinkle 3s infinite ease-in-out;
+                }
+                @keyframes moveRoad {
+                    0% { background-position: 0px 0; }
+                    100% { background-position: -100px 0; }
+                }
+                 .road-stripe {
+                    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%);
+                    background-size: 100px 20px;
+                    animation: moveRoad 0.5s linear infinite;
+                }
+                 /* Cloud Animation */
+                @keyframes floatingCloud {
+                    0% { transform: translateX(100vw); opacity: 0; }
+                    10% { opacity: var(--cloud-opacity); }
+                    90% { opacity: var(--cloud-opacity); }
+                    100% { transform: translateX(-200px); opacity: 0; }
+                }
+                .cloud-space {
+                    position: absolute; fill: rgba(200, 220, 255, 0.15); filter: blur(8px);
+                }
+                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 45s linear infinite; top: 15%; }
+                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 60s linear infinite; top: 30%; animation-delay: -20s; scale: 1.5; }
+                .cloud-3 { --cloud-opacity: 0.3; animation: floatingCloud 50s linear infinite; top: 5%; animation-delay: -5s; scale: 0.8; }
+
+            `}</style>
+
+            {/* --- Background Layers --- */}
+            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
+                 {/* Blobs */}
+                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
+                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
+                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
+                
+                 {/* Stars */}
+                <div className="absolute inset-0">
+                    <div className="star w-1 h-1 top-10 left-10" style={{animationDelay: '0s'}}></div>
+                    <div className="star w-0.5 h-0.5 top-20 right-20" style={{animationDelay: '1s'}}></div>
+                    <div className="star w-1 h-1 top-1/2 left-1/3" style={{animationDelay: '2s'}}></div>
+                    <div className="star w-0.5 h-0.5 bottom-1/3 right-1/4" style={{animationDelay: '0.5s'}}></div>
+                     <div className="star w-0.5 h-0.5 top-5 left-1/2 opacity-40"></div>
+                </div>
+
+                 {/* Clouds */}
+                <div className="absolute inset-0 overflow-hidden">
+                    <svg className="cloud-space cloud-1" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                    <svg className="cloud-space cloud-2" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                    <svg className="cloud-space cloud-3" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                </div>
+
+                 {/* Moving Road */}
+                <div className="absolute bottom-0 w-full z-0">
+                     <div className="w-full h-40 bg-gradient-to-t from-slate-900 to-transparent"></div>
+                     <div className="w-full h-32 bg-slate-800 relative overflow-hidden border-t border-blue-500/30 shadow-[0_-10px_50px_rgba(59,130,246,0.2)]">
+                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
+                        <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%]"></div>
+                    </div>
+                </div>
+            </div>
+
+            {/* --- Glass Card --- */}
+            <div className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10">
+                
+                {/* ⭐ Back Button (Inside the Card, Top Left) ⭐ */}
+                <button 
+                    onClick={() => setView('welcome')} 
+                    className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all z-20"
+                >
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                    </svg>
+                </button>
+
+                <div className="text-center mb-8 pt-2">
+                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2 tracking-tight pb-2 pr-2 inline-block">
+                        EasyWay
+                    </h1>
+                    <p className="text-slate-300 font-medium">Welcome Back!</p>
+                </div>
+
+                {error && (
+                    <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">
+                       ⚠️ {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleLogin} className="space-y-5">
+                    {/* Email Input */}
+                    <div className={inputContainerStyle}>
+                        <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Email</label>
+                        <div className="relative">
+                            <div className={iconStyle}><EnvelopeIcon /></div>
+                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputStyle} placeholder="name@example.com" required />
+                        </div>
+                    </div>
+                    {/* Password Input */}
+                    <div className={inputContainerStyle}>
+                        <div className="flex justify-between ml-1 mb-1.5">
+                             <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Password</label>
+                             <button type="button" onClick={() => setIsPasswordResetOpen(true)} className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">Forgot?</button>
+                        </div>
+                        <div className="relative">
+                            <div className={iconStyle}><LockIcon /></div>
+                            <input type={passwordVisible ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className={`${inputStyle} pr-12`} placeholder="••••••••" required />
+                            <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
+                                <EyeIcon closed={passwordVisible} />
                             </button>
                         </div>
                     </div>
+                    <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-1 active:scale-[0.98]">
+                        Sign In
+                    </button>
+                </form>
+
+                 {/* Google Button */}
+                 <div className="mt-6">
+                    <button
+                        onClick={handleGoogleSignIn}
+                        className="w-full py-3.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold flex items-center justify-center transition-all duration-300 hover:shadow-md group active:scale-[0.98]"
+                    >
+                        <GoogleIcon /> 
+                        <span className="ml-3">Sign in with Google</span>
+                    </button>
                 </div>
-                <div className="hidden lg:flex w-1/2 relative items-center justify-center"><img src="https://upload.wikimedia.org/wikipedia/commons/b/bf/Songthaew_in_Bangkok_%283%29.jpg" alt="Driving with map" className="w-full h-full object-cover rounded-[100px] rounded-tr-[350px] pt-[25px] pb-[15px] pr-[15px]"/>
-                <CloseButton onClick={() => setView('welcome')} />
-                </div>
+
+                <p className="mt-8 text-center text-slate-400 text-sm">
+                    Don't have an account?{' '}
+                    <button onClick={() => setView('signup')} className="text-blue-400 font-bold hover:underline transition-colors">
+                        Sign Up
+                    </button>
+                </p>
             </div>
             {isPasswordResetOpen && <PasswordResetModal onClose={() => setIsPasswordResetOpen(false)} />}
-        </>
+        </div>
     );
 }
 
