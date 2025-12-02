@@ -1098,6 +1098,186 @@ const ManageLocations = ({ onViewLocation }) => {
     );
 };
 
+// --- Component: ManageReviews (สำหรับจัดการรีวิว) ---
+// --- Component: ManageReviews (Updated: Show Location Name + Search) ---
+const ManageReviews = () => {
+    const [reviews, setReviews] = useState([]);
+    const [locationsMap, setLocationsMap] = useState({}); // เก็บจับคู่ ID -> Name
+    const [searchTerm, setSearchTerm] = useState('');
+
+    useEffect(() => {
+        // 1. ดึงข้อมูล Reviews
+        const qReviews = query(collection(db, "reviews"));
+        const unsubscribeReviews = onSnapshot(qReviews, (snapshot) => {
+            setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        });
+
+        // 2. ดึงข้อมูล Locations (เพื่อเอาชื่อหมุดมาแสดง)
+        const qLocations = query(collection(db, "locations"));
+        const unsubscribeLocations = onSnapshot(qLocations, (snapshot) => {
+            const locMap = {};
+            snapshot.forEach(doc => {
+                locMap[doc.id] = doc.data().name; // จับคู่ ID กับชื่อ
+            });
+            setLocationsMap(locMap);
+        });
+
+        return () => {
+            unsubscribeReviews();
+            unsubscribeLocations();
+        };
+    }, []);
+
+    // รับ locationId มาด้วย เพื่อจะไปดึงข้อมูลมานับใหม่
+    const handleDeleteReview = async (reviewId, locationId) => {
+        if (!window.confirm("Are you sure you want to delete this review? This will recalculate the location's rating.")) {
+            return;
+        }
+
+        try {
+            // 1. ลบรีวิวออกจาก Collection reviews
+            await deleteDoc(doc(db, "reviews", reviewId));
+            
+            // 2. --- เริ่มกระบวนการคำนวณใหม่ (Recalculate) ---
+            
+            // ดึงรีวิว "ที่เหลืออยู่" ทั้งหมดของ Location นี้
+            const q = query(collection(db, "reviews"), where("locationId", "==", locationId));
+            const querySnapshot = await getDocs(q);
+
+            // คำนวณค่าใหม่
+            const newCount = querySnapshot.size; // จำนวนรีวิวที่เหลือ
+            let totalRating = 0;
+            querySnapshot.forEach((doc) => {
+                totalRating += doc.data().rating || 0;
+            });
+            
+            // หาค่าเฉลี่ย (ถ้าไม่มีรีวิวเหลือเลย ให้เป็น 0)
+            const newAvg = newCount > 0 ? totalRating / newCount : 0;
+
+            // 3. บันทึกค่าสถิติใหม่ลงไปที่ Location
+            const locationRef = doc(db, "locations", locationId);
+            await updateDoc(locationRef, {
+                reviewCount: newCount,
+                avgRating: newAvg
+            });
+
+            toast.success("Review deleted and stats updated!");
+
+        } catch (error) {
+            console.error("Error deleting review:", error);
+            toast.error("Failed to delete review or update stats.");
+        }
+    };
+
+    // --- Logic การกรองข้อมูล (Search) ---
+    const filteredReviews = reviews.filter(review => {
+        // หาชื่อหมุดจาก ID
+        const locationName = locationsMap[review.locationId] || ''; 
+        // เช็กว่าชื่อหมุด ตรงกับคำค้นหาหรือไม่ (ค้นหาจากชื่อ User ได้ด้วยถ้าต้องการ)
+        return locationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+               (review.userName && review.userName.toLowerCase().includes(searchTerm.toLowerCase()));
+    });
+
+    return (
+        <div className="dark:text-gray-200">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
+                <h2 className="text-3xl font-bold">Manage Reviews</h2>
+                
+                {/* --- ⭐ ช่องค้นหา (Search Bar) ⭐ --- */}
+                <div className="relative w-full md:w-72">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <SearchIcon />
+                    </div>
+                    <input
+                        type="text"
+                        placeholder="Search by Location Name..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                    />
+                </div>
+            </div>
+            
+            {/* 📱 Mobile View (Cards) */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredReviews.map((review) => (
+                    <div key={review.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
+                        
+                        {/* แสดงชื่อหมุด (Location Name) */}
+                        <div className="mb-2 pb-2 border-b border-gray-100 dark:border-gray-700">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Review for:</p>
+                            <p className="font-bold text-blue-600 dark:text-blue-400 truncate">
+                                📍 {locationsMap[review.locationId] || 'Unknown Location'}
+                            </p>
+                        </div>
+
+                        <div className="flex justify-between items-start mb-2">
+                            <div>
+                                <p className="font-bold text-gray-800 dark:text-white">{review.userName || 'Anonymous'}</p>
+                                <p className="text-xs text-gray-500">{review.userEmail}</p>
+                            </div>
+                            <div className="flex">
+                                {[...Array(5)].map((_, i) => (
+                                    <StarIcon key={i} className={`h-4 w-4 ${i + 1 <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`} filled />
+                                ))}
+                            </div>
+                        </div>
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 italic">"{review.text}"</p>
+                        <button onClick={() => handleDeleteReview(review.id, review.locationId)} className="w-full py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold border border-red-100 hover:bg-red-100 transition">
+                            Delete Review
+                        </button>
+                    </div>
+                ))}
+            </div>
+
+            {/* 💻 Desktop View (Table) */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+                <table className="min-w-full leading-normal">
+                    <thead>
+                        <tr>
+                            {/* เพิ่มคอลัมน์ Location Name */}
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Location</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">User</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Review</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Rating</th>
+                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {filteredReviews.map((review) => (
+                            <tr key={review.id}>
+                                {/* แสดงชื่อหมุด */}
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                                    <p className="text-blue-600 dark:text-blue-400 font-semibold">
+                                        {locationsMap[review.locationId] || 'Unknown'}
+                                    </p>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                                    <p className="text-gray-900 dark:text-white font-bold">{review.userName}</p>
+                                    <p className="text-gray-500 text-xs">{review.userEmail}</p>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
+                                    <p className="text-gray-700 dark:text-gray-300">{review.text}</p>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                    <div className="flex justify-center">
+                                         {[...Array(5)].map((_, i) => (
+                                            <StarIcon key={i} className={`h-4 w-4 ${i + 1 <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`} filled />
+                                        ))}
+                                    </div>
+                                </td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                    <button onClick={() => handleDeleteReview(review.id, review.locationId)} className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg hover:bg-red-100 transition">Delete</button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+};
+
 const ManageReports = () => {
     const [reports, setReports] = useState([]);
 
@@ -1260,7 +1440,8 @@ function AdminDashboard() {
             case 'users': return <ManageUsers />;
             case 'locations': return <ManageLocations onViewLocation={setViewingLocation} />;
             case 'reports': return <ManageReports />;
-            default: return <ManageUsers />; // Fallback
+            case 'reviews': return <ManageReviews />; // <-- ⭐ เพิ่มบรรทัดนี้ ⭐
+            default: return <ManageUsers />;
         }
     };
 
@@ -1282,6 +1463,7 @@ function AdminDashboard() {
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'users' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Users</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'locations' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Locations</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reports' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Reports</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reviews'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reviews' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Reviews</a>
                 </nav>
 
                 <button onClick={handleSignOut} className="mt-auto w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hidden md:block">
