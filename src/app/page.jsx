@@ -237,10 +237,7 @@ function WelcomeScreen({ setView }) {
             </div>
 
             <div className="relative z-10 w-full flex flex-col items-center pb-0">
-                <div className="bike-bounce text-9xl mb-2 relative z-20">
-                    🛵
-                    <div className="absolute top-2/3 -right-2 w-16 h-6 bg-gradient-to-r from-cyan-400 to-transparent blur-md rounded-full opacity-80"></div>
-                </div>
+
 
                 <div className="w-full max-w-md px-6 pb-10 z-30">
                     <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl space-y-3">
@@ -424,7 +421,7 @@ function SignUpScreen({ setView }) {
                             
                             {/* ปุ่มดูรหัสผ่าน (ใช้ EyeSlashIcon / EyeIcon) */}
                             <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
-                                {passwordVisible ? <EyeSlashIcon className="h-5 w-5" /> : <EyeIcon closed={true} />}
+                                <EyeIcon closed={passwordVisible} />
                             </button>
                         </div>
                     </div>
