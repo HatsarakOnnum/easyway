@@ -924,92 +924,94 @@ const ManageLocations = ({ onViewLocation }) => {
 
     // --- ⭐ Updated handleDelete for Storage and Reports ⭐ ---
     const handleDelete = async (locationToDelete) => {
-            if (!locationToDelete || !locationToDelete.id) return;
-            const locationId = locationToDelete.id;
-            const locationName = locationToDelete.name;
-            const isPending = locationToDelete.status === 'pending';
+        if (!locationToDelete || !locationToDelete.id) return;
+        const locationId = locationToDelete.id;
+        const locationName = locationToDelete.name;
+        const isPending = locationToDelete.status === 'pending';
 
-            // ปรับข้อความยืนยัน
-            const confirmMessage = isPending 
-                ? `Are you sure you want to REJECT "${locationName}"? This will notify the user and remove the pin.` 
-                : `Are you sure you want to DELETE "${locationName}"? This cannot be undone.`;
+        const confirmMessage = isPending 
+            ? `Are you sure you want to REJECT "${locationName}"? This will notify the user and remove the pin.` 
+            : `Are you sure you want to DELETE "${locationName}"? This cannot be undone.`;
 
-            if (window.confirm(confirmMessage)) {
-                try {
-                    const locationRef = doc(db, "locations", locationId);
+        if (window.confirm(confirmMessage)) {
+            try {
+                const locationRef = doc(db, "locations", locationId);
+
+                // --- ⭐ ส่งแจ้งเตือน (ทำแค่ครั้งเดียวที่นี่) ⭐ ---
+                // เช็กว่ามีคนส่ง และ คนส่ง "ไม่ใช่" Admin คนปัจจุบัน
+                if (locationToDelete.submittedBy && locationToDelete.submittedBy !== auth.currentUser.uid) {
+                    const message = isPending 
+                        ? `Your location submission "${locationName}" was rejected by admin.`
+                        : `Your location "${locationName}" has been removed by the administrator.`;
                     
-
-                    // 1. ส่งแจ้งเตือนหาเจ้าของหมุด (ทำทั้งกรณี Reject และ Delete)
-                    if (locationToDelete.submittedBy) {
-                        const message = isPending 
-                            ? `Your location submission "${locationName}" was rejected by admin.`
-                            : `Your location "${locationName}" has been removed by the administrator.`;
-                            
-                        
-                        // ใช้ type 'rejected' ทั้งคู่เพื่อให้ขึ้นสีแดง
-                        await addDoc(collection(db, "users", locationToDelete.submittedBy, "notifications"), {
-                            type: 'rejected', 
-                            locationName: locationName,
-                            message: message,
-                            createdAt: serverTimestamp(),
-                            read: false
-                        });
-                    }
-                    // 2. ลบรูปภาพ (ถ้ามี)
-                    if (locationToDelete.imageUrl) {
-                        try {
-                            const imageRef = storageRef(storage, locationToDelete.imageUrl);
-                            await deleteObject(imageRef);
-                        } catch (err) { 
-                            if (err.code !== 'storage/object-not-found') console.error("Image delete error:", err); 
-                        }
-                    }
-
-                    // 3. ลบ Sub-collections (Reports & Reviews)
-                    const deleteSubCollection = async (collName) => {
-                        const q = query(collection(db, collName), where("locationId", "==", locationId));
-                        const snapshot = await getDocs(q);
-                        const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-                        await Promise.all(promises);
-                    };
-                    await deleteSubCollection("reports");
-                    await deleteSubCollection("reviews");
-
-                    // 4. ลบเอกสาร Location ถาวร (ทำเป็นขั้นตอนสุดท้าย)
-                    await deleteDoc(locationRef);
-
-                    console.log(`Location deleted: ${locationName}`);
-                    // alert("Deleted successfully."); // (เลือกได้ว่าจะใส่หรือไม่)
-
-                } catch (error) {
-                    console.error(`Error processing ${locationName}:`, error);
-                    alert(`Failed to delete. Check console.`);
+                    await addDoc(collection(db, "users", locationToDelete.submittedBy, "notifications"), {
+                        type: 'rejected', 
+                        locationName: locationName,
+                        message: message,
+                        createdAt: serverTimestamp(),
+                        read: false
+                    });
                 }
+                // ------------------------------------------------
+
+                // 2. ลบรูปภาพ
+                if (locationToDelete.imageUrl) {
+                    try {
+                        const imageRef = storageRef(storage, locationToDelete.imageUrl);
+                        await deleteObject(imageRef);
+                    } catch (err) { 
+                        if (err.code !== 'storage/object-not-found') console.error("Image delete error:", err); 
+                    }
+                }
+
+                // 3. ลบ Reports & Reviews
+                const deleteSubCollection = async (collName) => {
+                    const q = query(collection(db, collName), where("locationId", "==", locationId));
+                    const snapshot = await getDocs(q);
+                    const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
+                    await Promise.all(promises);
+                };
+                await deleteSubCollection("reports");
+                await deleteSubCollection("reviews");
+
+                // 4. ลบเอกสาร Location (สุดท้าย)
+                await deleteDoc(locationRef);
+
+                console.log(`Location deleted: ${locationName}`);
+                toast.success(`ลบ "${locationName}" เรียบร้อยแล้ว`); // ใช้ Toast แจ้ง Admin
+
+            } catch (error) {
+                console.error(`Error processing ${locationName}:`, error);
+                toast.error(`เกิดข้อผิดพลาดในการลบ "${locationName}"`);
             }
-        };
+        }
+    };
+
     const handleApprove = async (location) => { 
         try {
             const locRef = doc(db, "locations", location.id);
             await updateDoc(locRef, { status: 'approved' });
 
-            // --- ⭐ ส่งแจ้งเตือนเมื่ออนุมัติ ---
-            if (location.submittedBy) {
-                await addDoc(collection(db, "users", location.submittedBy, "notifications"), {
-                    type: 'approved',
-                    locationName: location.name,
-                    message: `Your location "${location.name}" has been approved and is now visible!`,
-                    createdAt: serverTimestamp(),
-                    read: false
-                });
-            }
-            // ----------------------------------------
+            // --- ⭐ ส่งแจ้งเตือน (ทำแค่ครั้งเดียวที่นี่) ⭐ ---
+            // เช็กว่ามีคนส่ง และ คนส่ง "ไม่ใช่" Admin คนปัจจุบัน
+            if (location.submittedBy && location.submittedBy !== auth.currentUser.uid) {
+                await addDoc(collection(db, "users", location.submittedBy, "notifications"), {
+                    type: 'approved',
+                    locationName: location.name,
+                    message: "Your location has been approved and is now visible!",
+                    createdAt: serverTimestamp(),
+                    read: false
+                });
+            }
+            // ------------------------------------------------
+
             toast.success(`อนุมัติ "${location.name}" เรียบร้อย!`);
-        // -------------------------------
+
         } catch (error) {
             console.error("Error approving:", error);
-            alert("Failed to approve.");
+            toast.error("ไม่สามารถอนุมัติได้");
         }
-  };
+    };
 
     const filteredLocations = locations.filter(loc =>
         loc.name.toLowerCase().includes(searchTerm.toLowerCase())
