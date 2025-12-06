@@ -2867,6 +2867,20 @@ export default function App() {
                 setIsAdmin(false);
                 setLoading(false);
                 setView('welcome');
+
+                // --- ⭐⭐ แก้ไขตรงนี้ครับ (เช็ก Deep Link) ⭐⭐ ---
+                const searchParams = new URLSearchParams(window.location.search);
+                const hasSharedPin = searchParams.has('pin'); // ดูว่ามี ?pin=... ไหม
+
+                if (hasSharedPin) {
+                    // ถ้ามีลิงก์แชร์มา ให้ข้ามไปหน้า Map เลย (เป็น Guest)
+                    setView('map'); 
+                } else {
+                    // ถ้าไม่มีลิงก์ และไม่ได้อยู่หน้า Login/SignUp/Loading ให้กลับไป Welcome
+                    if (!isLoadingMap && view !== 'login' && view !== 'signup') {
+                        setView('welcome');
+                    }
+                }
             }
         });
 
