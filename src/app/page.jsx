@@ -2,6 +2,8 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from 'react-hot-toast';
+import Tilt from 'react-parallax-tilt';
+import confetti from 'canvas-confetti';
 // --- Firebase Initialization ---
 // --- Firebase Initialization ---
 import { initializeApp } from "firebase/app";
@@ -33,6 +35,25 @@ const firebaseConfig = {
     // measurementId is optional
 };
 // ***** ⬆️⬆️⬆️ สำคัญมาก! คัดลอก Config ที่ถูกต้องจาก Firebase Console มาวางทับตรงนี้ทั้งหมด ⬆️⬆️⬆️ *****
+// --- ⭐ Glowing Border Button Component ⭐ ---
+const GlowingButton = ({ children, onClick, type = "button", className }) => {
+  return (
+    <button
+      type={type}
+      onClick={onClick}
+      // เพิ่ม shadow-blue-500/50 ให้เงาฟุ้งขึ้น
+      className={`relative inline-flex h-14 w-full overflow-hidden rounded-xl p-[2px] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 shadow-2xl shadow-blue-600/40 transition-transform active:scale-95 group ${className}`}
+    >
+      {/* 1. แสงวิ่งวน (เปลี่ยนสีแสงให้สว่างขึ้น เป็น ขาว-ฟ้า) */}
+      <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#FFFFFF_0%,#3B82F6_50%,#FFFFFF_100%)]" />
+      
+      {/* 2. เนื้อปุ่มตรงกลาง (เปลี่ยนจากสีดำ เป็นไล่สี ฟ้า->ม่วง) */}
+      <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-1 text-lg font-bold text-white backdrop-blur-3xl group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-200">
+        {children}
+      </span>
+    </button>
+  );
+};
 
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
@@ -40,7 +61,18 @@ const db = getFirestore(app);
 const auth = getAuth(app);
 const storage = getStorage(app);
 // const functions = getFunctions(app, 'us-central1'); // Assuming you revert/remove Cloud Functions for now
-
+// --- ⭐ เพิ่มไอคอนธง (สำหรับปุ่ม Report) ⭐ ---
+const FlagIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    {/* 👇👇 เปลี่ยน path ใหม่ตรงนี้ครับ 👇👇 */}
+    <path strokeLinecap="round" strokeLinejoin="round" d="M3 21V4m0 0h14l-3 5 3 5H3" />
+  </svg>
+);
+const ShareIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
+  </svg>
+);
 
 // --- SVG Icons ---
 // ... (Previous Icons: GoogleIcon, EyeIcon, MenuIcon, SearchIcon, PlusIcon, MinusIcon, MotorcycleIcon, BusIcon, AddPinIcon, LikeIcon, SaveIcon, PriceIcon, ReviewIcon, StarIcon, ReportIcon, ImageIcon)
@@ -240,7 +272,15 @@ function WelcomeScreen({ setView }) {
 
 
                 <div className="w-full max-w-md px-6 pb-10 z-30">
-                    <div className="bg-slate-900/60 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl space-y-3">
+                    {/* 👇👇 ใช้ Tilt ครอบ div เดิม แล้วใส่ options เพิ่ม 👇👇 */}
+                    <Tilt 
+                        tiltMaxAngleX={5}    // เอียงซ้ายขวาสูงสุด 5 องศา
+                        tiltMaxAngleY={5}    // เอียงบนล่างสูงสุด 5 องศา
+                        perspective={1000}   // ความลึก (ค่ายิ่งเยอะยิ่งดูแบน)
+                        scale={1.02}         // ขยายขึ้นนิดหน่อยตอนเอาเมาส์ชี้
+                        transitionSpeed={1500} // ความสมูทในการเอียง
+                        className="bg-slate-900/60 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl space-y-3"
+                    >
                         <button onClick={() => handleSetView('login')} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform active:scale-95">
                             Login
                         </button>
@@ -248,9 +288,10 @@ function WelcomeScreen({ setView }) {
                             Create Account
                         </button>
                         <button onClick={() => handleSetView('map')} className="w-full py-2 text-sm text-slate-400 hover:text-white transition-colors">
-                            Continue as Guest &rarr;
+                            Continue as Guest →
                         </button>
-                    </div>
+                    </Tilt>
+                    {/* 👆👆 ปิด Tag Tilt 👆👆 */}
                 </div>
 
                 <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-slate-900 to-transparent z-0"></div>
@@ -368,7 +409,14 @@ function SignUpScreen({ setView }) {
             </div>
 
             {/* --- Glass Card Form --- */}
-            <div className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10">
+            <Tilt 
+                tiltMaxAngleX={3} 
+                tiltMaxAngleY={3} 
+                perspective={1000} 
+                scale={1.01}
+                transitionSpeed={2000}
+                className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10"
+            >
                 
                 {/* Back Button */}
                 <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all">
@@ -427,9 +475,9 @@ function SignUpScreen({ setView }) {
                     </div>
 
                     {/* Submit Button */}
-                    <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-1 active:scale-[0.98]">
-                        Sign Up
-                    </button>
+                    <GlowingButton type="submit">
+                        Create Account
+                    </GlowingButton>
                 </form>
 
                 <p className="mt-8 text-center text-slate-400 text-sm">
@@ -438,7 +486,7 @@ function SignUpScreen({ setView }) {
                         Login
                     </button>
                 </p>
-            </div>
+            </Tilt>
         </div>
     );
 }
@@ -576,7 +624,14 @@ function LoginScreen({ setView }) {
             </div>
 
             {/* --- Glass Card --- */}
-            <div className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10">
+            <Tilt 
+                tiltMaxAngleX={3} 
+                tiltMaxAngleY={3} 
+                perspective={1000} 
+                scale={1.01}
+                transitionSpeed={2000}
+                className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10"
+            >
                 
                 {/* ⭐ Back Button (Inside the Card, Top Left) ⭐ */}
                 <button 
@@ -624,9 +679,9 @@ function LoginScreen({ setView }) {
                             </button>
                         </div>
                     </div>
-                    <button type="submit" className="w-full py-4 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform hover:-translate-y-1 active:scale-[0.98]">
+                    <GlowingButton type="submit">
                         Sign In
-                    </button>
+                    </GlowingButton>
                 </form>
 
                  {/* Google Button */}
@@ -646,7 +701,7 @@ function LoginScreen({ setView }) {
                         Sign Up
                     </button>
                 </p>
-            </div>
+            </Tilt>
             {isPasswordResetOpen && <PasswordResetModal onClose={() => setIsPasswordResetOpen(false)} />}
         </div>
     );
@@ -1006,6 +1061,12 @@ const ManageLocations = ({ onViewLocation }) => {
             // ------------------------------------------------
 
             toast.success(`อนุมัติ "${location.name}" เรียบร้อย!`);
+            // 🎉 จุดพลุให้ Admin ด้วย
+            confetti({
+                particleCount: 100,
+                spread: 60,
+                origin: { y: 0.6 }
+            });
 
         } catch (error) {
             console.error("Error approving:", error);
@@ -1449,7 +1510,7 @@ function AdminDashboard() {
     return (
         // เปลี่ยน layout: มือถือเป็นแนวตั้ง (col), จอคอมเป็นแนวนอน (row)
         <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
-            <Toaster position="bottom-right" reverseOrder={false} />
+            <Toaster position="top-right" reverseOrder={false} />
             
             {/* Sidebar / Topbar */}
             <div className="w-full md:w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col flex-shrink-0">
@@ -1488,7 +1549,8 @@ function AdminDashboard() {
 // ... (วางทับ LocationFormModal ตัวเดิมทั้งหมด) ...
 
 // --- Location Form Modal (Updated with Skeleton on Upload) ---
-const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess }) => {
+// --- Location Form Modal (Updated: Use Toast for Alerts) ---
+const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess, setView }) => {
     const [name, setName] = useState(currentLocation?.name || '');
     const [lat, setLat] = useState(currentLocation?.lat || initialCoords?.lat || '');
     const [lng, setLng] = useState(currentLocation?.lng || initialCoords?.lng || '');
@@ -1499,7 +1561,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
     const [imagePreview, setImagePreview] = useState(currentLocation?.imageUrl || null);
 
     const [uploading, setUploading] = useState(false);
-    const [error, setError] = useState('');
+    // const [error, setError] = useState(''); // ❌ ไม่ใช้ State error แล้ว ใช้ toast แทน
 
     const handleRouteChange = (index, field, value) => {
         const newRoutes = [...routes];
@@ -1520,23 +1582,28 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        setError('');
+        // setError(''); // ไม่ต้องใช้แล้ว
 
+        // --- ⭐ ใช้ toast.error แจ้งเตือนแบบน่ารักๆ ⭐ ---
         if (!name || name.trim() === '') {
-            setError("Please enter a Pin Name.");
+            toast.error("กรุณาใส่ชื่อสถานที่ (Pin Name) ด้วยนะครับ 🥺");
             return;
         }
         if (!imageFile && !currentLocation?.imageUrl) {
-            setError("Please upload an image for the location."); return;
+            toast.error("อย่าลืมอัปโหลดรูปภาพสถานที่นะ 📸"); 
+            return;
         }
         if (!auth.currentUser) {
-            setError("You must be logged in to submit a location."); return;
+            toast.error("ต้องเข้าสู่ระบบก่อนนะ ถึงจะปักหมุดได้ 🔒"); 
+            return;
         }
+        // ------------------------------------------------
 
         setUploading(true);
         let imageUrl = currentLocation?.imageUrl || '';
 
         try {
+            // Upload Image
             if (imageFile) {
                 if (currentLocation?.imageUrl) { 
                     try {
@@ -1549,23 +1616,43 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                 imageUrl = await getDownloadURL(snapshot.ref);
             }
 
+            // Prepare Data
             const locationData = {
                 name, lat: Number(lat), lng: Number(lng), type, routes, imageUrl,
                 status: currentLocation?.status || 'pending',
-                submittedBy: auth.currentUser.uid,
+                submittedBy: currentLocation?.submittedBy || auth.currentUser.uid,
                 createdAt: currentLocation?.createdAt || serverTimestamp(),
                 updatedAt: serverTimestamp()
             };
 
+            // Save to Firestore
             if (currentLocation) {
                 await setDoc(doc(db, "locations", currentLocation.id), locationData, { merge: true });
+                toast.success("แก้ไขข้อมูลเรียบร้อย! 🎉"); // แจ้งเตือนสำเร็จ
             } else {
                 await addDoc(collection(db, "locations"), locationData);
+                toast.success("ส่งข้อมูลเรียบร้อย! รอแอดมินอนุมัตินะ 🚀"); // แจ้งเตือนสำเร็จ
             }
-            onSuccess(); 
+
+            // --- 🎉🎉 จุดพลุฉลองตรงนี้เลยครับ 🎉🎉 ---
+            confetti({
+                particleCount: 150,   // จำนวนชิ้นพลุ
+                spread: 70,           // การกระจายตัว
+                origin: { y: 0.6 },   // จุดที่พุ่งออกมา (0.6 คือค่อนไปทางล่างหน่อย)
+                colors: ['#2563eb', '#9333ea', '#ffffff'], // สีฟ้า, ม่วง, ขาว (ธีมอวกาศของเรา)
+                zIndex: 9999          // ให้ลอยทับ Modal
+            });
+            // ---------------------------------------
+            
+            onSuccess(); // ปิด Modal
+
+            // Logic เปลี่ยนหน้า
+            if (!currentLocation && setView) {
+                setView('waiting');
+            }
         } catch (err) {
             console.error("Error submitting location:", err); 
-            setError("Failed to submit. Please try again.");
+            toast.error("เกิดข้อผิดพลาด: " + err.message); // แจ้งเตือน Error
         } finally { 
             setUploading(false); 
         }
@@ -1579,24 +1666,19 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                     <h3 className="text-2xl font-bold text-gray-800 dark:text-white">
                         {currentLocation ? '✏️ Edit Location' : '📍 Add New Location'}
                     </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Fill in the details to share this spot.</p>
                 </div>
 
                 <div className="p-8 overflow-y-auto custom-scrollbar space-y-6">
-                    {error && (
-                        <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-4 rounded-xl text-sm font-medium border border-red-100 dark:border-red-800 flex items-center">
-                            {error}
-                        </div>
-                    )}
+                    
+                    {/* ❌ ลบกล่อง Error สีแดงเดิมออก เพราะเราใช้ Toast แล้ว */}
+                    {/* {error && (...)} */}
 
                     {/* Image Upload with Skeleton Overlay */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location Image</label>
                         <div className="relative group h-48 w-full">
-                            
-                            {/* Input File (ซ่อนไว้) */}
                             <input type="file" accept="image/*" onChange={handleImageChange} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" disabled={uploading}/>
-                            
-                            {/* ส่วนแสดงผล (Preview หรือ Placeholder) */}
                             <div className={`absolute inset-0 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center transition-all duration-300 ${imagePreview ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/10' : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 hover:bg-gray-50 dark:hover:bg-gray-700/50'}`}>
                                 {imagePreview ? (
                                     <img src={imagePreview} alt="Preview" className="h-full w-full object-cover rounded-2xl" />
@@ -1607,15 +1689,11 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                                     </>
                                 )}
                             </div>
-
-                            {/* --- ☠️ Skeleton Overlay (แสดงตอนกำลังอัปโหลด) --- */}
                             {uploading && (
                                 <div className="absolute inset-0 z-30 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm flex items-center justify-center rounded-2xl">
                                     <div className="w-full h-full p-4">
                                         <Skeleton className="w-full h-full rounded-xl" />
-                                        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-300 font-bold animate-pulse">
-                                            Uploading...
-                                        </p>
+                                        <p className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-gray-600 dark:text-gray-300 font-bold animate-pulse">Uploading...</p>
                                     </div>
                                 </div>
                             )}
@@ -1647,47 +1725,21 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                             <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Destinations & Prices</h4>
                             <button type="button" onClick={addRoute} className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg flex items-center"><span className="mr-1"><PlusIcon /></span> Add Route</button>
                         </div>
-                        <div className="space-y-4"> {/* เพิ่มระยะห่างระหว่างการ์ด */}
+                        <div className="space-y-4">
                             {routes.map((route, index) => (
                                 <div key={index} className="flex flex-col sm:flex-row gap-3 sm:items-end animate-fadeIn bg-white dark:bg-gray-800 p-3 rounded-xl border border-gray-200 dark:border-gray-600 shadow-sm">
-                                    
-                                    {/* 1. ช่อง Destination (บนมือถือเต็มความกว้าง / บนคอมยืดหยุ่น) */}
                                     <div className="flex-1 w-full">
-                                        {/* Label โชว์เฉพาะมือถือ เพื่อให้อ่านง่าย */}
                                         <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block sm:hidden ml-1">Destination</label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Destination (e.g. BTS Station)" 
-                                            value={route.destination} 
-                                            onChange={e => handleRouteChange(index, 'destination', e.target.value)} 
-                                            className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-500 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white transition" 
-                                        />
+                                        <input type="text" placeholder="Destination (e.g. BTS Station)" value={route.destination} onChange={e => handleRouteChange(index, 'destination', e.target.value)} className="w-full px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-500 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white transition" />
                                     </div>
-
-                                    {/* 2. ช่อง Price & ปุ่ม Delete (บนมือถืออยู่บรรทัดล่างคู่กัน) */}
                                     <div className="flex items-end gap-3 w-full sm:w-auto">
-                                        <div className="relative flex-1 sm:w-40"> {/* ยืดเต็มในมือถือ, กว้าง 40 ในคอม */}
+                                        <div className="relative flex-1 sm:w-40">
                                             <label className="text-xs text-gray-500 dark:text-gray-400 mb-1 block sm:hidden ml-1">Price</label>
-                                            <input 
-                                                type="number" 
-                                                placeholder="Price" 
-                                                value={route.price} 
-                                                onChange={e => handleRouteChange(index, 'price', e.target.value)} 
-                                                className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-500 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white transition" 
-                                            />
+                                            <input type="number" placeholder="Price" value={route.price} onChange={e => handleRouteChange(index, 'price', e.target.value)} className="w-full pl-3 pr-8 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-500 focus:ring-2 focus:ring-blue-500 outline-none text-sm dark:text-white transition" />
                                             <span className="absolute right-3 bottom-2.5 text-gray-400 text-xs font-bold">฿</span>
                                         </div>
-                                        
-                                        {/* ปุ่มลบ */}
                                         {routes.length > 1 && (
-                                            <button 
-                                                type="button" 
-                                                onClick={() => removeRoute(index)} 
-                                                className="p-2.5 mb-[1px] text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition flex-shrink-0"
-                                                title="Remove route"
-                                            >
-                                                <TrashIcon />
-                                            </button>
+                                            <button type="button" onClick={() => removeRoute(index)} className="p-2.5 mb-[1px] text-red-500 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-xl transition flex-shrink-0" title="Remove route"><TrashIcon /></button>
                                         )}
                                     </div>
                                 </div>
@@ -1699,12 +1751,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                 {/* Footer */}
                 <div className="px-8 py-5 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end space-x-3">
                     <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
-                    <button 
-                        type="button"
-                        onClick={handleSubmit}
-                        disabled={uploading} 
-                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed transition transform active:scale-95 flex items-center"
-                    >
+                    <button type="button" onClick={handleSubmit} disabled={uploading} className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed transition transform active:scale-95 flex items-center">
                         {uploading ? 'Saving...' : 'Save Location'}
                     </button>
                 </div>
@@ -1919,10 +1966,82 @@ const ImageModal = ({ imageUrl, onClose }) => {
 };
 
 // --- ⭐ Profile Modal (New Component) ⭐ ---
+// --- ⭐ Profile Modal (Space ID Card Style) ⭐ ---
 const ProfileModal = ({ user, onClose }) => {
-    const [displayName, setDisplayName] = useState(user?.displayName || user?.email?.split('@')[0] || ''); const [loading, setLoading] = useState(false); const [message, setMessage] = useState(''); const [error, setError] = useState('');
-    const handleProfileUpdate = async (e) => { e.preventDefault(); setMessage(''); setError(''); if (!user) return; if (displayName.trim() === '') { setError('Display name cannot be empty.'); return; } setLoading(true); try { await updateProfile(auth.currentUser, { displayName: displayName.trim() }); const userRef = doc(db, "users", user.uid); await updateDoc(userRef, { displayName: displayName.trim() }); setMessage('Profile updated!'); setTimeout(onClose, 1500); } catch (err) { setError('Failed to update.'); console.error("Profile update error:", err); } finally { setLoading(false); } };
-    return ( <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}> <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-xl w-full max-w-md" onClick={(e) => e.stopPropagation()}> <h2 className="text-2xl font-bold mb-4 dark:text-white">Edit Profile</h2> <form onSubmit={handleProfileUpdate}>{message && <p className="mb-4 text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900 p-3 rounded">{message}</p>}{error && <p className="mb-4 text-red-500 bg-red-100 dark:bg-red-900 dark:text-red-300 p-3 rounded">{error}</p>}<div className="mb-4"><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Email</label><p className="mt-1 text-gray-500 dark:text-gray-400">{user?.email}</p></div><div className="mb-4"><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300">Display Name</label><input type="text" value={displayName} onChange={(e) => setDisplayName(e.target.value)} className="mt-1 w-full px-4 py-3 rounded-lg bg-white dark:bg-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring focus:ring-blue-200 dark:focus:ring-blue-700 focus:ring-opacity-50" required /></div><div className="flex justify-end space-x-2"><button type="button" onClick={onClose} className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-800 dark:text-gray-200 font-bold py-2 px-4 rounded transition duration-300">Cancel</button><button type="submit" disabled={loading} className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded disabled:bg-blue-400 transition duration-300">{loading ? 'Saving...' : 'Save Changes'}</button></div></form> </div> </div> );
+    const [displayName, setDisplayName] = useState(user?.displayName || '');
+    const [loading, setLoading] = useState(false);
+
+    const handleProfileUpdate = async (e) => {
+        e.preventDefault();
+        if (displayName.trim() === '') return toast.error("ชื่อห้ามว่างนะ!");
+        setLoading(true);
+        try {
+            await updateProfile(auth.currentUser, { displayName: displayName.trim() });
+            await updateDoc(doc(db, "users", user.uid), { displayName: displayName.trim() });
+            toast.success("อัปเดตโปรไฟล์เรียบร้อย! 🚀");
+            setTimeout(onClose, 1000);
+        } catch (err) { toast.error("เกิดข้อผิดพลาด"); } 
+        finally { setLoading(false); }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4" onClick={onClose}>
+            
+            {/* Card Container */}
+            <div className="relative w-full max-w-sm overflow-hidden rounded-3xl shadow-2xl transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+                
+                {/* 🌌 Space Background (ส่วนหัว) */}
+                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900">
+                    {/* Stars & Blobs (CSS เดิม) */}
+                    <div className="absolute inset-0 opacity-50">
+                        <div className="absolute top-[-50%] left-[-20%] w-60 h-60 bg-blue-500 rounded-full blur-[60px]"></div>
+                        <div className="absolute bottom-[-20%] right-[-20%] w-40 h-40 bg-pink-500 rounded-full blur-[50px]"></div>
+                    </div>
+                </div>
+
+                {/* Content (ส่วนเนื้อหา - สีขาว/ดำ) */}
+                <div className="relative bg-white dark:bg-gray-900 pt-16 pb-6 px-6 mt-20">
+                    
+                    {/* Avatar (รูปวงกลมลอยทับส่วนหัว) */}
+                    <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+                        <div className="w-28 h-28 rounded-full border-4 border-white dark:border-gray-900 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
+                            <span className="text-4xl font-bold text-white">
+                                {user?.displayName?.charAt(0).toUpperCase() || 'U'}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Form */}
+                    <div className="text-center mb-6">
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Profile</h2>
+                        <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
+                    </div>
+
+                    <form onSubmit={handleProfileUpdate} className="space-y-4">
+                        <div>
+                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Display Name</label>
+                            <input 
+                                type="text" 
+                                value={displayName} 
+                                onChange={(e) => setDisplayName(e.target.value)} 
+                                className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-2 border-transparent focus:border-blue-500 outline-none text-gray-800 dark:text-white font-medium transition-all"
+                                placeholder="Enter your name"
+                            />
+                        </div>
+
+                        <div className="flex gap-3 pt-2">
+                            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                                Cancel
+                            </button>
+                            <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50">
+                                {loading ? 'Saving...' : 'Save'}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    );
 };
 
 
@@ -1960,12 +2079,43 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const [notifications, setNotifications] = useState([]);
     const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
+    const [userPosition, setUserPosition] = useState(null); // เก็บพิกัดจริงของ User
+
     const [showTooCloseAlert, setShowTooCloseAlert] = useState(false);
 
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
     useEffect(() => { if (!user) { setUserLikes(new Set()); return; } const likesRef = collection(db, "users", user.uid, "likes"); const unsubscribe = onSnapshot(likesRef, (snapshot) => { setUserLikes(new Set(snapshot.docs.map(doc => doc.id))); }); return () => unsubscribe(); }, [user]);
     const handleLike = async (location) => { if (!user) { alert("Log in to like."); return; } if (!location || !location.id) return; const locationId = location.id; const locationRef = doc(db, "locations", locationId); const likeRef = doc(db, "users", user.uid, "likes", locationId); const isLiked = userLikes.has(locationId); const newLikes = new Set(userLikes); const currentCount = localSelectedLocation?.likeCount || locations.find(l => l.id === locationId)?.likeCount || 0; let updatedCount; if (isLiked) { newLikes.delete(locationId); updatedCount = currentCount - 1; } else { newLikes.add(locationId); updatedCount = currentCount + 1; } setLocalSelectedLocation(prev => prev ? { ...prev, likeCount: updatedCount < 0 ? 0 : updatedCount } : null); setUserLikes(newLikes); try { if (isLiked) { await deleteDoc(likeRef); await updateDoc(locationRef, { likeCount: increment(-1) }); } else { await setDoc(likeRef, { createdAt: serverTimestamp() }); await updateDoc(locationRef, { likeCount: increment(1) }); } } catch (error) { console.error("Like error:", error); setUserLikes(userLikes); setLocalSelectedLocation(location); alert("Failed to update like."); } };
+
+// --- ⭐ ฟังก์ชันแชร์สถานที่ ⭐ ---
+    // --- แก้ไข handleShare ---
+    const handleShare = async () => {
+        if (!localSelectedLocation) return;
+
+        // 1. สร้าง URL พร้อมแนบ ID หมุดไปด้วย (?pin=...)
+        const shareUrl = new URL(window.location.origin);
+        shareUrl.searchParams.set('pin', localSelectedLocation.id);
+        const finalUrl = shareUrl.toString();
+
+        const shareData = {
+            title: localSelectedLocation.name,
+            text: `มาดูจุดจอดรถ "${localSelectedLocation.name}" ในแอป EasyWay กันเถอะ!`,
+            url: finalUrl // ใช้ URL แบบมี ID
+        };
+
+        if (navigator.share) {
+            try {
+                await navigator.share(shareData);
+            } catch (error) {
+                console.log('Error sharing:', error);
+            }
+        } else {
+            navigator.clipboard.writeText(finalUrl);
+            toast.success("คัดลอกลิงก์เรียบร้อย! 📋");
+        }
+    };
+    // -----------------------------
 
     // ฟังก์ชันสร้างรูปหมุด SVG ตามสีที่กำหนด
     const getMarkerIcon = (color) => {
@@ -1975,6 +2125,20 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             <path d="M0 0h24v24H0z" fill="none"/>
         </svg>`;
         return 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(svg);
+    };
+
+    const getDistanceText = (targetLat, targetLng) => {
+        if (!userPosition || !window.google?.maps?.geometry) return null;
+
+        const userLatLng = new window.google.maps.LatLng(userPosition.lat, userPosition.lng);
+        const targetLatLng = new window.google.maps.LatLng(targetLat, targetLng);
+        const distanceMeters = window.google.maps.geometry.spherical.computeDistanceBetween(userLatLng, targetLatLng);
+
+        if (distanceMeters < 1000) {
+            return `${Math.round(distanceMeters)} ม.`; // แสดงเป็นเมตร
+        } else {
+            return `${(distanceMeters / 1000).toFixed(1)} กม.`; // แสดงเป็นกิโลเมตร
+        }
     };
 
     // ⭐ ฟังการแจ้งเตือน Real-time
@@ -2158,6 +2322,35 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
         };
     }, [tempPin]); // Only depends on tempPin presence/value
 
+    // --- ⭐ เพิ่ม useEffect นี้ใน MapScreen ⭐ ---
+    // ทำหน้าที่: ถ้าเปิดเว็บมาด้วยลิงก์แชร์ ให้เปิด Modal หมุดนั้นอัตโนมัติ
+    useEffect(() => {
+        // ต้องรอให้โหลด locations เสร็จก่อน ถึงจะหาหมุดเจอ
+        if (locations.length > 0) {
+            const searchParams = new URLSearchParams(window.location.search);
+            const pinId = searchParams.get('pin'); // ดูว่ามี ?pin=... ไหม
+
+            if (pinId) {
+                const foundLocation = locations.find(loc => loc.id === pinId);
+                if (foundLocation) {
+                    setSelectedLocation(foundLocation); // เปิด Modal ทันที
+                    
+                    // (แถม) เลื่อนแผนที่ไปหาหมุดนั้นด้วย
+                    if (mapInstanceRef.current) {
+                        mapInstanceRef.current.setCenter({ 
+                            lat: foundLocation.lat, 
+                            lng: foundLocation.lng 
+                        });
+                        mapInstanceRef.current.setZoom(16);
+                    }
+                    
+                    // เคลียร์ URL ให้สวยงาม (ลบ ?pin=... ออก) เพื่อไม่ให้กวนใจ
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
+            }
+        }
+    }, [locations, isLoaded]); // ทำงานเมื่อ locations โหลดมาครบแล้ว
+
     useEffect(() => {
         let unsubscribe = null;
         
@@ -2201,7 +2394,42 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
 
     // --- Other Functions (moveToCurrentLocation, handleSearchResultClick, etc. - Updated Zoom) ---
-    const moveToCurrentLocation = () => { if (navigator.geolocation) { navigator.geolocation.getCurrentPosition((pos) => { const { latitude, longitude } = pos.coords; const current = { lat: latitude, lng: longitude }; if (!mapInstanceRef.current) return; mapInstanceRef.current.setCenter(current); mapInstanceRef.current.setZoom(16); if (userMarkerRef.current) userMarkerRef.current.setMap(null); userMarkerRef.current = new window.google.maps.Marker({ position: current, map: mapInstanceRef.current, title: "Your Location", icon: { path: window.google.maps.SymbolPath.CIRCLE, scale: 8, fillColor: "#4285F4", fillOpacity: 1, strokeColor: "white", strokeWeight: 2 }, }); }, (error) => alert("ไม่สามารถระบุตำแหน่งได้ โปรดตรวจสอบการตั้งค่าเพื่อเปิดใช้งานระบุตำแหน่ง."), { enableHighAccuracy: true }); } else { alert("Geolocation not supported."); } };
+    const moveToCurrentLocation = () => { 
+        if (navigator.geolocation) { 
+            navigator.geolocation.getCurrentPosition((pos) => { 
+                const { latitude, longitude } = pos.coords; 
+                const current = { lat: latitude, lng: longitude }; 
+                
+                // ⭐ บันทึกพิกัดลง State
+                setUserPosition(current); 
+                
+                if (!mapInstanceRef.current) return; 
+                mapInstanceRef.current.setCenter(current); 
+                mapInstanceRef.current.setZoom(16); 
+                
+                // (โค้ดวาด User Marker เดิม...) 
+                if (userMarkerRef.current) userMarkerRef.current.setMap(null); 
+                userMarkerRef.current = new window.google.maps.Marker({ 
+                    position: current, 
+                    map: mapInstanceRef.current, 
+                    title: "Your Location", 
+                    icon: { 
+                        path: window.google.maps.SymbolPath.CIRCLE, 
+                        scale: 8, 
+                        fillColor: "#4285F4", 
+                        fillOpacity: 1, 
+                        strokeColor: "white", 
+                        strokeWeight: 2 
+                    }, 
+                }); 
+            }, 
+            (error) => toast.error("ไม่สามารถระบุตำแหน่งได้"), 
+            { enableHighAccuracy: true }
+            ); 
+        } else { 
+            toast.error("Geolocation not supported."); 
+        } 
+    };
     const handleSearchResultClick = (location) => { if (mapInstanceRef.current) { mapInstanceRef.current.setCenter({ lat: location.lat, lng: location.lng }); mapInstanceRef.current.setZoom(17); } setSelectedLocation(location); setSearchQuery(''); };
     const searchResults = searchQuery ? locations.filter(loc => loc.name.toLowerCase().includes(searchQuery.toLowerCase())) : [];
 
@@ -2263,7 +2491,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     // --- ⭐ JSX Structure (Includes Dark Mode, Profile, Full Screen Image, Guest Login Button) ⭐ ---
     return (
         <div className="relative w-screen h-[100dvh] overflow-hidden touch-none">
-            <Toaster position="bottom-right" reverseOrder={false} />
+            <Toaster position="top-right" reverseOrder={false} />
             {/* Map Container */}
             <div ref={mapRef} className="w-full h-full bg-gray-300 dark:bg-gray-700">
                 {/* Basic Loading based only on script load */}
@@ -2308,6 +2536,16 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                     className="w-full h-full object-cover"
                                     onClick={() => openImageModal(localSelectedLocation.imageUrl)}
                                 />
+                                {/* --- ⭐ 1. ปุ่ม Report (ย้ายมาซ่อนตรงนี้ มุมซ้ายบน) ⭐ --- */}
+                                <motion.button
+                                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                    onClick={() => { if (user) { setIsReportModalOpen(true) } else { toast.error('กรุณาเข้าสู่ระบบเพื่อรายงาน') } }}
+                                    className="absolute top-3 left-3 bg-black/40 hover:bg-red-600/80 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
+                                    title="Report this location"
+                                >
+                                    <FlagIcon />
+                                </motion.button>
+                                {/* ------------------------------------------------------- */}
                                 {/* ปุ่มปิด X */}
                                 <motion.button
                                     whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }} // ✨ เพิ่ม effect ตอนเอาเมาส์ชี้/กด
@@ -2329,19 +2567,49 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                             </div>
 
                             {/* เนื้อหา */}
+                            {/* เนื้อหา Modal (ปรับแก้: ระยะทางอยู่ข้างประเภทรถ) */}
                             <div className="p-5 space-y-4">
                                 <div>
-                                    <h3 className="text-2xl font-bold dark:text-white leading-tight">{localSelectedLocation.name}</h3>
-                                    <div className="flex items-center mt-1 space-x-2">
-                                        <StarRatingDisplay rating={localSelectedLocation.avgRating} count={localSelectedLocation.reviewCount} />
-                                        <span className="text-gray-400">|</span>
-                                        <span className="text-sm text-gray-500 dark:text-gray-400 capitalize">{localSelectedLocation.type}</span>
+                                    {/* ชื่อสถานที่ */}
+                                    <h3 className="text-2xl font-bold dark:text-white leading-tight mb-2">{localSelectedLocation.name}</h3>
+                                    
+                                    {/* ส่วนแสดงรายละเอียด (จัดกลุ่มใหม่) */}
+                                    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
+                                        
+                                        {/* กลุ่ม A: ดาวรีวิว */}
+                                        <div className="flex items-center">
+                                            <StarRatingDisplay rating={localSelectedLocation.avgRating} count={localSelectedLocation.reviewCount} />
+                                        </div>
+
+                                        {/* เส้นคั่น (ซ่อนในมือถือจอเล็กมากๆ) */}
+                                        <span className="hidden sm:inline text-gray-300 dark:text-gray-600">|</span>
+
+                                        {/* กลุ่ม B: ประเภทรถ + ระยะทาง (อยู่ด้วยกัน) */}
+                                        <div className="flex items-center gap-2">
+                                            {/* ประเภทรถ */}
+                                            <span className="capitalize font-medium text-gray-700 dark:text-gray-300">
+                                                {localSelectedLocation.type}
+                                            </span>
+
+                                            {/* ระยะทาง (แสดงเมื่อมีพิกัด) */}
+                                            {userPosition && (
+                                                <>
+                                                    <span className="text-gray-300 dark:text-gray-600">•</span>
+                                                    <span className="flex items-center font-bold text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30 px-2 py-0.5 rounded-md whitespace-nowrap">
+                                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 mr-1" viewBox="0 0 20 20" fill="currentColor">
+                                                            <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                                                        </svg>
+                                                        {getDistanceText(localSelectedLocation.lat, localSelectedLocation.lng)}
+                                                    </span>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
-                                {/* ปุ่มนำทาง (Navigation Button) */}
+                                {/* ... (ปุ่มนำทาง และ Action Buttons ด้านล่าง ปล่อยไว้เหมือนเดิม) ... */}
                                 <motion.a
-                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} // ✨ effect ปุ่มกด
+                                    whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}
                                     href={`https://www.google.com/maps/dir/?api=1&destination=${localSelectedLocation.lat},${localSelectedLocation.lng}`}
                                     target="_blank"
                                     rel="noopener noreferrer"
@@ -2353,7 +2621,6 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                     นำทาง (Get Directions)
                                 </motion.a>
 
-                                {/* ส่วนแสดงราคา */}
                                 <AnimatePresence>
                                     {showPrices && (
                                         <motion.div
@@ -2362,7 +2629,6 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                             exit={{ opacity: 0, height: 0 }}
                                             className="bg-gray-50/50 dark:bg-gray-800/50 rounded-xl p-4 border border-gray-100 dark:border-gray-700 max-h-40 overflow-y-auto"
                                         >
-                                           {/* ... เนื้อหาราคา เหมือนเดิม ... */}
                                             <h4 className="font-semibold text-sm mb-2 text-gray-500 dark:text-gray-400 uppercase tracking-wider">Service Rates</h4>
                                             <ul className="space-y-2">
                                                 {localSelectedLocation.routes?.map((route, index) => (
@@ -2377,24 +2643,26 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                     )}
                                 </AnimatePresence>
 
-                                {/* Action Buttons ด้านล่าง */}
+                                {/* Action Buttons */}
                                 <div className="grid grid-cols-4 gap-2 pt-2">
-                                    {/* ผมเปลี่ยน button ธรรมดาเป็น motion.button และเพิ่ม whileHover/whileTap ให้ดูมีชีวิตชีวา */}
                                     <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleLike(localSelectedLocation)} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition">
                                         <LikeIcon isLiked={userLikes.has(localSelectedLocation.id)} />
                                         <span className={`text-xs mt-1 font-medium ${userLikes.has(localSelectedLocation.id) ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`}>{localSelectedLocation.likeCount || 0}</span>
                                     </motion.button>
+
+                                    <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
+                                        <ShareIcon />
+                                        <span className="text-xs mt-1 font-medium">Share</span>
+                                    </motion.button>
+
                                     <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsReviewsModalOpen(true)} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
                                         <ReviewIcon />
                                         <span className="text-xs mt-1 font-medium">Review</span>
                                     </motion.button>
+
                                     <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowPrices(prev => !prev)} className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${showPrices ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400'}`}>
                                         {showPrices ? <ImageIcon /> : <PriceIcon />}
                                         <span className="text-xs mt-1 font-medium">{showPrices ? 'Info' : 'Prices'}</span>
-                                    </motion.button>
-                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => { if (user) { setIsReportModalOpen(true) } else { alert('Log in to report.') } }} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
-                                        <ReportIcon />
-                                        <span className="text-xs mt-1 font-medium">Report</span>
                                     </motion.button>
                                 </div>
                             </div>
@@ -2451,7 +2719,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             {pinningMode && (<div className="absolute top-0 left-0 right-0 p-4 bg-blue-600 text-white text-center z-20 flex justify-center items-center shadow-lg"><p className="font-semibold text-lg">{tempPin ? 'Location selected. Confirm or Cancel.' : 'Click map to place pin.'}</p><button onClick={handleCancelPin} className="ml-6 bg-white text-blue-600 font-bold py-1 px-4 rounded-full text-sm hover:bg-blue-100">Cancel</button></div>)}
             {tempPin && (<div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-4"><button onClick={handleConfirmPin} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 text-lg rounded-full shadow-lg">Confirm Pin</button><button onClick={handleCancelPin} className="bg-white hover:bg-gray-100 text-gray-700 font-bold py-3 px-8 text-lg rounded-full shadow-lg">Cancel</button></div>)}
             {isAddLocationModalOpen && (<LocationFormModal initialCoords={tempPin} onSuccess={handleSubmissionSuccess} onClose={() => { setIsAddLocationModalOpen(false); setTempPin(null); }} />)}
-            {submissionStatus === 'waiting' && (<div className="absolute inset-0 bg-white/90 dark:bg-gray-900/90 z-50 flex items-center justify-center" onClick={() => setSubmissionStatus('')}><div className="text-center p-8"><h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100">Waiting for approval</h2><p className="text-gray-600 dark:text-gray-400 mt-2">Submitted, waiting for admin approval.</p></div></div>)}
+            
 
             {/* Search Results Panel */}
             {searchQuery.length > 0 && (<div className="absolute top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-gray-800 z-30 shadow-lg p-6 flex flex-col"><div className="relative flex items-center mb-4"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"><SearchIcon/></span><input type="text" className="w-full pl-10 pr-10 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-100" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." autoFocus /><button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div><ul className="space-y-2 overflow-y-auto">{searchResults.map((loc) => (<li key={loc.id} className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-lg" onClick={() => handleSearchResultClick(loc)}><div className="mr-3 text-gray-400 dark:text-gray-500">{loc.type === 'motorcycle' ? <MotorcycleIcon/> : <BusIcon/>}</div><span className="text-gray-700 dark:text-gray-200">{loc.name}</span></li>))}{searchResults.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-4">No results.</p>}</ul></div>)}
