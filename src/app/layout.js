@@ -1,26 +1,32 @@
-import { Kanit } from "next/font/google"; // 1. Import ตัวพิมพ์ใหญ่
+import { Itim } from "next/font/google"; // หรือฟอนต์เดิมที่คุณใช้
 import "./globals.css";
 
-// 2. ประกาศตัวแปร (ใช้ชื่อ kanit ตัวเล็ก) = เรียกฟังก์ชัน Kanit (ตัวใหญ่)
-const kanit = Kanit({ 
+const itim = Itim({ 
   subsets: ["thai", "latin"], 
-  weight: ["300", "400", "500", "600", "700"],
-  variable: "--font-kanit",
+  weight: ["400"], 
+  variable: "--font-itim",
 });
 
+// 1. metadata (เก็บแค่ Title, Description, Manifest)
 export const metadata = {
   title: "EasyWay",
   description: "Transportation Helper App",
   manifest: "/manifest.json",
+};
+
+// 2. viewport (แยกออกมาต่างหาก ตามกฎใหม่ Next.js)
+export const viewport = {
   themeColor: "#2563eb",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false, // กันไม่ให้ User ซูมหน้าจอ
 };
 
 export default function RootLayout({ children }) {
   return (
     <html lang="en">
-      {/* 3. เรียกใช้ className จากตัวแปร kanit (ตัวเล็ก) */}
-      <body className={kanit.className}>{children}</body>
+      <body className={itim.className}>{children}</body>
     </html>
   );
 }
