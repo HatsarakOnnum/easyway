@@ -2645,26 +2645,51 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                 </AnimatePresence>
 
                                 {/* Action Buttons */}
+                                {/* Action Buttons ด้านล่าง (เรียงใหม่: Like -> Review -> Price -> Share) */}
                                 <div className="grid grid-cols-4 gap-2 pt-2">
-                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => handleLike(localSelectedLocation)} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition">
+                                    
+                                    {/* 1. ❤️ ปุ่ม Like */}
+                                    <motion.button 
+                                        whileTap={{ scale: 0.9 }} 
+                                        onClick={() => handleLike(localSelectedLocation)} 
+                                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition"
+                                    >
                                         <LikeIcon isLiked={userLikes.has(localSelectedLocation.id)} />
-                                        <span className={`text-xs mt-1 font-medium ${userLikes.has(localSelectedLocation.id) ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`}>{localSelectedLocation.likeCount || 0}</span>
+                                        <span className={`text-xs mt-1 font-medium ${userLikes.has(localSelectedLocation.id) ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`}>
+                                            {localSelectedLocation.likeCount || 0}
+                                        </span>
                                     </motion.button>
 
-                                    <motion.button whileTap={{ scale: 0.9 }} onClick={handleShare} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
-                                        <ShareIcon />
-                                        <span className="text-xs mt-1 font-medium">Share</span>
-                                    </motion.button>
-
-                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setIsReviewsModalOpen(true)} className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400">
+                                    {/* 2. 💬 ปุ่ม Review */}
+                                    <motion.button 
+                                        whileTap={{ scale: 0.9 }} 
+                                        onClick={() => setIsReviewsModalOpen(true)} 
+                                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400"
+                                    >
                                         <ReviewIcon />
                                         <span className="text-xs mt-1 font-medium">Review</span>
                                     </motion.button>
 
-                                    <motion.button whileTap={{ scale: 0.9 }} onClick={() => setShowPrices(prev => !prev)} className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${showPrices ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400'}`}>
+                                    {/* 3. ฿ ปุ่ม Prices */}
+                                    <motion.button 
+                                        whileTap={{ scale: 0.9 }} 
+                                        onClick={() => setShowPrices(prev => !prev)} 
+                                        className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${showPrices ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400'}`}
+                                    >
                                         {showPrices ? <ImageIcon /> : <PriceIcon />}
                                         <span className="text-xs mt-1 font-medium">{showPrices ? 'Info' : 'Prices'}</span>
                                     </motion.button>
+
+                                    {/* 4. 🔗 ปุ่ม Share */}
+                                    <motion.button 
+                                        whileTap={{ scale: 0.9 }} 
+                                        onClick={handleShare} 
+                                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400"
+                                    >
+                                        <ShareIcon />
+                                        <span className="text-xs mt-1 font-medium">Share</span>
+                                    </motion.button>
+
                                 </div>
                             </div>
                         </motion.div>
