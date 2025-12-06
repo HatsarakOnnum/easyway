@@ -1619,7 +1619,6 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess 
                                     </div>
                                 </div>
                             )}
-                            {/* ------------------------------------------------ */}
                         </div>
                     </div>
 
