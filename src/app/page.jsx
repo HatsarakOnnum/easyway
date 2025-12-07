@@ -843,28 +843,39 @@ const ManageUsers = () => {
         <div className="dark:text-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
                 <h2 className="text-2xl md:text-3xl font-bold">Manage Users</h2>
-                <div className="flex w-full md:w-auto space-x-2">
+                
+                {/* ⭐⭐ แก้ไข Layout ตรงนี้ครับ ⭐⭐ */}
+                <div className="flex flex-col w-full md:w-auto gap-3 md:flex-row md:items-center">
+                    
+                    {/* ช่องค้นหา (เต็มจอในมือถือ) */}
                     <input
                         type="text"
                         placeholder="Search by email..."
-                        className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600"
+                        className="w-full md:w-64 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
 
-                    {/* --- ⭐ 3. ปุ่ม Sort Date --- */}
-                    <button 
-                        onClick={toggleSortOrder} 
-                        className="bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2 px-4 rounded flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap"
-                        title={sortOrder === 'desc' ? "Newest joined first" : "Oldest joined first"}
-                    >
-                        {/* ถ้ายังไม่มี SortIcon ให้ใช้ Text แทน หรือไปเพิ่ม Icon ตามที่เคยบอกครับ */}
-                        <span className="mr-2">{sortOrder === 'desc' ? '⬇' : '⬆'}</span>
-                        Date
-                    </button>
+                    {/* กลุ่มปุ่ม (Date + Add User) */}
+                    <div className="flex gap-2 w-full md:w-auto">
+                        {/* ปุ่ม Sort Date */}
+                        <button 
+                            onClick={toggleSortOrder} 
+                            className="flex-1 md:flex-none justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2 px-4 rounded flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap"
+                        >
+                            <span className="mr-2">{sortOrder === 'desc' ? '⬇' : '⬆'}</span> Date
+                        </button>
 
-                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">Add User</button>
+                        {/* ปุ่ม Add User */}
+                        <button 
+                            onClick={() => handleOpenModal()} 
+                            className="flex-1 md:flex-none justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap"
+                        >
+                            Add User
+                        </button>
+                    </div>
                 </div>
+                {/* --------------------------------- */}
             </div>
 
             {/* 📱 Mobile View (Cards) */}
@@ -949,7 +960,141 @@ const ManageUsers = () => {
     );
 };
 
+// --- ⭐ User Form Modal (Component ที่หายไป) ⭐ ---
+const UserFormModal = ({ currentUser, onClose }) => {
+    const [email, setEmail] = useState(currentUser?.email || '');
+    const [password, setPassword] = useState('');
+    const [displayName, setDisplayName] = useState(currentUser?.displayName || '');
+    const [status, setStatus] = useState(currentUser?.status || 'active');
+    const [loading, setLoading] = useState(false);
 
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+
+        try {
+            // กรณีสร้าง User ใหม่
+            if (!currentUser) {
+                // ⚠️ หมายเหตุ: การ create user ด้วย Client SDK จะทำให้ Admin ถูก Log out
+                // ในระบบจริงควรใช้ Firebase Cloud Functions
+                // แต่เพื่อความง่ายในตอนนี้ เราจะแค่ "สร้าง Database" ไปก่อน (User ต้องไป Sign up เอง หรือใช้วิธีอื่น)
+                
+                // เช็กว่า Password สั้นไปไหม
+                if (password.length < 6) {
+                     toast.error("Password ต้องยาวกว่า 6 ตัวอักษร");
+                     setLoading(false);
+                     return;
+                }
+
+                // สร้าง User ผ่าน Auth (ระวัง: Admin จะหลุด)
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // บันทึกลง Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    uid: user.uid,
+                    email: user.email,
+                    displayName: displayName,
+                    status: status,
+                    createdAt: serverTimestamp(),
+                });
+                
+                toast.success("สร้าง User สำเร็จ! (คุณอาจต้อง Login ใหม่)");
+            } 
+            // กรณีแก้ไข User เดิม
+            else {
+                const userRef = doc(db, "users", currentUser.id);
+                await updateDoc(userRef, {
+                    displayName: displayName,
+                    status: status,
+                    // email: email // ปกติไม่ค่อยให้แก้ email กันง่ายๆ
+                });
+                toast.success("อัปเดตข้อมูลสำเร็จ!");
+            }
+            onClose();
+        } catch (error) {
+            console.error(error);
+            toast.error("เกิดข้อผิดพลาด: " + error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white">
+                        {currentUser ? 'Edit User' : 'Add New User'}
+                    </h3>
+                </div>
+                
+                <form onSubmit={handleSubmit} className="p-6 space-y-4">
+                    {/* Email */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Email</label>
+                        <input 
+                            type="email" 
+                            value={email} 
+                            onChange={e => setEmail(e.target.value)} 
+                            disabled={!!currentUser} // แก้ไขไม่ได้ถ้าเป็น User เก่า
+                            className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white disabled:opacity-60"
+                            required
+                        />
+                    </div>
+
+                    {/* Password (เฉพาะตอนสร้างใหม่) */}
+                    {!currentUser && (
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Password</label>
+                            <input 
+                                type="password" 
+                                value={password} 
+                                onChange={e => setPassword(e.target.value)} 
+                                className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+                                required
+                            />
+                        </div>
+                    )}
+
+                    {/* Display Name */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Display Name</label>
+                        <input 
+                            type="text" 
+                            value={displayName} 
+                            onChange={e => setDisplayName(e.target.value)} 
+                            className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+                        />
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Status</label>
+                        <select 
+                            value={status} 
+                            onChange={e => setStatus(e.target.value)}
+                            className="w-full px-4 py-2 rounded-lg bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none dark:text-white"
+                        >
+                            <option value="active">Active</option>
+                            <option value="suspended">Suspended</option>
+                        </select>
+                    </div>
+
+                    {/* Buttons */}
+                    <div className="flex justify-end gap-3 pt-4">
+                        <button type="button" onClick={onClose} className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition">
+                            Cancel
+                        </button>
+                        <button type="submit" disabled={loading} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-lg disabled:opacity-50 transition">
+                            {loading ? 'Saving...' : 'Save'}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
+};
 
 
 const ManageLocations = ({ onViewLocation }) => {
@@ -1339,6 +1484,7 @@ const ManageReviews = () => {
     );
 };
 
+// --- Component: ManageReports (Updated: Beautiful Mobile Cards) ---
 const ManageReports = () => {
     const [reports, setReports] = useState([]);
 
@@ -1354,18 +1500,95 @@ const ManageReports = () => {
     const handleStatusChange = async (reportId, newStatus) => {
         const reportRef = doc(db, "reports", reportId);
         await updateDoc(reportRef, { status: newStatus });
+        toast.success(`Status updated to ${newStatus}`);
     };
 
     const handleDelete = async (reportId) => {
         if (window.confirm("Are you sure you want to delete this report?")) {
             await deleteDoc(doc(db, "reports", reportId));
+            toast.success("Report deleted");
         }
     };
 
     return (
         <div className="dark:text-gray-200">
-            <h2 className="text-3xl font-bold mb-5">Manage Reports</h2>
-            <div className="bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-x-auto">
+            <h2 className="text-3xl font-bold mb-6">Manage Reports</h2>
+
+            {/* 📱 Mobile View (Cards) - แสดงเฉพาะบนมือถือ */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {reports.map(report => (
+                    <div key={report.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                        
+                        {/* แถบสีสถานะด้านซ้าย */}
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${report.status === 'resolved' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
+
+                        {/* Header: ชื่อสถานที่ + วันที่ */}
+                        <div className="flex justify-between items-start mb-3 pl-2">
+                            <div>
+                                <h3 className="font-bold text-lg text-gray-800 dark:text-white leading-tight">
+                                    {report.locationName}
+                                </h3>
+                                <p className="text-xs text-gray-400 mt-1">
+                                    {report.createdAt?.toDate().toLocaleString()}
+                                </p>
+                            </div>
+                            <span className={`px-2.5 py-1 text-xs font-bold rounded-full uppercase tracking-wide ${
+                                report.status === 'resolved' 
+                                ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' 
+                                : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                            }`}>
+                                {report.status}
+                            </span>
+                        </div>
+
+                        {/* Body: ข้อความรายงาน */}
+                        <div className="bg-gray-50 dark:bg-gray-700/40 p-3 rounded-xl mb-4 ml-2 border border-gray-100 dark:border-gray-700">
+                            <p className="text-sm text-gray-600 dark:text-gray-300 italic">
+                                "{report.reportText}"
+                            </p>
+                        </div>
+
+                        {/* Footer: User & Actions */}
+                        <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-3 pl-2">
+                            <div className="text-xs text-gray-400 w-full sm:w-auto">
+                                <span className="font-semibold text-gray-500 dark:text-gray-400">By:</span> {report.userEmail}
+                            </div>
+                            
+                            <div className="flex items-center gap-2 w-full sm:w-auto">
+                                {/* Dropdown เปลี่ยนสถานะ */}
+                                <div className="relative flex-1 sm:flex-none">
+                                    <select 
+                                        value={report.status} 
+                                        onChange={(e) => handleStatusChange(report.id, e.target.value)}
+                                        className="w-full appearance-none bg-gray-100 dark:bg-gray-700 border-none text-gray-700 dark:text-gray-200 text-sm font-medium py-2 pl-3 pr-8 rounded-lg cursor-pointer focus:ring-2 focus:ring-blue-500"
+                                    >
+                                        <option value="pending">⏳ Pending</option>
+                                        <option value="resolved">✅ Resolved</option>
+                                    </select>
+                                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-500">
+                                        <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z"/></svg>
+                                    </div>
+                                </div>
+
+                                {/* ปุ่มลบ */}
+                                <button 
+                                    onClick={() => handleDelete(report.id)} 
+                                    className="p-2 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                                    title="Delete Report"
+                                >
+                                    <TrashIcon />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                ))}
+                {reports.length === 0 && (
+                    <div className="text-center py-10 text-gray-400">No reports found 🎉</div>
+                )}
+            </div>
+
+            {/* 💻 Desktop View (Table) - แสดงเฉพาะบนจอใหญ่ (เหมือนเดิม) */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-x-auto">
                 <table className="min-w-full leading-normal">
                     <thead>
                         <tr>
@@ -1380,20 +1603,22 @@ const ManageReports = () => {
                     <tbody>
                         {reports.map(report => (
                             <tr key={report.id}>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{report.locationName}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm max-w-xs break-words">{report.reportText}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{report.userEmail}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{report.createdAt?.toDate().toLocaleString()}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-900 dark:text-white">{report.locationName}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm max-w-xs break-words text-gray-600 dark:text-gray-300">{report.reportText}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-500">{report.userEmail}</td>
+                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-500">{report.createdAt?.toDate().toLocaleString()}</td>
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
                                     <select
                                         value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)}
-                                        className={`p-1 rounded text-xs dark:bg-gray-700 ${report.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'}`}
+                                        className={`py-1 px-2 rounded text-xs font-bold border-none cursor-pointer outline-none ${report.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400'}`}
                                     >
                                         <option value="pending">Pending</option> <option value="resolved">Resolved</option>
                                     </select>
                                 </td>
                                 <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <button onClick={() => handleDelete(report.id)} className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
+                                    <button onClick={() => handleDelete(report.id)} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 transition">
+                                        <TrashIcon />
+                                    </button>
                                 </td>
                             </tr>
                         ))}
