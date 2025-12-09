@@ -98,7 +98,12 @@ const MinusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w
 const MotorcycleIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="5.5" cy="17.5" r="2.5"/><circle cx="18.5" cy="17.5" r="2.5"/><path d="M15 17.5V9.5l-3.6-4.2c-.2-.2-.5-.3-.8-.3H5.5"/><path d="m8 17.5 4-4"/><path d="M8 13h4.5"/></svg>);
 const BusIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>);
 const AddPinIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle><line x1="12" y1="7" x2="12" y2="13"></line><line x1="9" y1="10" x2="15" y2="10"></line></svg>);
-const LikeIcon = ({ isLiked }) => (<svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${isLiked ? 'text-blue-600' : 'text-gray-700'}`} viewBox="0 0 24 24" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"></path></svg>);
+// เปลี่ยนจากรูปนิ้วโป้ง เป็นรูปหัวใจ ❤️ และเปลี่ยนสี active เป็น text-pink-500
+const LikeIcon = ({ isLiked }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${isLiked ? 'text-pink-500' : 'text-gray-700'}`} viewBox="0 0 24 24" fill={isLiked ? 'currentColor' : 'none'} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+  </svg>
+);
 const SaveIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" /></svg>;
 const PriceIcon = () => (<svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8 7h5a3 3 0 0 1 0 6H8V7z"></path><path d="M8 13h5a3 3 0 0 1 0 6H8v-6z"></path><path d="M12 4v16"></path></svg>);
 const ReviewIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>;
@@ -152,7 +157,18 @@ const LockIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
   </svg>
 );
+// --- ไอคอนเสริมสำหรับ Admin ---
+const BanIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+  </svg>
+);
 
+const CheckCircleIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+    <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+  </svg>
+);
 // --- Authentication Screens ---
 // --- Welcome Screen (Creative Animated Style) ---
 // --- Welcome Screen (Cosmic Space Theme matched with Login) ---
@@ -516,22 +532,32 @@ function LoginScreen({ setView }) {
     // (Keep your existing handleGoogleSignIn logic here if needed)
      const handleGoogleSignIn = async () => {
         setError('');
-        const provider = new GoogleAuthProvider(); 
+        const provider = new GoogleAuthProvider();
         try {
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
             const userRef = doc(db, "users", user.uid);
+            
+            // ใช้ setDoc แบบ merge: true เพื่ออัปเดตข้อมูล (เช่น รูปโปรไฟล์เปลี่ยน) โดยไม่ลบข้อมูลเก่า
+            await setDoc(userRef, {
+                uid: user.uid,
+                email: user.email,
+                displayName: user.displayName || user.email.split('@')[0],
+                photoURL: user.photoURL || null, // ⭐ บันทึก URL รูปภาพตรงนี้
+                lastLogin: serverTimestamp(),
+                // เช็กว่ามี status หรือยัง ถ้าไม่มีให้เป็น active
+            }, { merge: true }); 
+            
+            // เช็กเพิ่มกรณีสร้างใหม่จริงๆ เพื่อใส่ createdAt (ถ้าจำเป็น) หรือใช้ logic เดิมของคุณก็ได้
             const userSnap = await getDoc(userRef);
-
-            if (!userSnap.exists()) {
-                await setDoc(userRef, {
-                    uid: user.uid, email: user.email, displayName: user.displayName || user.email.split('@')[0],
-                    createdAt: serverTimestamp(), status: 'active' 
-                });
+            if (!userSnap.data().createdAt) {
+                 await updateDoc(userRef, { createdAt: serverTimestamp(), status: 'active' });
             } else if (userSnap.data().status === 'suspended') {
                 setError("บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแล");
-                await signOut(auth); return;
+                await signOut(auth);
+                return;
             }
+
         } catch (err) {
             console.error("Google Sign-In Error:", err);
             if (err.code !== 'auth/popup-closed-by-user') setError("Failed to sign in with Google.");
@@ -779,9 +805,7 @@ const ManageUsers = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUser, setEditingUser] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-
-    // --- ⭐ 1. เพิ่ม State สำหรับเรียงลำดับ ---
-    const [sortOrder, setSortOrder] = useState('desc'); // 'desc' = ใหม่->เก่า, 'asc' = เก่า->ใหม่
+    const [sortOrder, setSortOrder] = useState('desc');
 
     useEffect(() => {
         const q = query(collection(db, "users"));
@@ -804,50 +828,40 @@ const ManageUsers = () => {
 
     const handleToggleUserStatus = async (user) => {
         const newStatus = user.status === 'suspended' ? 'active' : 'suspended';
-        const actionVerb = newStatus === 'active' ? 'activate' : 'suspend';
-
-        if (window.confirm(`Are you sure you want to ${actionVerb} user ${user.email}?`)) {
+        const actionVerb = newStatus === 'active' ? 'ปลดแบน (Activate)' : 'ระงับการใช้งาน (Suspend)';
+        
+        if (window.confirm(`ยืนยันการ ${actionVerb} ผู้ใช้ ${user.email}?`)) {
             try {
                 const userRef = doc(db, "users", user.id);
                 await updateDoc(userRef, { status: newStatus });
-                alert(`User status updated to '${newStatus}'.`);
+                toast.success(`สถานะเปลี่ยนเป็น ${newStatus} เรียบร้อย`);
             } catch (error) {
-                console.error("Error updating user status:", error);
-                alert(`Failed to update status.`);
+                console.error(error);
+                toast.error(`เกิดข้อผิดพลาด`);
             }
         }
     };
 
-    // --- ⭐ 2. Logic การเรียงลำดับข้อมูล (Sorting) ---
     const sortedUsers = [...users].sort((a, b) => {
         const dateA = a.createdAt?.toMillis() || 0;
         const dateB = b.createdAt?.toMillis() || 0;
-        if (sortOrder === 'desc') {
-            return dateB - dateA; // ใหม่ไปเก่า
-        } else {
-            return dateA - dateB; // เก่าไปใหม่
-        }
+        return sortOrder === 'desc' ? dateB - dateA : dateA - dateB;
     });
 
-    // กรองข้อมูลจากการค้นหา (ใช้ sortedUsers มากรองต่อ)
     const filteredUsers = sortedUsers.filter(user =>
-        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+        user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (user.displayName && user.displayName.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // ฟังก์ชันสลับโหมด
-    const toggleSortOrder = () => {
-        setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
-    };
+    const toggleSortOrder = () => setSortOrder(prev => prev === 'desc' ? 'asc' : 'desc');
 
     return (
         <div className="dark:text-gray-200">
+            {/* --- Header Section --- */}
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
-                <h2 className="text-2xl md:text-3xl font-bold">Manage Users</h2>
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">Manage Users</h2>
                 
-                {/* ⭐⭐ แก้ไข Layout ตรงนี้ครับ ⭐⭐ */}
                 <div className="flex flex-col w-full md:w-auto gap-3 md:flex-row md:items-center">
-                    
-                    {/* ช่องค้นหา (เต็มจอในมือถือ) */}
                     <input
                         type="text"
                         placeholder="Search by email..."
@@ -855,18 +869,13 @@ const ManageUsers = () => {
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
-
-                    {/* กลุ่มปุ่ม (Date + Add User) */}
                     <div className="flex gap-2 w-full md:w-auto">
-                        {/* ปุ่ม Sort Date */}
                         <button 
                             onClick={toggleSortOrder} 
                             className="flex-1 md:flex-none justify-center bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold py-2 px-4 rounded flex items-center hover:bg-gray-200 dark:hover:bg-gray-600 transition whitespace-nowrap"
                         >
                             <span className="mr-2">{sortOrder === 'desc' ? '⬇' : '⬆'}</span> Date
                         </button>
-
-                        {/* ปุ่ม Add User */}
                         <button 
                             onClick={() => handleOpenModal()} 
                             className="flex-1 md:flex-none justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap"
@@ -875,10 +884,9 @@ const ManageUsers = () => {
                         </button>
                     </div>
                 </div>
-                {/* --------------------------------- */}
             </div>
 
-            {/* 📱 Mobile View (Cards) */}
+            {/* --- 📱 Mobile View (ใช้แบบเดิมตามที่คุณต้องการ) --- */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {filteredUsers.map(user => (
                     <div key={user.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
@@ -896,7 +904,6 @@ const ManageUsers = () => {
                         <p className="text-xs text-gray-400 mb-3">Joined: {user.createdAt?.toDate().toLocaleString()}</p>
                         
                         <div className="flex gap-2 pt-2 border-t dark:border-gray-700">
-                            {/* ปุ่ม Edit เอาออกตามที่คุณเคยคอมเมนต์ไว้ หรือจะใส่กลับก็ได้ */}
                              <button
                                 onClick={() => handleToggleUserStatus(user)}
                                 className={`flex-1 py-1.5 rounded-lg text-sm font-semibold text-white ${
@@ -910,51 +917,96 @@ const ManageUsers = () => {
                 ))}
             </div>
 
-            {/* 💻 Desktop View (Table) */}
-            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+            {/* --- 💻 Desktop View (Table ใหม่ สวยงาม) --- */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
                 <table className="min-w-full leading-normal">
                     <thead>
-                        <tr>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Email</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Display Name</th> 
-                            {/* --- ⭐ 4. เพิ่มลูกศรบอกที่ Header --- */}
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider cursor-pointer" onClick={toggleSortOrder}>
-                                Created At {sortOrder === 'desc' ? '↓' : '↑'}
+                        <tr className="bg-gray-50 dark:bg-gray-900/50 text-left">
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User Info</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-blue-500 transition" onClick={toggleSortOrder}>
+                                Joined Date {sortOrder === 'desc' ? '↓' : '↑'}
                             </th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {filteredUsers.map(user => (
-                            <tr key={user.id}>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.email}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{user.displayName}</td> 
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                                    {user.createdAt?.toDate().toLocaleString()}
+                            <tr key={user.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                {/* ช่อง 1: User Info พร้อม Avatar */}
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center">
+                                        {/* ⭐ ส่วนแสดงรูปภาพ (Avatar) ⭐ */}
+                                        <div className="flex-shrink-0 h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden shadow-sm border border-gray-200 dark:border-gray-600">
+                                            {user.photoURL ? (
+                                                <img 
+                                                    src={user.photoURL} 
+                                                    alt="" 
+                                                    className="h-full w-full object-cover" 
+                                                />
+                                            ) : (
+                                                <div className="h-full w-full bg-gradient-to-br from-blue-400 to-purple-500 flex items-center justify-center text-white font-bold">
+                                                    {user.displayName?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                                                </div>
+                                            )}
+                                        </div>
+                                        {/* จบส่วนรูปภาพ */}
+
+                                        <div className="ml-4">
+                                            <div className="text-sm font-bold text-gray-900 dark:text-white">
+                                                {user.displayName || 'No Name'}
+                                            </div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400">
+                                                {user.email}
+                                            </div>
+                                        </div>
+                                    </div>
                                 </td>
                                 
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                     <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                                        user.status === 'active' || !user.status ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                                    }`}>
-                                        {user.status || 'active'}
+                                {/* ช่อง 2: วันที่ */}
+                                <td className="px-6 py-4">
+                                    <span className="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md">
+                                        {user.createdAt?.toDate().toLocaleDateString()}
                                     </span>
                                 </td>
 
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                {/* ช่อง 3: Status Badge แบบใหม่ */}
+                                <td className="px-6 py-4 text-center">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                                        user.status === 'suspended'
+                                        ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800'
+                                        : 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+                                    }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${user.status === 'suspended' ? 'bg-red-500' : 'bg-green-500'}`}></span>
+                                        {user.status === 'suspended' ? 'Suspended' : 'Active'}
+                                    </span>
+                                </td>
+
+                                {/* ช่อง 4: ปุ่มกดแบบไอคอน */}
+                                <td className="px-6 py-4 text-center">
                                     <button
                                         onClick={() => handleToggleUserStatus(user)}
-                                        className={user.status === 'suspended' ? 'text-green-600 hover:text-green-900' : 'text-red-600 hover:text-red-900'}
+                                        title={user.status === 'suspended' ? "Click to Activate" : "Click to Suspend"}
+                                        className={`inline-flex items-center justify-center w-10 h-10 rounded-full transition-all shadow-sm ${
+                                            user.status === 'suspended'
+                                            ? 'bg-green-100 text-green-600 hover:bg-green-200 hover:scale-110 dark:bg-green-900/30'
+                                            : 'bg-red-100 text-red-600 hover:bg-red-200 hover:scale-110 dark:bg-red-900/30'
+                                        }`}
                                     >
-                                        {user.status === 'suspended' ? 'Activate' : 'Suspend'}
+                                        {user.status === 'suspended' ? <CheckCircleIcon /> : <BanIcon />}
                                     </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                {filteredUsers.length === 0 && (
+                    <div className="text-center py-10 text-gray-400">
+                        No users found.
+                    </div>
+                )}
             </div>
+            
             {isModalOpen && <UserFormModal currentUser={editingUser} onClose={handleCloseModal} />}
         </div>
     );
@@ -1096,207 +1148,404 @@ const UserFormModal = ({ currentUser, onClose }) => {
     );
 };
 
+// --- ⭐ My Pins Modal (ดูรายการหมุดของตัวเอง) ⭐ ---
+const MyPinsModal = ({ user, onClose, onSelectLocation }) => {
+    const [myLocations, setMyLocations] = useState([]);
+    const [loading, setLoading] = useState(true);
 
-const ManageLocations = ({ onViewLocation }) => {
+    useEffect(() => {
+        if (!user) return;
+        // ดึงเฉพาะหมุดที่ submittedBy = uid ของเรา
+        const q = query(collection(db, "locations"), where("submittedBy", "==", user.uid));
+        const unsubscribe = onSnapshot(q, (snapshot) => {
+            // เรียงลำดับ: เรียงตามวันที่สร้าง (ใหม่สุดขึ้นก่อน)
+            const locs = snapshot.docs
+                .map(doc => ({ id: doc.id, ...doc.data() }))
+                .sort((a, b) => b.createdAt?.toMillis() - a.createdAt?.toMillis());
+            setMyLocations(locs);
+            setLoading(false);
+        });
+        return () => unsubscribe();
+    }, [user]);
+
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                        📍 My Pins <span className="text-sm font-normal text-gray-500">({myLocations.length})</span>
+                    </h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {/* List (Updated Design) */}
+                <div className="overflow-y-auto p-4 space-y-3 custom-scrollbar bg-gray-50/50 dark:bg-gray-900/20">
+                    {loading ? (
+                        <div className="text-center py-10 text-gray-400 animate-pulse">Loading...</div>
+                    ) : myLocations.length === 0 ? (
+                        <div className="text-center py-12 text-gray-400 flex flex-col items-center">
+                            <span className="text-5xl mb-3 grayscale opacity-50">📍</span>
+                            <p className="font-medium">No pins yet</p>
+                        </div>
+                    ) : (
+                        myLocations.map(loc => (
+                            <div 
+                                key={loc.id} 
+                                onClick={() => onSelectLocation(loc)}
+                                className="group relative bg-white dark:bg-gray-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer flex gap-4 overflow-hidden"
+                            >
+                                {/* แถบสีสถานะด้านซ้าย */}
+                                <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${
+                                    loc.status === 'approved' ? 'bg-gradient-to-b from-green-400 to-green-600' :
+                                    loc.status === 'rejected' ? 'bg-gradient-to-b from-red-400 to-red-600' :
+                                    'bg-gradient-to-b from-yellow-300 to-yellow-500'
+                                }`} />
+
+                                {/* รูปภาพ */}
+                                <div className="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0 overflow-hidden relative shadow-inner">
+                                    <img 
+                                        src={loc.imageUrl || "https://placehold.co/100x100?text=No+Img"} 
+                                        alt="" 
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                    />
+                                    {/* ไอคอนประเภทรถมุมขวาล่าง */}
+                                    <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-md p-1 rounded-lg text-white shadow-sm">
+                                        {loc.type === 'motorcycle' ? <MotorcycleIcon /> : <BusIcon />} 
+                                    </div>
+                                </div>
+
+                                {/* ข้อมูล */}
+                                <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex justify-between items-start mb-1">
+                                            <h4 className="font-bold text-gray-800 dark:text-white truncate text-lg leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                                                {loc.name}
+                                            </h4>
+                                        </div>
+                                        <p className="text-xs text-gray-400 flex items-center gap-1">
+                                            📅 {loc.createdAt?.toDate().toLocaleDateString('th-TH')}
+                                        </p>
+                                    </div>
+
+                                    {/* Status Badge */}
+                                    <div className="flex justify-between items-end mt-2">
+                                        <span className={`px-2.5 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider border ${
+                                            loc.status === 'approved' ? 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800' :
+                                            loc.status === 'rejected' ? 'bg-red-50 text-red-600 border-red-200 dark:bg-red-900/20 dark:border-red-800' :
+                                            'bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+                                        }`}>
+                                            {loc.status === 'pending' ? '⏳ Wait Approval' : loc.status}
+                                        </span>
+                                        
+                                        <span className="text-xs text-gray-400 group-hover:translate-x-1 transition-transform">
+                                            View ➝
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// --- ⭐ Favorites Modal (หน้ารายการที่กด Like ไว้) ⭐ ---
+const FavoritesModal = ({ locations, userLikes, onClose, onSelectLocation }) => {
+    // กรองเอาเฉพาะ Location ที่ ID อยู่ใน userLikes
+    const favoriteLocations = locations.filter(loc => userLikes.has(loc.id));
+
+    return (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[80vh]" onClick={e => e.stopPropagation()}>
+                
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-pink-50 dark:bg-pink-900/20">
+                    <h3 className="text-xl font-bold text-pink-600 dark:text-pink-400 flex items-center gap-2">
+                        ❤️ Favorites <span className="text-sm font-normal text-gray-500">({favoriteLocations.length})</span>
+                    </h3>
+                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {/* List */}
+                <div className="overflow-y-auto p-4 space-y-3 custom-scrollbar bg-gray-50/50 dark:bg-gray-900/20">
+                    {favoriteLocations.length === 0 ? (
+                        <div className="text-center py-12 text-gray-400 flex flex-col items-center">
+                            <span className="text-5xl mb-3 grayscale opacity-50">💔</span>
+                            <p className="font-medium">No favorites yet</p>
+                            <p className="text-xs mt-1">Click the heart icon on any pin to save it here.</p>
+                        </div>
+                    ) : (
+                        favoriteLocations.map(loc => (
+                            <div 
+                                key={loc.id} 
+                                onClick={() => onSelectLocation(loc)}
+                                className="group relative bg-white dark:bg-gray-800 p-3 rounded-2xl border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all cursor-pointer flex gap-4 overflow-hidden"
+                            >
+                                {/* รูปภาพ */}
+                                <div className="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-700 flex-shrink-0 overflow-hidden relative shadow-inner">
+                                    <img 
+                                        src={loc.imageUrl || "https://placehold.co/100x100?text=No+Img"} 
+                                        alt="" 
+                                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" 
+                                    />
+                                    <div className="absolute bottom-1 right-1 bg-black/60 backdrop-blur-md p-1 rounded-lg text-white shadow-sm">
+                                        {loc.type === 'motorcycle' ? <MotorcycleIcon /> : <BusIcon />} 
+                                    </div>
+                                </div>
+
+                                {/* ข้อมูล */}
+                                <div className="flex-1 min-w-0 py-1 flex flex-col justify-between">
+                                    <div>
+                                        <h4 className="font-bold text-gray-800 dark:text-white truncate text-lg leading-tight group-hover:text-pink-500 transition-colors">
+                                            {loc.name}
+                                        </h4>
+                                        <div className="flex items-center gap-1 mt-1">
+                                            <StarIcon className="w-3 h-3 text-yellow-400" filled />
+                                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                                                {loc.avgRating ? loc.avgRating.toFixed(1) : 'New'} ({loc.reviewCount || 0})
+                                            </span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div className="flex justify-end mt-2">
+                                        <span className="text-xs text-pink-400 group-hover:translate-x-1 transition-transform font-semibold">
+                                            Go to Pin ➝
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        ))
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+};
+
+
+// --- ⭐ Manage Locations (Redesigned) ⭐ ---
+// --- ⭐ Manage Locations (รับ Props จาก AdminDashboard) ⭐ ---
+const ManageLocations = ({ onViewLocation, currentFilter, setFilter, onApprove, onDelete }) => {
     const [locations, setLocations] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [currentLocation, setCurrentLocation] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
-    const [statusFilter, setStatusFilter] = useState('approved');
+    
+    // ❌ ลบ const [statusFilter, setStatusFilter] = useState('pending'); ออก (ใช้ currentFilter แทน)
 
     useEffect(() => {
-        const q = query(collection(db, "locations"), where("status", "==", statusFilter));
+        // ใช้ currentFilter ที่ส่งมาจาก AdminDashboard
+        const q = query(collection(db, "locations"), where("status", "==", currentFilter));
         const unsubscribe = onSnapshot(q, (snapshot) => {
             const locsData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             setLocations(locsData);
         });
         return () => unsubscribe();
-    }, [statusFilter]);
+    }, [currentFilter]);
 
-    const handleOpenModal = (loc = null) => {
-        setCurrentLocation(loc);
-        setIsModalOpen(true);
-    };
+    const handleOpenModal = (loc = null) => { setCurrentLocation(loc); setIsModalOpen(true); };
+    const handleCloseModal = () => { setIsModalOpen(false); setCurrentLocation(null); };
 
-    const handleCloseModal = () => {
-        setIsModalOpen(false);
-        setCurrentLocation(null);
-    };
-
-    // --- ⭐ Updated handleDelete for Storage and Reports ⭐ ---
-    const handleDelete = async (locationToDelete) => {
-        if (!locationToDelete || !locationToDelete.id) return;
-        const locationId = locationToDelete.id;
-        const locationName = locationToDelete.name;
-        const isPending = locationToDelete.status === 'pending';
-
-        const confirmMessage = isPending 
-            ? `Are you sure you want to REJECT "${locationName}"? This will notify the user and remove the pin.` 
-            : `Are you sure you want to DELETE "${locationName}"? This cannot be undone.`;
-
-        if (window.confirm(confirmMessage)) {
-            try {
-                const locationRef = doc(db, "locations", locationId);
-
-                // --- ⭐ ส่งแจ้งเตือน (ทำแค่ครั้งเดียวที่นี่) ⭐ ---
-                // เช็กว่ามีคนส่ง และ คนส่ง "ไม่ใช่" Admin คนปัจจุบัน
-                if (locationToDelete.submittedBy && locationToDelete.submittedBy !== auth.currentUser.uid) {
-                    const message = isPending 
-                        ? `Your location submission "${locationName}" was rejected by admin.`
-                        : `Your location "${locationName}" has been removed by the administrator.`;
-                    
-                    await addDoc(collection(db, "users", locationToDelete.submittedBy, "notifications"), {
-                        type: 'rejected', 
-                        locationName: locationName,
-                        message: message,
-                        createdAt: serverTimestamp(),
-                        read: false
-                    });
-                }
-                // ------------------------------------------------
-
-                // 2. ลบรูปภาพ
-                if (locationToDelete.imageUrl) {
-                    try {
-                        const imageRef = storageRef(storage, locationToDelete.imageUrl);
-                        await deleteObject(imageRef);
-                    } catch (err) { 
-                        if (err.code !== 'storage/object-not-found') console.error("Image delete error:", err); 
-                    }
-                }
-
-                // 3. ลบ Reports & Reviews
-                const deleteSubCollection = async (collName) => {
-                    const q = query(collection(db, collName), where("locationId", "==", locationId));
-                    const snapshot = await getDocs(q);
-                    const promises = snapshot.docs.map(doc => deleteDoc(doc.ref));
-                    await Promise.all(promises);
-                };
-                await deleteSubCollection("reports");
-                await deleteSubCollection("reviews");
-
-                // 4. ลบเอกสาร Location (สุดท้าย)
-                await deleteDoc(locationRef);
-
-                console.log(`Location deleted: ${locationName}`);
-                toast.success(`ลบ "${locationName}" เรียบร้อยแล้ว`); // ใช้ Toast แจ้ง Admin
-
-            } catch (error) {
-                console.error(`Error processing ${locationName}:`, error);
-                toast.error(`เกิดข้อผิดพลาดในการลบ "${locationName}"`);
-            }
-        }
-    };
-
-    const handleApprove = async (location) => { 
-        try {
-            const locRef = doc(db, "locations", location.id);
-            await updateDoc(locRef, { status: 'approved' });
-
-            // --- ⭐ ส่งแจ้งเตือน (ทำแค่ครั้งเดียวที่นี่) ⭐ ---
-            // เช็กว่ามีคนส่ง และ คนส่ง "ไม่ใช่" Admin คนปัจจุบัน
-            if (location.submittedBy && location.submittedBy !== auth.currentUser.uid) {
-                await addDoc(collection(db, "users", location.submittedBy, "notifications"), {
-                    type: 'approved',
-                    locationName: location.name,
-                    message: "Your location has been approved and is now visible!",
-                    createdAt: serverTimestamp(),
-                    read: false
-                });
-            }
-            // ------------------------------------------------
-
-            toast.success(`อนุมัติ "${location.name}" เรียบร้อย!`);
-            // 🎉 จุดพลุให้ Admin ด้วย
-            confetti({
-                particleCount: 100,
-                spread: 60,
-                origin: { y: 0.6 }
-            });
-
-        } catch (error) {
-            console.error("Error approving:", error);
-            toast.error("ไม่สามารถอนุมัติได้");
-        }
-    };
+    // ❌ ลบ handleDelete และ handleApprove ในนี้ออกให้หมด (เพราะเราส่ง onApprove, onDelete มาจาก AdminDashboard แล้ว)
 
     const filteredLocations = locations.filter(loc =>
         loc.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // ... ใน const ManageLocations ...
-
     return (
-        <div className="dark:text-gray-200">
-            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
-                <h2 className="text-2xl md:text-3xl font-bold">Manage Locations</h2>
-                <div className="flex w-full md:w-auto space-x-2">
-                    <input type="text" placeholder="Search..." className="flex-1 px-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-                    <button onClick={() => handleOpenModal()} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap">Add Location</button>
+        <div className="dark:text-gray-200 p-2 sm:p-0">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+                <div>
+                    <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">
+                        Manage Locations
+                    </h2>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                        Total {currentFilter}: {locations.length}
+                    </p>
+                </div>
+                <div className="flex flex-col w-full md:w-auto gap-3 md:flex-row md:items-center">
+                    <div className="relative w-full md:w-64">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><SearchIcon /></span>
+                        <input
+                            type="text"
+                            placeholder="Search locations..."
+                            className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 focus:ring-2 focus:ring-blue-500 outline-none transition-shadow shadow-sm"
+                            value={searchTerm}
+                            onChange={(e) => setSearchTerm(e.target.value)}
+                        />
+                    </div>
+                    <button 
+                        onClick={() => handleOpenModal()} 
+                        className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition transform active:scale-95 flex items-center justify-center gap-2"
+                    >
+                        <PlusIcon /> <span>Add Pin</span>
+                    </button>
                 </div>
             </div>
 
-            <div className="mb-4 border-b border-gray-200 dark:border-gray-700 overflow-x-auto">
-                <nav className="-mb-px flex space-x-8" aria-label="Tabs">
-                    <button onClick={() => setStatusFilter('approved')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'approved' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Approved Locations</button>
-                    <button onClick={() => setStatusFilter('pending')} className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm ${statusFilter === 'pending' ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400' : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700'}`}>Pending Requests</button>
-                </nav>
+            {/* Tabs (ใช้ currentFilter/setFilter แทน) */}
+            <div className="flex space-x-2 mb-6 bg-gray-100 dark:bg-gray-800 p-1.5 rounded-2xl w-full md:w-fit">
+                <button
+                    onClick={() => setFilter('pending')}
+                    className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                        currentFilter === 'pending'
+                            ? 'bg-white dark:bg-gray-700 text-yellow-600 shadow-sm scale-105'
+                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                >
+                    <span>⏳ Pending Requests</span>
+                    {currentFilter === 'pending' && locations.length > 0 && (
+                        <span className="bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded-full text-xs">{locations.length}</span>
+                    )}
+                </button>
+                
+                <button
+                    onClick={() => setFilter('approved')}
+                    className={`flex-1 md:flex-none px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${
+                        currentFilter === 'approved'
+                            ? 'bg-white dark:bg-gray-700 text-green-600 shadow-sm scale-105'
+                            : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                    }`}
+                >
+                    <span>✅ Approved Locations</span>
+                </button>
             </div>
 
-            {/* 📱 Mobile View */}
-            <div className="grid grid-cols-1 gap-4 md:hidden">
-                {filteredLocations.map(loc => (
-                    <div key={loc.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-                        <div className="flex items-center space-x-3 mb-3">
-                            <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0">
-                                <img src={loc.imageUrl || "https://placehold.co/100"} alt={loc.name} className="w-full h-full object-cover" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                                <h3 className="font-bold text-gray-800 dark:text-white truncate">{loc.name}</h3>
-                                <span className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-700 rounded text-gray-600 dark:text-gray-300 capitalize">{loc.type}</span>
-                            </div>
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 mt-2">
-                            <button onClick={() => onViewLocation(loc)} className="bg-blue-50 text-blue-600 py-1.5 rounded-lg text-sm font-medium">View</button>
-                            <button onClick={() => handleOpenModal(loc)} className="bg-gray-100 text-gray-600 py-1.5 rounded-lg text-sm font-medium">Edit</button>
-                            {statusFilter === 'pending' && (
-                                <button onClick={() => handleApprove(loc)} className="col-span-2 bg-green-600 text-white py-1.5 rounded-lg text-sm font-bold">Approve</button>
-                            )}
-                            <button onClick={() => handleDelete(loc)} className="col-span-2 bg-red-50 text-red-600 py-1.5 rounded-lg text-sm font-medium border border-red-100">
-                                {statusFilter === 'pending' ? 'Reject' : 'Delete'}
-                            </button>
-                        </div>
-                    </div>
-                ))}
-            </div>
-
-            {/* 💻 Desktop View (ตารางเดิม) */}
-            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+            {/* Desktop Table */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
                 <table className="min-w-full leading-normal">
                     <thead>
-                        <tr>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Pin Name</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Type</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        <tr className="bg-gray-50 dark:bg-gray-900/50 text-left">
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location Info</th>
+                            <th className="px-6 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                            <th className="px-6 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {filteredLocations.map(loc => (
-                            <tr key={loc.id}>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">{loc.name}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm capitalize">{loc.type}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <div className="flex justify-center items-center space-x-2">
-                                        <button onClick={() => onViewLocation(loc)} className="text-blue-600 hover:text-blue-900">View</button>
-                                        {statusFilter === 'pending' && <button onClick={() => handleApprove(loc)} className="text-green-600 hover:text-green-900">Approve</button>}
-                                        <button onClick={() => handleOpenModal(loc)} className="text-indigo-600 hover:text-indigo-900">Edit</button>
-                                        <button onClick={() => handleDelete(loc)} className="text-red-600 hover:text-red-900">{statusFilter === 'pending' ? 'Reject' : 'Delete'}</button>
+                            <tr key={loc.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors group">
+                                <td className="px-6 py-4">
+                                    <div className="flex items-center">
+                                        <div className="h-12 w-12 rounded-xl overflow-hidden bg-gray-200 flex-shrink-0 shadow-sm group-hover:scale-110 transition-transform duration-300">
+                                            <img src={loc.imageUrl || "https://placehold.co/100"} alt="" className="h-full w-full object-cover" />
+                                        </div>
+                                        <div className="ml-4">
+                                            <div className="text-sm font-bold text-gray-900 dark:text-white">{loc.name}</div>
+                                            <div className="text-xs text-gray-500">Added: {loc.createdAt?.toDate().toLocaleDateString()}</div>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <td className="px-6 py-4">
+                                    <span className={`px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                                        loc.type === 'motorcycle' 
+                                        ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' 
+                                        : 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300'
+                                    }`}>
+                                        {loc.type === 'motorcycle' ? '🛵 Motorbike' : '🚌 Songthaew'}
+                                    </span>
+                                </td>
+
+                                <td className="px-6 py-4 text-center">
+                                    <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border ${
+                                        loc.status === 'pending'
+                                        ? 'bg-yellow-50 text-yellow-600 border-yellow-200 dark:bg-yellow-900/20 dark:border-yellow-800'
+                                        : 'bg-green-50 text-green-600 border-green-200 dark:bg-green-900/20 dark:border-green-800'
+                                    }`}>
+                                        <span className={`w-1.5 h-1.5 rounded-full ${loc.status === 'pending' ? 'bg-yellow-500 animate-pulse' : 'bg-green-500'}`}></span>
+                                        {loc.status === 'pending' ? 'Waiting Approval' : 'Active'}
+                                    </span>
+                                </td>
+
+                                {/* Actions: ใช้ onApprove / onDelete ที่ส่งมา */}
+                                <td className="px-6 py-4 text-center">
+                                    <div className="flex items-center justify-center gap-2">
+                                        <button 
+                                            onClick={() => onViewLocation(loc)} 
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-blue-50 text-blue-600 hover:bg-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:hover:bg-blue-900/40 transition border border-transparent hover:border-blue-200"
+                                        >
+                                            <TargetIcon /> View
+                                        </button>
+                                        
+                                        <button 
+                                            onClick={() => handleOpenModal(loc)} 
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-gray-100 text-gray-600 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600 transition border border-transparent hover:border-gray-300"
+                                        >
+                                            <span className="text-sm">✏️</span> Edit
+                                        </button>
+
+                                        {currentFilter === 'pending' && (
+                                            <button 
+                                                onClick={() => onApprove(loc)} 
+                                                className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-green-100 text-green-700 hover:bg-green-200 dark:bg-green-900/30 dark:text-green-400 dark:hover:bg-green-900/50 transition border border-transparent hover:border-green-300"
+                                            >
+                                                <CheckCircleIcon /> Approve
+                                            </button>
+                                        )}
+
+                                        <button 
+                                            onClick={() => onDelete(loc)} 
+                                            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition border border-transparent hover:border-red-200"
+                                        >
+                                            <TrashIcon /> {currentFilter === 'pending' ? 'Reject' : 'Delete'}
+                                        </button>
                                     </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                {filteredLocations.length === 0 && (
+                    <div className="text-center py-12 text-gray-400">
+                        <span className="text-4xl block mb-2 opacity-50">📭</span>
+                        No {currentFilter} locations found.
+                    </div>
+                )}
+            </div>
+
+            {/* Mobile View */}
+            <div className="grid grid-cols-1 gap-4 md:hidden">
+                {filteredLocations.map(loc => (
+                    <div key={loc.id} className="bg-white dark:bg-gray-800 p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
+                        <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${currentFilter === 'pending' ? 'bg-yellow-400' : 'bg-green-500'}`} />
+                        <div className="flex gap-4 pl-3">
+                            <div className="w-20 h-20 rounded-xl bg-gray-100 dark:bg-gray-700 overflow-hidden flex-shrink-0">
+                                <img src={loc.imageUrl || "https://placehold.co/150"} alt={loc.name} className="w-full h-full object-cover" />
+                            </div>
+                            <div className="flex-1 min-w-0 flex flex-col justify-between py-1">
+                                <div>
+                                    <h3 className="font-bold text-gray-800 dark:text-white truncate text-lg">{loc.name}</h3>
+                                    <span className="inline-block px-2 py-0.5 text-xs font-semibold bg-gray-100 dark:bg-gray-700 rounded text-gray-500 capitalize mt-1">
+                                        {loc.type === 'motorcycle' ? '🛵 Win' : '🚌 Bus'}
+                                    </span>
+                                </div>
+                                <p className="text-xs text-gray-400 mt-1">{loc.createdAt?.toDate().toLocaleDateString()}</p>
+                            </div>
+                        </div>
+                        <div className="flex gap-2 mt-4 pl-3">
+                            <button onClick={() => onViewLocation(loc)} className="flex-1 bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400 py-2 rounded-xl text-sm font-bold">View</button>
+                            <button onClick={() => handleOpenModal(loc)} className="flex-1 bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300 py-2 rounded-xl text-sm font-bold">Edit</button>
+                            {currentFilter === 'pending' ? (
+                                <>
+                                    <button onClick={() => onApprove(loc)} className="flex-1 bg-green-500 text-white py-2 rounded-xl text-sm font-bold shadow-lg shadow-green-500/30">Approve</button>
+                                    <button onClick={() => onDelete(loc)} className="w-10 flex items-center justify-center bg-red-100 text-red-500 dark:bg-red-900/30 rounded-xl"><TrashIcon/></button>
+                                </>
+                            ) : (
+                                <button onClick={() => onDelete(loc)} className="w-10 flex items-center justify-center bg-red-100 text-red-500 dark:bg-red-900/30 rounded-xl"><TrashIcon/></button>
+                            )}
+                        </div>
+                    </div>
+                ))}
             </div>
 
             {isModalOpen && <LocationFormModal currentLocation={currentLocation} onClose={handleCloseModal} onSuccess={handleCloseModal}/>}
@@ -1304,26 +1553,107 @@ const ManageLocations = ({ onViewLocation }) => {
     );
 };
 
+// --- ⭐ Reject Reason Modal (New Component) ⭐ ---
+const RejectModal = ({ location, onClose, onConfirm }) => {
+    const [reasonType, setReasonType] = useState('ข้อมูลไม่ถูกต้อง (Incorrect Info)');
+    const [customReason, setCustomReason] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    const predefinedReasons = [
+        "ข้อมูลไม่ถูกต้อง (Incorrect Info)",
+        "รูปภาพไม่ชัดเจน/ไม่เหมาะสม (Inappropriate Image)",
+        "ชื่อสถานที่หยาบคาย (Inappropriate Name)",
+        "ตำแหน่งหมุดผิดพลาด (Wrong Location)",
+        "หมุดซ้ำซ้อน (Duplicate Pin)",
+        "อื่นๆ (Other)"
+    ];
+
+    const handleSubmit = () => {
+        setLoading(true);
+        // ถ้าเลือก "อื่นๆ" ให้ใช้ข้อความที่พิมพ์เอง, ถ้าเลือกช้อยส์ ให้ใช้ช้อยส์ + ข้อความขยายความ
+        const finalReason = reasonType === 'อื่นๆ (Other)' 
+            ? customReason 
+            : `${reasonType} ${customReason ? '- ' + customReason : ''}`;
+        
+        onConfirm(location, finalReason);
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[70] flex items-center justify-center p-4" onClick={onClose}>
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md overflow-hidden" onClick={e => e.stopPropagation()}>
+                <div className="p-6">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">
+                        ❌ Reject / Delete
+                    </h3>
+                    <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+                        ระบุเหตุผลที่ปฏิเสธ/ลบหมุด: <span className="font-semibold text-blue-500">{location.name}</span>
+                    </p>
+
+                    <div className="space-y-4">
+                        {/* Dropdown เลือกเหตุผล */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">สาเหตุหลัก</label>
+                            <select 
+                                value={reasonType} 
+                                onChange={(e) => setReasonType(e.target.value)}
+                                className="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none"
+                            >
+                                {predefinedReasons.map(r => <option key={r} value={r}>{r}</option>)}
+                            </select>
+                        </div>
+
+                        {/* ช่องกรอกเพิ่มเติม */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                                {reasonType === 'อื่นๆ (Other)' ? 'ระบุสาเหตุ (จำเป็น)*' : 'รายละเอียดเพิ่มเติม (ถ้ามี)'}
+                            </label>
+                            <textarea 
+                                rows="3"
+                                value={customReason}
+                                onChange={(e) => setCustomReason(e.target.value)}
+                                className="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-white focus:ring-2 focus:ring-red-500 outline-none resize-none"
+                                placeholder="พิมพ์ข้อความถึงผู้ใช้..."
+                            ></textarea>
+                        </div>
+                    </div>
+
+                    <div className="flex gap-3 mt-6">
+                        <button onClick={onClose} className="flex-1 py-2.5 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">
+                            Cancel
+                        </button>
+                        <button 
+                            onClick={handleSubmit} 
+                            disabled={loading || (reasonType === 'อื่นๆ (Other)' && !customReason.trim())}
+                            className="flex-1 py-2.5 rounded-xl bg-red-600 hover:bg-red-700 text-white font-bold shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition"
+                        >
+                            {loading ? 'Processing...' : 'Confirm Reject'}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+};
+
 // --- Component: ManageReviews (สำหรับจัดการรีวิว) ---
 // --- Component: ManageReviews (Updated: Show Location Name + Search) ---
+// --- Component: ManageReviews (Updated: Consistent Delete Button) ---
 const ManageReviews = () => {
     const [reviews, setReviews] = useState([]);
-    const [locationsMap, setLocationsMap] = useState({}); // เก็บจับคู่ ID -> Name
+    const [locationsMap, setLocationsMap] = useState({}); 
     const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
-        // 1. ดึงข้อมูล Reviews
         const qReviews = query(collection(db, "reviews"));
         const unsubscribeReviews = onSnapshot(qReviews, (snapshot) => {
             setReviews(snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
         });
 
-        // 2. ดึงข้อมูล Locations (เพื่อเอาชื่อหมุดมาแสดง)
         const qLocations = query(collection(db, "locations"));
         const unsubscribeLocations = onSnapshot(qLocations, (snapshot) => {
             const locMap = {};
             snapshot.forEach(doc => {
-                locMap[doc.id] = doc.data().name; // จับคู่ ID กับชื่อ
+                locMap[doc.id] = doc.data().name; 
             });
             setLocationsMap(locMap);
         });
@@ -1334,52 +1664,32 @@ const ManageReviews = () => {
         };
     }, []);
 
-    // รับ locationId มาด้วย เพื่อจะไปดึงข้อมูลมานับใหม่
     const handleDeleteReview = async (reviewId, locationId) => {
-        if (!window.confirm("Are you sure you want to delete this review? This will recalculate the location's rating.")) {
-            return;
-        }
+        if (!window.confirm("Are you sure you want to delete this review? This will recalculate the location's rating.")) return;
 
         try {
-            // 1. ลบรีวิวออกจาก Collection reviews
             await deleteDoc(doc(db, "reviews", reviewId));
             
-            // 2. --- เริ่มกระบวนการคำนวณใหม่ (Recalculate) ---
-            
-            // ดึงรีวิว "ที่เหลืออยู่" ทั้งหมดของ Location นี้
+            // Recalculate Logic
             const q = query(collection(db, "reviews"), where("locationId", "==", locationId));
             const querySnapshot = await getDocs(q);
-
-            // คำนวณค่าใหม่
-            const newCount = querySnapshot.size; // จำนวนรีวิวที่เหลือ
+            const newCount = querySnapshot.size;
             let totalRating = 0;
-            querySnapshot.forEach((doc) => {
-                totalRating += doc.data().rating || 0;
-            });
-            
-            // หาค่าเฉลี่ย (ถ้าไม่มีรีวิวเหลือเลย ให้เป็น 0)
+            querySnapshot.forEach((doc) => { totalRating += doc.data().rating || 0; });
             const newAvg = newCount > 0 ? totalRating / newCount : 0;
 
-            // 3. บันทึกค่าสถิติใหม่ลงไปที่ Location
             const locationRef = doc(db, "locations", locationId);
-            await updateDoc(locationRef, {
-                reviewCount: newCount,
-                avgRating: newAvg
-            });
+            await updateDoc(locationRef, { reviewCount: newCount, avgRating: newAvg });
 
             toast.success("Review deleted and stats updated!");
-
         } catch (error) {
             console.error("Error deleting review:", error);
-            toast.error("Failed to delete review or update stats.");
+            toast.error("Failed to delete review.");
         }
     };
 
-    // --- Logic การกรองข้อมูล (Search) ---
     const filteredReviews = reviews.filter(review => {
-        // หาชื่อหมุดจาก ID
         const locationName = locationsMap[review.locationId] || ''; 
-        // เช็กว่าชื่อหมุด ตรงกับคำค้นหาหรือไม่ (ค้นหาจากชื่อ User ได้ด้วยถ้าต้องการ)
         return locationName.toLowerCase().includes(searchTerm.toLowerCase()) ||
                (review.userName && review.userName.toLowerCase().includes(searchTerm.toLowerCase()));
     });
@@ -1387,17 +1697,15 @@ const ManageReviews = () => {
     return (
         <div className="dark:text-gray-200">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-5 gap-4">
-                <h2 className="text-3xl font-bold">Manage Reviews</h2>
-                
-                {/* --- ⭐ ช่องค้นหา (Search Bar) ⭐ --- */}
+                <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500">Manage Reviews</h2>
                 <div className="relative w-full md:w-72">
-                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400">
                         <SearchIcon />
                     </div>
                     <input
                         type="text"
-                        placeholder="Search by Location Name..."
-                        className="w-full pl-10 pr-4 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="Search by Location or User..."
+                        className="w-full pl-10 pr-4 py-2 border rounded-xl dark:bg-gray-700 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none transition shadow-sm"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
@@ -1407,12 +1715,10 @@ const ManageReviews = () => {
             {/* 📱 Mobile View (Cards) */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {filteredReviews.map((review) => (
-                    <div key={review.id} className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700">
-                        
-                        {/* แสดงชื่อหมุด (Location Name) */}
+                    <div key={review.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                         <div className="mb-2 pb-2 border-b border-gray-100 dark:border-gray-700">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Review for:</p>
-                            <p className="font-bold text-blue-600 dark:text-blue-400 truncate">
+                            <p className="font-bold text-blue-600 dark:text-blue-400 truncate text-lg">
                                 📍 {locationsMap[review.locationId] || 'Unknown Location'}
                             </p>
                         </div>
@@ -1428,63 +1734,74 @@ const ManageReviews = () => {
                                 ))}
                             </div>
                         </div>
-                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-3 italic">"{review.text}"</p>
-                        <button onClick={() => handleDeleteReview(review.id, review.locationId)} className="w-full py-2 bg-red-50 text-red-600 rounded-lg text-sm font-bold border border-red-100 hover:bg-red-100 transition">
-                            Delete Review
+                        <p className="text-sm text-gray-700 dark:text-gray-300 mb-4 italic bg-gray-50 dark:bg-gray-700/50 p-3 rounded-xl border border-gray-100 dark:border-gray-600">"{review.text}"</p>
+                        
+                        {/* ⭐ ปุ่ม Delete บน Mobile (Full Width + Icon) ⭐ */}
+                        <button 
+                            onClick={() => handleDeleteReview(review.id, review.locationId)} 
+                            className="w-full flex items-center justify-center gap-2 py-2.5 bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 rounded-xl text-sm font-bold border border-red-100 dark:border-red-900/50 transition transform active:scale-95"
+                        >
+                            <TrashIcon /> Delete Review
                         </button>
                     </div>
                 ))}
             </div>
 
             {/* 💻 Desktop View (Table) */}
-            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-hidden">
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
                 <table className="min-w-full leading-normal">
                     <thead>
-                        <tr>
-                            {/* เพิ่มคอลัมน์ Location Name */}
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Location</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">User</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Review</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Rating</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Action</th>
+                        <tr className="bg-gray-50 dark:bg-gray-900/50 text-left">
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location</th>
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Review</th>
+                            <th className="px-5 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rating</th>
+                            <th className="px-5 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {filteredReviews.map((review) => (
-                            <tr key={review.id}>
-                                {/* แสดงชื่อหมุด */}
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                                    <p className="text-blue-600 dark:text-blue-400 font-semibold">
+                            <tr key={review.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                <td className="px-5 py-4">
+                                    <p className="text-blue-600 dark:text-blue-400 font-bold text-sm">
                                         {locationsMap[review.locationId] || 'Unknown'}
                                     </p>
                                 </td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                                    <p className="text-gray-900 dark:text-white font-bold">{review.userName}</p>
+                                <td className="px-5 py-4">
+                                    <p className="text-gray-900 dark:text-white font-bold text-sm">{review.userName}</p>
                                     <p className="text-gray-500 text-xs">{review.userEmail}</p>
                                 </td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm">
-                                    <p className="text-gray-700 dark:text-gray-300">{review.text}</p>
+                                <td className="px-5 py-4 max-w-xs">
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm truncate">{review.text}</p>
                                 </td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                                <td className="px-5 py-4 text-center">
                                     <div className="flex justify-center">
                                          {[...Array(5)].map((_, i) => (
                                             <StarIcon key={i} className={`h-4 w-4 ${i + 1 <= review.rating ? 'text-yellow-400' : 'text-gray-300'}`} filled />
                                         ))}
                                     </div>
                                 </td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <button onClick={() => handleDeleteReview(review.id, review.locationId)} className="text-red-600 hover:text-red-900 font-bold bg-red-50 px-3 py-1 rounded-lg hover:bg-red-100 transition">Delete</button>
+                                <td className="px-5 py-4 text-center">
+                                    {/* ⭐ ปุ่ม Delete บน Desktop (เหมือน Location Table) ⭐ */}
+                                    <button 
+                                        onClick={() => handleDeleteReview(review.id, review.locationId)} 
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition border border-transparent hover:border-red-200"
+                                    >
+                                        <TrashIcon /> Delete
+                                    </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                {filteredReviews.length === 0 && <div className="text-center py-10 text-gray-400">No reviews found.</div>}
             </div>
         </div>
     );
 };
 
 // --- Component: ManageReports (Updated: Beautiful Mobile Cards) ---
+// --- Component: ManageReports (Updated: Consistent Delete Button) ---
 const ManageReports = () => {
     const [reports, setReports] = useState([]);
 
@@ -1512,17 +1829,16 @@ const ManageReports = () => {
 
     return (
         <div className="dark:text-gray-200">
-            <h2 className="text-3xl font-bold mb-6">Manage Reports</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 mb-5">Manage Reports</h2>
 
-            {/* 📱 Mobile View (Cards) - แสดงเฉพาะบนมือถือ */}
+            {/* 📱 Mobile View (Cards) */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
                 {reports.map(report => (
                     <div key={report.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden">
                         
-                        {/* แถบสีสถานะด้านซ้าย */}
                         <div className={`absolute left-0 top-0 bottom-0 w-1.5 ${report.status === 'resolved' ? 'bg-green-500' : 'bg-yellow-500'}`}></div>
 
-                        {/* Header: ชื่อสถานที่ + วันที่ */}
+                        {/* Header */}
                         <div className="flex justify-between items-start mb-3 pl-2">
                             <div>
                                 <h3 className="font-bold text-lg text-gray-800 dark:text-white leading-tight">
@@ -1541,26 +1857,26 @@ const ManageReports = () => {
                             </span>
                         </div>
 
-                        {/* Body: ข้อความรายงาน */}
+                        {/* Body */}
                         <div className="bg-gray-50 dark:bg-gray-700/40 p-3 rounded-xl mb-4 ml-2 border border-gray-100 dark:border-gray-700">
                             <p className="text-sm text-gray-600 dark:text-gray-300 italic">
                                 "{report.reportText}"
                             </p>
                         </div>
 
-                        {/* Footer: User & Actions */}
+                        {/* Footer */}
                         <div className="flex flex-col sm:flex-row justify-between items-end sm:items-center gap-3 pl-2">
                             <div className="text-xs text-gray-400 w-full sm:w-auto">
                                 <span className="font-semibold text-gray-500 dark:text-gray-400">By:</span> {report.userEmail}
                             </div>
                             
-                            <div className="flex items-center gap-2 w-full sm:w-auto">
-                                {/* Dropdown เปลี่ยนสถานะ */}
+                            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+                                {/* Dropdown */}
                                 <div className="relative flex-1 sm:flex-none">
                                     <select 
                                         value={report.status} 
                                         onChange={(e) => handleStatusChange(report.id, e.target.value)}
-                                        className="w-full appearance-none bg-gray-100 dark:bg-gray-700 border-none text-gray-700 dark:text-gray-200 text-sm font-medium py-2 pl-3 pr-8 rounded-lg cursor-pointer focus:ring-2 focus:ring-blue-500"
+                                        className="w-full appearance-none bg-gray-100 dark:bg-gray-700 border-none text-gray-700 dark:text-gray-200 text-sm font-medium py-2 pl-3 pr-8 rounded-xl cursor-pointer focus:ring-2 focus:ring-blue-500"
                                     >
                                         <option value="pending">⏳ Pending</option>
                                         <option value="resolved">✅ Resolved</option>
@@ -1570,10 +1886,10 @@ const ManageReports = () => {
                                     </div>
                                 </div>
 
-                                {/* ปุ่มลบ */}
+                                {/* ⭐ ปุ่ม Delete บน Mobile (Square Icon Style) ⭐ */}
                                 <button 
                                     onClick={() => handleDelete(report.id)} 
-                                    className="p-2 bg-red-50 text-red-500 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                                    className="w-10 h-10 flex items-center justify-center bg-red-100 text-red-500 hover:bg-red-200 dark:bg-red-900/30 dark:text-red-400 dark:hover:bg-red-900/50 rounded-xl transition shadow-sm flex-shrink-0"
                                     title="Delete Report"
                                 >
                                     <TrashIcon />
@@ -1587,188 +1903,402 @@ const ManageReports = () => {
                 )}
             </div>
 
-            {/* 💻 Desktop View (Table) - แสดงเฉพาะบนจอใหญ่ (เหมือนเดิม) */}
-            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-md rounded-lg overflow-x-auto">
+            {/* 💻 Desktop View (Table) */}
+            <div className="hidden md:block bg-white dark:bg-gray-800 shadow-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700">
                 <table className="min-w-full leading-normal">
                     <thead>
-                        <tr>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Location Name</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Details</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">By</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-left text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Date</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Status</th>
-                            <th className="px-5 py-3 border-b-2 border-gray-200 dark:border-gray-700 bg-gray-100 dark:bg-gray-900 text-center text-xs font-semibold text-gray-600 dark:text-gray-300 uppercase tracking-wider">Actions</th>
+                        <tr className="bg-gray-50 dark:bg-gray-900/50 text-left">
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Location Name</th>
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Details</th>
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">By</th>
+                            <th className="px-5 py-4 text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                            <th className="px-5 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                            <th className="px-5 py-4 text-center text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                         {reports.map(report => (
-                            <tr key={report.id}>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm font-medium text-gray-900 dark:text-white">{report.locationName}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm max-w-xs break-words text-gray-600 dark:text-gray-300">{report.reportText}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-500">{report.userEmail}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-500">{report.createdAt?.toDate().toLocaleString()}</td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
+                            <tr key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                                <td className="px-5 py-4 text-sm font-medium text-gray-900 dark:text-white">{report.locationName}</td>
+                                <td className="px-5 py-4 text-sm max-w-xs break-words text-gray-600 dark:text-gray-300">{report.reportText}</td>
+                                <td className="px-5 py-4 text-sm text-gray-500">{report.userEmail}</td>
+                                <td className="px-5 py-4 text-sm text-gray-500">{report.createdAt?.toDate().toLocaleString()}</td>
+                                <td className="px-5 py-4 text-sm text-center">
                                     <select
                                         value={report.status} onChange={(e) => handleStatusChange(report.id, e.target.value)}
-                                        className={`py-1 px-2 rounded text-xs font-bold border-none cursor-pointer outline-none ${report.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400'}`}
+                                        className={`py-1 px-2 rounded-lg text-xs font-bold border-none cursor-pointer outline-none shadow-sm ${report.status === 'resolved' ? 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-400' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-400'}`}
                                     >
                                         <option value="pending">Pending</option> <option value="resolved">Resolved</option>
                                     </select>
                                 </td>
-                                <td className="px-5 py-5 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-center">
-                                    <button onClick={() => handleDelete(report.id)} className="p-2 bg-red-50 text-red-600 rounded-full hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/40 transition">
-                                        <TrashIcon />
+                                <td className="px-5 py-4 text-sm text-center">
+                                    {/* ⭐ ปุ่ม Delete บน Desktop (Table Style) ⭐ */}
+                                    <button 
+                                        onClick={() => handleDelete(report.id)} 
+                                        className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold bg-red-50 text-red-600 hover:bg-red-100 dark:bg-red-900/20 dark:text-red-400 dark:hover:bg-red-900/40 transition border border-transparent hover:border-red-200"
+                                    >
+                                        <TrashIcon /> Delete
                                     </button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
+                {reports.length === 0 && <div className="text-center py-10 text-gray-400">No reports found.</div>}
             </div>
         </div>
     );
 };
 
-const LocationMapView = ({ location, onBack }) => {
+// --- ⭐ Location Map View (Updated: มีปุ่ม Approve/Reject) ⭐ ---
+// --- ⭐ Location Map View (Updated: Mobile Responsive Layout) ⭐ ---
+// --- ⭐ Location Map View (Updated: Show ALL Context Pins) ⭐ ---
+// --- ⭐ Location Map View (Updated: High Contrast Context Pins) ⭐ ---
+// --- ⭐ Location Map View (Updated: Theme Colors - Blue & Red) ⭐ ---
+// --- ⭐ Location Map View (Updated: Make Context Pins POP with Pin Shape) ⭐ ---
+// --- ⭐ Location Map View (Updated: Interactive Pins & Red Target) ⭐ ---
+// --- ⭐ Location Map View (Updated: Fix Duplicate Markers & Clean Cleanup) ⭐ ---
+const LocationMapView = ({ location, onBack, onApprove, onReject, onSelectLocation }) => {
     const mapRef = useRef(null);
+    const mapInstanceRef = useRef(null);
     const isLoaded = window.google && window.google.maps;
     const [existingLocations, setExistingLocations] = useState([]);
+    
+    // ⭐ เพิ่ม Ref สำหรับเก็บหมุดทั้งหมด เพื่อใช้ลบก่อนวาดใหม่
+    const markersRef = useRef([]); 
+    const infoWindowRef = useRef(null);
 
-    // 1. ดึงข้อมูลหมุดที่ Approved แล้วมาเพื่อเป็น Context
+    // 1. ดึงข้อมูลหมุดบริบท
     useEffect(() => {
         const fetchExistingLocations = async () => {
             try {
-                // ดึงเฉพาะหมุดที่อนุมัติแล้ว (approved)
-                const q = query(collection(db, "locations"), where("status", "==", "approved"));
+                const q = query(collection(db, "locations")); 
                 const querySnapshot = await getDocs(q);
                 const locs = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
                 setExistingLocations(locs);
-            } catch (error) {
-                console.error("Error fetching context locations:", error);
-            }
+            } catch (error) { console.error("Error fetching context:", error); }
         };
-
         fetchExistingLocations();
     }, []);
 
-    // 2. วาดแผนที่และหมุด
+    // 2. วาดแผนที่ และจัดการหมุด
     useEffect(() => {
         if (isLoaded && mapRef.current) {
-            const map = new window.google.maps.Map(mapRef.current, {
-                center: { lat: location.lat, lng: location.lng },
-                zoom: 16, // ซูมเข้าไปใกล้หน่อยเพื่อให้เห็นชัด
-                disableDefaultUI: true,
-            });
+            // --- A. สร้าง Map Instance (ทำแค่ครั้งเดียว) ---
+            if (!mapInstanceRef.current) {
+                mapInstanceRef.current = new window.google.maps.Map(mapRef.current, {
+                    center: { lat: location.lat, lng: location.lng },
+                    zoom: 16,
+                    disableDefaultUI: true,
+                    gestureHandling: 'greedy',
+                });
+                
+                infoWindowRef.current = new window.google.maps.InfoWindow({
+                    maxWidth: 250,
+                    disableAutoPan: true
+                });
+            } else {
+                // ถ้ามี Map อยู่แล้ว ให้เลื่อนไปหาเป้าหมายใหม่
+                mapInstanceRef.current.panTo({ lat: location.lat, lng: location.lng });
+            }
 
-            // --- A. วาดหมุด Context (หมุดอื่นๆ ที่อนุมัติแล้ว) ---
-            // ให้เป็นสีฟ้า (Blue) หรือสีเทา เพื่อไม่ให้เด่นแย่งซีน
+            const map = mapInstanceRef.current;
+            const pinPath = "M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z";
+
+            // --- ⭐ B. ล้างหมุดเก่าทั้งหมดก่อนวาดใหม่ (แก้ปัญหาหมุดซ้อน) ⭐ ---
+            if (markersRef.current.length > 0) {
+                markersRef.current.forEach(marker => marker.setMap(null));
+                markersRef.current = []; // เคลียร์ Array
+            }
+
+            // --- C. วาดหมุดบริบท (Context Pins) ---
             existingLocations.forEach(loc => {
-                // อย่าเพิ่งวาด ถ้ามันคือหมุดตัวเดียวกับที่เรากำลังดูอยู่ (ป้องกันซ้อนทับ)
-                if (loc.id === location.id) return;
+                // ⚠️ เช็กให้ชัวร์ว่าไม่วาดทับหมุดเป้าหมาย (ใช้ ID เทียบ)
+                if (loc.id === location.id) return; 
 
-                new window.google.maps.Marker({
+                const isApproved = loc.status === 'approved';
+                const fillColor = isApproved ? "#3B82F6" : "#EAB308"; 
+
+                const marker = new window.google.maps.Marker({
                     position: { lat: loc.lat, lng: loc.lng },
                     map: map,
-                    title: `(Approved) ${loc.name}`,
-                    // ใช้ไอคอนสีฟ้า
-                    icon: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png", 
-                    opacity: 0.7 // ทำให้จางลงหน่อยจะได้รู้ว่าเป็นแค่พื้นหลัง
+                    icon: { 
+                        path: pinPath, 
+                        scale: 1.8, 
+                        fillColor: fillColor, 
+                        fillOpacity: 1, 
+                        strokeWeight: 1.5, 
+                        strokeColor: "#FFFFFF",
+                        anchor: new window.google.maps.Point(12, 24)
+                    },
+                    zIndex: 1 
                 });
+
+                // Interaction: Hover
+                marker.addListener("mouseover", () => {
+                    const contentString = `
+                        <div style="padding: 0px; text-align: center;">
+                            <div style="width: 100%; height: 80px; background-image: url('${loc.imageUrl || 'https://placehold.co/150'}'); background-size: cover; background-position: center; border-radius: 8px 8px 0 0;"></div>
+                            <div style="padding: 8px;">
+                                <h3 style="margin: 0; font-size: 14px; font-weight: bold; color: #333;">${loc.name}</h3>
+                                <span style="font-size: 10px; padding: 2px 6px; border-radius: 4px; background-color: ${isApproved ? '#dbeafe' : '#fef9c3'}; color: ${isApproved ? '#1e40af' : '#854d0e'}; margin-top: 4px; display: inline-block;">
+                                    ${isApproved ? '✅ Active' : '⏳ Pending'}
+                                </span>
+                                <p style="margin: 4px 0 0; font-size: 10px; color: #666;">Click to select</p>
+                            </div>
+                        </div>
+                    `;
+                    infoWindowRef.current.setContent(contentString);
+                    infoWindowRef.current.open(map, marker);
+                });
+
+                // Interaction: Click -> เปลี่ยนเป้าหมาย
+                marker.addListener("click", () => {
+                    if (onSelectLocation) {
+                        onSelectLocation(loc); // ส่งค่ากลับไปให้ AdminDashboard สลับหน้า
+                    }
+                });
+
+                // เก็บเข้า Array เพื่อรอลบ
+                markersRef.current.push(marker);
             });
 
-            // --- B. วาดหมุด Target (หมุดที่เรากำลังตรวจสอบ) ---
-            // ให้เป็นสีแดง (Red) และเด้งดึ๋งๆ (Bounce) จะได้เด่นที่สุด
-            new window.google.maps.Marker({
+            // --- 🎯 D. วาดหมุดเป้าหมาย (Target Pin) ---
+            const targetMarker = new window.google.maps.Marker({
                 position: { lat: location.lat, lng: location.lng },
                 map: map,
-                title: `Checking: ${location.name}`,
-                animation: window.google.maps.Animation.BOUNCE, // ใส่ Animation ให้เด้ง
-                icon: "http://maps.google.com/mapfiles/ms/icons/red-dot.png", // สีแดงชัดเจน
-                zIndex: 999 // ให้มันอยู่บนสุดเสมอ
+                title: `Target: ${location.name}`,
+                icon: {
+                    path: pinPath,
+                    fillColor: "#EF4444", // สีแดงเสมอ
+                    fillOpacity: 1,
+                    strokeWeight: 2,
+                    strokeColor: "#FFFFFF",
+                    scale: 2.5, 
+                    anchor: new window.google.maps.Point(12, 24),
+                },
+                animation: window.google.maps.Animation.BOUNCE,
+                zIndex: 999
             });
+
+            // เก็บหมุดเป้าหมายเข้า Array ด้วย (จะได้ลบได้เมื่อเปลี่ยนหน้า)
+            markersRef.current.push(targetMarker);
         }
     }, [isLoaded, location, existingLocations]);
 
+    // --- ส่วน Render HTML ---
     return (
-        <div className="dark:text-gray-200">
-            <div className="flex justify-between items-center mb-5">
-                <div>
-                    <h2 className="text-3xl font-bold">Viewing: {location.name}</h2>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                        <span className="inline-block w-3 h-3 bg-red-500 rounded-full mr-2"></span>Target Pin (Checking)
-                        <span className="ml-4 inline-block w-3 h-3 bg-blue-400 rounded-full mr-2"></span>Existing Pins (Context)
-                    </p>
+        <div className="dark:text-gray-200 h-full flex flex-col">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 shrink-0 gap-3">
+                <div className="w-full md:w-auto">
+                    <h2 className="text-xl md:text-2xl font-bold flex items-center gap-2 flex-wrap">
+                        <span className="break-words">📍 {location.name}</span>
+                        <span className={`text-xs px-2 py-1 rounded-full border whitespace-nowrap ${
+                            location.status === 'pending' 
+                            ? 'bg-yellow-100 text-yellow-700 border-yellow-200' 
+                            : 'bg-green-100 text-green-700 border-green-200'
+                        }`}>
+                            {location.status === 'pending' ? 'Waiting Approval' : 'Active'}
+                        </span>
+                    </h2>
+                    <p className="text-sm text-gray-500 mt-1">By: {location.userEmail || 'Unknown'}</p>
                 </div>
-                <button onClick={onBack} className="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">Back</button>
+                
+                <button onClick={onBack} className="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2">
+                    <BackIcon /> Back
+                </button>
             </div>
-            <div ref={mapRef} className="w-full h-[600px] rounded-lg shadow-md bg-gray-300 dark:bg-gray-700">
-                {!isLoaded && <div className="flex items-center justify-center h-full">Loading map...</div>}
+
+            <div className="flex-1 relative rounded-2xl overflow-hidden shadow-lg border border-gray-200 dark:border-gray-700 min-h-[300px]">
+                {!isLoaded && <div className="absolute inset-0 flex items-center justify-center bg-gray-100">Loading Map...</div>}
+                <div ref={mapRef} className="w-full h-full" />
+                
+                {location.status === 'pending' && (
+                    <div className="absolute bottom-4 left-4 right-4 md:bottom-8 md:left-1/2 md:right-auto md:transform md:-translate-x-1/2 flex flex-col md:flex-row gap-3 bg-white/95 dark:bg-gray-900/95 backdrop-blur-md p-3 rounded-2xl shadow-2xl border border-white/20">
+                        <button 
+                            onClick={() => onReject(location)} 
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-red-500 hover:bg-red-600 text-white font-bold py-3 md:py-2.5 px-6 rounded-xl shadow-md transition transform active:scale-95"
+                        >
+                            <TrashIcon /> Reject
+                        </button>
+                        <button 
+                            onClick={() => onApprove(location)} 
+                            className="flex-1 md:flex-none flex items-center justify-center gap-2 bg-green-500 hover:bg-green-600 text-white font-bold py-3 md:py-2.5 px-6 rounded-xl shadow-md transition transform active:scale-95"
+                        >
+                            <CheckCircleIcon /> Approve
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );
 };
 
 
+// --- ⭐ Admin Dashboard (Updated: Fix Back Navigation & Alerts) ⭐ ---
+// --- ⭐ Admin Dashboard (Logic Center) ⭐ ---
 function AdminDashboard() {
-    // --- ⭐ Updated: Removed Dashboard Link, Default to Users ⭐ ---
-    const [view, setView] = useState('users'); // Default view
+    // เพิ่มบรรทัดนี้ใน AdminDashboard (ใต้ const [locationFilter...])
+    const [isRejectModalOpen, setIsRejectModalOpen] = useState(false);
+    const [locationToReject, setLocationToReject] = useState(null);
+    const [view, setView] = useState('users'); 
     const [viewingLocation, setViewingLocation] = useState(null);
+    
+    // ⭐ เก็บ State ของ Tab Location ไว้ที่นี่ (ค่าจะไม่หายตอนเปลี่ยน View)
+    const [locationFilter, setLocationFilter] = useState('pending');
+
 
     const handleSignOut = async () => {
         try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); }
     };
 
+    // --- Logic อนุมัติ (รวมศูนย์ที่นี่) ---
+    const handleApproveLocation = async (location) => {
+        // ✅ Popup ยืนยันการอนุมัติ (ถ้าต้องการ)
+        if (!window.confirm(`ยืนยันการอนุมัติ "${location.name}"?`)) return;
+        
+        try {
+            const locRef = doc(db, "locations", location.id);
+            await updateDoc(locRef, { status: 'approved' });
+
+            if (location.submittedBy && location.submittedBy !== auth.currentUser.uid) {
+                await addDoc(collection(db, "users", location.submittedBy, "notifications"), {
+                    type: 'approved', locationName: location.name, message: "Your location has been approved and is now visible!", createdAt: serverTimestamp(), read: false
+                });
+            }
+
+            toast.success(`อนุมัติ "${location.name}" เรียบร้อย!`);
+            confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
+            
+            // ปิด Map (ถ้าเปิดอยู่) กลับไปหน้า List
+            setViewingLocation(null);
+
+        } catch (error) {
+            console.error("Error approving:", error);
+            toast.error("ไม่สามารถอนุมัติได้");
+        }
+    };
+
+    // --- Logic ลบ/ปฏิเสธ (รวมศูนย์ที่นี่) ---
+    // --- Logic ลบ/ปฏิเสธ (รวมศูนย์ที่นี่) ---
+    // --- 1. ฟังก์ชันเปิด Modal (ใช้แทน handleDeleteLocation เดิมตอนกดปุ่ม) ---
+    const openRejectModal = (location) => {
+        setLocationToReject(location);
+        setIsRejectModalOpen(true);
+    };
+
+    // --- 2. Logic การลบ/ปฏิเสธ ของจริง (ทำงานเมื่อกด Confirm ใน Modal) ---
+    // ฟังก์ชันนี้จะรับ 'reason' มาจาก Modal ครับ
+    const executeReject = async (location, reason) => {
+        const isPending = location.status === 'pending';
+        
+        try {
+            // 1. ลบรูปภาพ (ถ้ามี)
+            if (location.imageUrl) {
+                try { await deleteObject(storageRef(storage, location.imageUrl)); } catch (err) {}
+            }
+            
+            // 2. ลบเอกสารจาก Firestore
+            await deleteDoc(doc(db, "locations", location.id));
+
+            // 3. ส่ง Notification พร้อมเหตุผล
+            if (location.submittedBy) {
+                
+                // กำหนดประเภทและข้อความหัวเรื่อง
+                let notiType = 'rejected';
+                let headerMsg = `Your location "${location.name}" was rejected by admin.`;
+
+                // ถ้าไม่ใช่ Pending (คือลบหมุดที่อนุมัติแล้ว)
+                if (!isPending) {
+                    notiType = 'deleted';
+                    headerMsg = `Your location "${location.name}" has been removed by admin.`;
+                }
+
+                // ⚠️ บันทึกลง Firestore พร้อม reason
+                await addDoc(collection(db, "users", location.submittedBy, "notifications"), {
+                    type: notiType,
+                    locationName: location.name,
+                    message: headerMsg, 
+                    reason: reason, // ⭐ บันทึกเหตุผลลงไปตรงนี้
+                    createdAt: serverTimestamp(),
+                    read: false
+                });
+            }
+
+            toast.success(isPending ? "ปฏิเสธคำขอเรียบร้อย" : "ลบสถานที่เรียบร้อย");
+            
+            // Reset ค่าต่างๆ
+            setViewingLocation(null); // ปิด Map
+            setIsRejectModalOpen(false); // ปิด Modal
+            setLocationToReject(null);
+
+        } catch (error) {
+            console.error("Error deleting:", error);
+            toast.error("เกิดข้อผิดพลาด");
+            setIsRejectModalOpen(false); // กันเหนียว ปิด Modal ไว้ก่อนถ้า Error
+        }
+    };
+
     const renderView = () => {
         if (viewingLocation) {
-            return <LocationMapView location={viewingLocation} onBack={() => setViewingLocation(null)} />;
+            return (
+                <LocationMapView 
+                    location={viewingLocation} 
+                    onBack={() => setViewingLocation(null)} // กลับไปหน้า List (State Tab ยังอยู่)
+                    onApprove={handleApproveLocation}
+                    onReject={openRejectModal}
+                    onSelectLocation={setViewingLocation}
+                />
+            );
         }
         switch (view) {
             case 'users': return <ManageUsers />;
-            case 'locations': return <ManageLocations onViewLocation={setViewingLocation} />;
+            case 'locations': 
+                return (
+                    <ManageLocations 
+                        onViewLocation={setViewingLocation}
+                        // ส่ง State และ Function ลงไป
+                        currentFilter={locationFilter}
+                        setFilter={setLocationFilter}
+                        onApprove={handleApproveLocation}
+                        onDelete={openRejectModal}
+                    />
+                );
             case 'reports': return <ManageReports />;
-            case 'reviews': return <ManageReviews />; // <-- ⭐ เพิ่มบรรทัดนี้ ⭐
+            case 'reviews': return <ManageReviews />;
             default: return <ManageUsers />;
         }
     };
 
-    // ... ใน function AdminDashboard ...
-
     return (
-        // เปลี่ยน layout: มือถือเป็นแนวตั้ง (col), จอคอมเป็นแนวนอน (row)
         <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
             <Toaster position="top-right" reverseOrder={false} />
-            
-            {/* Sidebar / Topbar */}
             <div className="w-full md:w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col flex-shrink-0">
                 <div className="flex justify-between items-center md:block">
                     <h1 className="text-2xl font-bold mb-0 md:mb-10">Admin Panel</h1>
                 </div>
-                
-                {/* เมนู: มือถือเรียงแนวนอน, คอมเรียงแนวตั้ง */}
                 <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 mt-4 md:mt-0 overflow-x-auto pb-2 md:pb-0">
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'users' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Users</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'locations' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Locations</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reports' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Reports</a>
-                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reviews'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reviews' && !viewingLocation ? 'bg-gray-700 dark:bg-gray-800' : 'hover:bg-gray-700 dark:hover:bg-gray-800'}`}>Reviews</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'users' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Users</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'locations' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Locations</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reports' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Reports</a>
+                    <a href="#" onClick={(e) => { e.preventDefault(); setView('reviews'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reviews' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Reviews</a>
                 </nav>
-
-                <button onClick={handleSignOut} className="mt-auto w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hidden md:block">
-                    Sign Out
-                </button>
-                {/* ปุ่ม Logout มือถือ (แยกออกมาเพื่อให้จัดวางง่าย) */}
-                <button onClick={handleSignOut} className="mt-4 w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded md:hidden">
-                    Sign Out
-                </button>
+                <button onClick={handleSignOut} className="mt-auto w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hidden md:block">Sign Out</button>
             </div>
-
-            {/* Content Area */}
             <div className="flex-1 p-4 md:p-10 overflow-y-auto">
                 {renderView()}
             </div>
+            {/* 👇👇 วาง RejectModal ไว้ตรงนี้ (ก่อนปิด div หลักของ Dashboard) 👇👇 */}
+            {isRejectModalOpen && locationToReject && (
+                <RejectModal 
+                    location={locationToReject} 
+                    onClose={() => setIsRejectModalOpen(false)} 
+                    onConfirm={executeReject} 
+                />
+            )}
         </div>
     );
 }
-
 // ... (LocationFormModal - No changes needed) ...
 // ... (LocationFormModal ตัวใหม่) ...
 // ... (วางทับ LocationFormModal ตัวเดิม) ...
@@ -1932,15 +2462,52 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pin Name</label>
                             <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white" required />
                         </div>
-                        <div><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latitude</label><input type="number" value={lat} readOnly className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" /></div>
-                        <div><label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Longitude</label><input type="number" value={lng} readOnly className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-500 dark:text-gray-400 cursor-not-allowed" /></div>
+                        {/* Latitude */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latitude</label>
+                            <input 
+                                type="number" 
+                                step="any" // 👈 สำคัญ! เพื่อให้ใส่ทศนิยมละเอียดๆ ได้
+                                value={lat} 
+                                onChange={(e) => setLat(e.target.value)} // 👈 เพิ่มอันนี้ให้พิมพ์ค่าได้
+                                placeholder="13.xxxxxx"
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white transition-all" 
+                            />
+                        </div>
+
+                        {/* Longitude */}
+                        <div>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Longitude</label>
+                            <input 
+                                type="number" 
+                                step="any" // 👈 สำคัญ!
+                                value={lng} 
+                                onChange={(e) => setLng(e.target.value)} // 👈 เพิ่มอันนี้ให้พิมพ์ค่าได้
+                                placeholder="100.xxxxxx"
+                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white transition-all" 
+                            />
+                        </div>
+                        {/* Vehicle Type (ปรับปรุงใหม่: มีลูกศร Dropdown) */}
                         <div className="md:col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Vehicle Type</label>
+                            
                             <div className="relative">
-                                <select value={type} onChange={e => setType(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white appearance-none">
-                                    <option value="motorcycle">🛵 Win Motorbike</option>
-                                    <option value="songthaew">🚌 Songthaew</option>
+                                {/* ตัว Dropdown */}
+                                <select 
+                                    value={type} 
+                                    onChange={e => setType(e.target.value)} 
+                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white appearance-none cursor-pointer transition-shadow hover:shadow-sm"
+                                >
+                                    <option value="motorcycle">🛵 Win Motorbike (วินมอเตอร์ไซค์)</option>
+                                    <option value="songthaew">🚌 Songthaew (รถสองแถว)</option>
                                 </select>
+
+                                {/* ⭐⭐ ไอคอนลูกศรชี้ลง (วางทับด้านขวา) ⭐⭐ */}
+                                <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500 dark:text-gray-400">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1948,7 +2515,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
                     {/* Places & Prices */}
                     <div className="bg-gray-50 dark:bg-gray-700/30 rounded-2xl p-6 border border-gray-100 dark:border-gray-700/50">
                         <div className="flex justify-between items-center mb-4">
-                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200 uppercase tracking-wider">Destinations & Prices</h4>
+                            <h4 className="text-sm font-bold text-gray-700 dark:text-gray-200  tracking-wider">Destinations & Prices</h4>
                             <button type="button" onClick={addRoute} className="text-xs font-bold text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30 px-3 py-1.5 rounded-lg flex items-center"><span className="mr-1"><PlusIcon /></span> Add Route</button>
                         </div>
                         <div className="space-y-4">
@@ -2159,20 +2726,41 @@ const NotificationModal = ({ notifications, onClose }) => {
     <div className="fixed inset-0 bg-black/60 z-[60] flex items-center justify-center p-4" onClick={onClose}>
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-sm p-6 relative" onClick={e => e.stopPropagation()}>
         <h3 className="text-2xl font-bold mb-4 text-gray-800 dark:text-white text-center">🔔 Updates</h3>
-        <div className="space-y-3 max-h-[60vh] overflow-y-auto">
+        <div className="space-y-3 max-h-[60vh] overflow-y-auto custom-scrollbar">
           {notifications.map((noti) => (
-            <div key={noti.id} className={`p-3 rounded-lg border-l-4 shadow-sm ${
-              noti.type === 'approved' ? 'bg-green-50 border-green-500' : 'bg-red-50 border-red-500'
+            <div key={noti.id} className={`p-4 rounded-xl border-l-4 shadow-sm relative overflow-hidden ${
+              noti.type === 'approved' 
+                ? 'bg-green-50 border-green-500 dark:bg-green-900/20' 
+                : 'bg-red-50 border-red-500 dark:bg-red-900/20'
             }`}>
-              <h4 className={`font-bold ${noti.type === 'approved' ? 'text-green-700' : 'text-red-700'}`}>
-                {noti.type === 'approved' ? '✅ Approved' : '❌ Rejected'}
+              
+              {/* Header */}
+              <h4 className={`font-bold text-lg mb-1 ${noti.type === 'approved' ? 'text-green-700 dark:text-green-400' : 'text-red-700 dark:text-red-400'}`}>
+                {noti.type === 'approved' ? '✅ Approved' : noti.type === 'deleted' ? '🗑️ Deleted' : '❌ Rejected'}
               </h4>
-              <p className="text-gray-700 text-sm mt-1"><strong>{noti.locationName}</strong></p>
-              <p className="text-gray-600 text-xs">{noti.message}</p>
+              
+              {/* ชื่อสถานที่ */}
+              <p className="text-gray-800 dark:text-gray-200 text-sm font-semibold mb-1">
+                 📍 {noti.locationName}
+              </p>
+              
+              {/* ข้อความหลัก */}
+              <p className="text-gray-600 dark:text-gray-400 text-xs mb-2">
+                  {noti.message}
+              </p>
+
+              {/* ⭐⭐ ส่วนแสดงเหตุผล (Reason) ⭐⭐ */}
+              {noti.reason && (
+                  <div className="mt-2 p-2 bg-white/60 dark:bg-black/20 rounded-lg text-xs border border-gray-200 dark:border-gray-700">
+                      <span className="font-bold text-gray-700 dark:text-gray-300">Reason: </span>
+                      <span className="text-gray-600 dark:text-gray-400">{noti.reason}</span>
+                  </div>
+              )}
+
             </div>
           ))}
         </div>
-        <button onClick={onClose} className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg">
+        <button onClick={onClose} className="mt-6 w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition-transform active:scale-95">
           Got it
         </button>
       </div>
@@ -2309,6 +2897,28 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
     const [showTooCloseAlert, setShowTooCloseAlert] = useState(false);
 
+    const [showManualInput, setShowManualInput] = useState(false);
+    const [manualLat, setManualLat] = useState('');
+    const [manualLng, setManualLng] = useState('');
+
+    // ... state เดิม
+    const [isMyPinsModalOpen, setIsMyPinsModalOpen] = useState(false); // ⭐ State ใหม่
+    // --- ⭐ ฟังก์ชันเปิดหมุดจากรายการ My Pins ⭐ ---
+
+    const [isFavoritesModalOpen, setIsFavoritesModalOpen] = useState(false); // ⭐ State สำหรับเปิด Favorites
+
+    // 🟢 2.2 วางฟังก์ชัน ไว้ตรงนี้ (ก่อนถึง return)
+    // ---------------------------------------------------------
+    const handleSelectMyPin = (location) => {
+        setIsMyPinsModalOpen(false);
+        setMenuOpen(false);
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setCenter({ lat: location.lat, lng: location.lng });
+            mapInstanceRef.current.setZoom(17);
+        }
+        setSelectedLocation(location);
+    };
+    // ---------------------------------------------------------
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
     useEffect(() => { if (!user) { setUserLikes(new Set()); return; } const likesRef = collection(db, "users", user.uid, "likes"); const unsubscribe = onSnapshot(likesRef, (snapshot) => { setUserLikes(new Set(snapshot.docs.map(doc => doc.id))); }); return () => unsubscribe(); }, [user]);
@@ -2691,6 +3301,43 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
         return false; // ไม่มีจุดใกล้เคียง
     };
 
+    // --- ⭐ ฟังก์ชันรับค่าพิกัดที่กรอกเอง ⭐ ---
+    const handleManualSubmit = () => {
+        const lat = parseFloat(manualLat);
+        const lng = parseFloat(manualLng);
+
+        // เช็กว่ากรอกตัวเลขถูกไหม
+        if (isNaN(lat) || isNaN(lng)) {
+            toast.error("กรุณากรอกพิกัดเป็นตัวเลขให้ถูกต้อง");
+            return;
+        }
+
+        const coords = { lat, lng };
+        
+        // เช็กระยะห่าง (Optional: ถ้าอยากใช้กฎเดิม)
+        if (isTooCloseToExistingMarker(lat, lng)) {
+            setShowTooCloseAlert(true);
+            return;
+        }
+
+        setTempPin(coords); // บันทึกพิกัดชั่วคราว
+        
+        // เลื่อนแผนที่ไปจุดนั้น
+        if (mapInstanceRef.current) {
+            mapInstanceRef.current.setCenter(coords);
+            mapInstanceRef.current.setZoom(18);
+        }
+
+        // เปิด Modal กรอกข้อมูลทันที (เหมือนกด Confirm)
+        setIsAddLocationModalOpen(true);
+        setPinningMode(false);
+        setShowManualInput(false);
+        
+        // ล้างค่า
+        setManualLat('');
+        setManualLng('');
+    };
+
     const handleConfirmPin = () => { 
         // --- ⭐ เพิ่มส่วนเช็กระยะห่าง ⭐ ---
         if (isTooCloseToExistingMarker(tempPin.lat, tempPin.lng)) {
@@ -2723,6 +3370,8 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
     if (loadError) return <div className="flex items-center justify-center h-screen dark:bg-gray-900 text-red-500 dark:text-red-400 p-4 text-center">{loadError.message}</div>;
 
+
+    
     // --- ⭐ JSX Structure (Includes Dark Mode, Profile, Full Screen Image, Guest Login Button) ⭐ ---
     return (
         <div className="relative w-screen h-[100dvh] overflow-hidden touch-none">
@@ -2769,16 +3418,23 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                     src={localSelectedLocation.imageUrl || "https://placehold.co/600x400?text=Image"}
                                     alt={localSelectedLocation.name}
                                     className="w-full h-full object-cover"
+                                    referrerPolicy="no-referrer" // 👈 ⭐ เติมบรรทัดนี้เข้าไปครับ
                                     onClick={() => openImageModal(localSelectedLocation.imageUrl)}
                                 />
-                                {/* --- ⭐ 1. ปุ่ม Report (ย้ายมาซ่อนตรงนี้ มุมซ้ายบน) ⭐ --- */}
+                                {/* --- ⭐ ปุ่ม Report (ปรับปรุงใหม่: สีแดง + มีข้อความ) ⭐ --- */}
                                 <motion.button
-                                    whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}
+                                    whileHover={{ scale: 1.05 }} 
+                                    whileTap={{ scale: 0.95 }}
                                     onClick={() => { if (user) { setIsReportModalOpen(true) } else { toast.error('กรุณาเข้าสู่ระบบเพื่อรายงาน') } }}
-                                    className="absolute top-3 left-3 bg-black/40 hover:bg-red-600/80 text-white p-2 rounded-full backdrop-blur-sm transition-colors"
-                                    title="Report this location"
+                                    // เปลี่ยน Style ตรงนี้ครับ 👇
+                                    className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-red-600/90 hover:bg-red-700 text-white px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm transition-all border border-red-400/30"
                                 >
-                                    <FlagIcon />
+                                    {/* ลดขนาดไอคอนลงนิดนึง เพื่อความสมดุล */}
+                                    <div className="w-4 h-4">
+                                        <FlagIcon />
+                                    </div>
+                                    {/* เพิ่มข้อความบอกชัดเจน */}
+                                    <span className="text-xs font-bold tracking-wide">Report</span>
                                 </motion.button>
                                 {/* ------------------------------------------------------- */}
                                 {/* ปุ่มปิด X */}
@@ -2880,51 +3536,76 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
                                 {/* Action Buttons */}
                                 {/* Action Buttons ด้านล่าง (เรียงใหม่: Like -> Review -> Price -> Share) */}
-                                <div className="grid grid-cols-4 gap-2 pt-2">
+                                {/* --- ส่วนปุ่มกด (Action Buttons) --- */}
+                                {/* เงื่อนไข: ถ้าสถานะเป็น 'pending' (รออนุมัติ) ให้โชว์ป้ายเตือนแทนปุ่ม */}
+                                {localSelectedLocation.status === 'pending' ? (
                                     
-                                    {/* 1. ❤️ ปุ่ม Like */}
-                                    <motion.button 
-                                        whileTap={{ scale: 0.9 }} 
-                                        onClick={() => handleLike(localSelectedLocation)} 
-                                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition"
-                                    >
-                                        <LikeIcon isLiked={userLikes.has(localSelectedLocation.id)} />
-                                        <span className={`text-xs mt-1 font-medium ${userLikes.has(localSelectedLocation.id) ? 'text-blue-600' : 'text-gray-500 dark:text-gray-400'}`}>
-                                            {localSelectedLocation.likeCount || 0}
-                                        </span>
-                                    </motion.button>
+                                    // 🔒 ส่วนแสดงผลสำหรับหมุดที่รออนุมัติ (ทำอะไรไม่ได้นอกจากดู)
+                                    <div className="mt-4 rounded-xl bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-700/50 p-4 text-center">
+                                        <div className="flex flex-col items-center gap-2">
+                                            <div className="p-2 bg-yellow-100 dark:bg-yellow-900/40 rounded-full">
+                                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-yellow-600 dark:text-yellow-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                                                </svg>
+                                            </div>
+                                            <h4 className="text-sm font-bold text-yellow-800 dark:text-yellow-200">
+                                                รอการตรวจสอบ (Pending Approval)
+                                            </h4>
+                                            <p className="text-xs text-yellow-700 dark:text-yellow-300">
+                                                You can view details, but you cannot like, review, or share until it is approved.
+                                            </p>
+                                        </div>
+                                    </div>
 
-                                    {/* 2. 💬 ปุ่ม Review */}
-                                    <motion.button 
-                                        whileTap={{ scale: 0.9 }} 
-                                        onClick={() => setIsReviewsModalOpen(true)} 
-                                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400"
-                                    >
-                                        <ReviewIcon />
-                                        <span className="text-xs mt-1 font-medium">Review</span>
-                                    </motion.button>
+                                ) : (
+                                    
+                                    // 🔓 ส่วนแสดงผลสำหรับหมุดปกติ (Approved) -> โค้ดเดิมของคุณที่ปุ่มครบ
+                                    <div className="grid grid-cols-4 gap-2 pt-2">
+                                        
+                                        {/* 1. ❤️ ปุ่ม Like */}
+                                        <motion.button 
+                                            whileTap={{ scale: 0.9 }} 
+                                            onClick={() => handleLike(localSelectedLocation)} 
+                                            className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition"
+                                        >
+                                            <LikeIcon isLiked={userLikes.has(localSelectedLocation.id)} />
+                                            <span className={`text-xs mt-1 font-medium ${userLikes.has(localSelectedLocation.id) ? 'text-pink-500' : 'text-gray-500 dark:text-gray-400'}`}>
+                                                {localSelectedLocation.likeCount || 0}
+                                            </span>
+                                        </motion.button>
 
-                                    {/* 3. ฿ ปุ่ม Prices */}
-                                    <motion.button 
-                                        whileTap={{ scale: 0.9 }} 
-                                        onClick={() => setShowPrices(prev => !prev)} 
-                                        className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${showPrices ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400'}`}
-                                    >
-                                        {showPrices ? <ImageIcon /> : <PriceIcon />}
-                                        <span className="text-xs mt-1 font-medium">{showPrices ? 'Info' : 'Prices'}</span>
-                                    </motion.button>
+                                        {/* 2. 💬 ปุ่ม Review */}
+                                        <motion.button 
+                                            whileTap={{ scale: 0.9 }} 
+                                            onClick={() => setIsReviewsModalOpen(true)} 
+                                            className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400"
+                                        >
+                                            <ReviewIcon />
+                                            <span className="text-xs mt-1 font-medium">Review</span>
+                                        </motion.button>
 
-                                    {/* 4. 🔗 ปุ่ม Share */}
-                                    <motion.button 
-                                        whileTap={{ scale: 0.9 }} 
-                                        onClick={handleShare} 
-                                        className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400"
-                                    >
-                                        <ShareIcon />
-                                        <span className="text-xs mt-1 font-medium">Share</span>
-                                    </motion.button>
+                                        {/* 3. ฿ ปุ่ม Prices */}
+                                        <motion.button 
+                                            whileTap={{ scale: 0.9 }} 
+                                            onClick={() => setShowPrices(prev => !prev)} 
+                                            className={`flex flex-col items-center justify-center p-2 rounded-xl transition ${showPrices ? 'bg-blue-50 dark:bg-blue-900/20 text-blue-600' : 'hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-500 dark:text-gray-400'}`}
+                                        >
+                                            {showPrices ? <ImageIcon /> : <PriceIcon />}
+                                            <span className="text-xs mt-1 font-medium">{showPrices ? 'Info' : 'Prices'}</span>
+                                        </motion.button>
 
-                                </div>
+                                        {/* 4. 🔗 ปุ่ม Share */}
+                                        <motion.button 
+                                            whileTap={{ scale: 0.9 }} 
+                                            onClick={handleShare} 
+                                            className="flex flex-col items-center justify-center p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700/50 transition text-gray-500 dark:text-gray-400"
+                                        >
+                                            <ShareIcon />
+                                            <span className="text-xs mt-1 font-medium">Share</span>
+                                        </motion.button>
+
+                                    </div>
+                                )}
                             </div>
                         </motion.div>
                     </motion.div>
@@ -2976,7 +3657,68 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             )}
 
             {/* Pinning UI */}
-            {pinningMode && (<div className="absolute top-0 left-0 right-0 p-4 bg-blue-600 text-white text-center z-20 flex justify-center items-center shadow-lg"><p className="font-semibold text-lg">{tempPin ? 'Location selected. Confirm or Cancel.' : 'Click map to place pin.'}</p><button onClick={handleCancelPin} className="ml-6 bg-white text-blue-600 font-bold py-1 px-4 rounded-full text-sm hover:bg-blue-100">Cancel</button></div>)}
+            {/* Pinning UI (Updated with Manual Input Button) */}
+            {pinningMode && (
+                <div className="absolute top-0 left-0 right-0 p-4 bg-blue-600 text-white z-20 shadow-lg flex flex-col sm:flex-row items-center justify-between gap-3">
+                    
+                    <p className="font-semibold text-lg text-center sm:text-left flex-1">
+                        {tempPin ? '📍 The position has been selected. Click Confirm.' : '👇 Click or follow the coordinates.'}
+                    </p>
+
+                    <div className="flex gap-2">
+                        {/* ⭐ ปุ่มกรอกพิกัดเอง (Input Coords) ⭐ */}
+                        <button 
+                            onClick={() => setShowManualInput(true)}
+                            className="bg-white/20 hover:bg-white/30 text-white font-bold py-1.5 px-4 rounded-full text-sm border border-white/50 transition"
+                        >
+                            ✏️ coordinates
+                        </button>
+
+                        <button 
+                            onClick={handleCancelPin} 
+                            className="bg-white text-blue-600 font-bold py-1.5 px-4 rounded-full text-sm hover:bg-blue-50 transition"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
+
+            {/* ⭐ Modal กรอกพิกัด (Manual Input Modal) ⭐ */}
+            {showManualInput && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4" onClick={() => setShowManualInput(false)}>
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-2xl w-full max-w-sm" onClick={e => e.stopPropagation()}>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">📍 Enter Coordinates</h3>
+                        
+                        <div className="space-y-3">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Latitude</label>
+                                <input 
+                                    type="number" step="any" placeholder="13.xxxxxx"
+                                    value={manualLat} onChange={e => setManualLat(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                    autoFocus
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Longitude</label>
+                                <input 
+                                    type="number" step="any" placeholder="100.xxxxxx"
+                                    value={manualLng} onChange={e => setManualLng(e.target.value)}
+                                    className="w-full px-3 py-2 rounded-lg border dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        <div className="flex justify-end gap-2 mt-6">
+                            <button onClick={() => setShowManualInput(false)} className="px-4 py-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Cancel</button>
+                            <button onClick={handleManualSubmit} className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-lg shadow-md transition">
+                                Next
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
             {tempPin && (<div className="absolute bottom-10 left-1/2 -translate-x-1/2 z-20 flex space-x-4"><button onClick={handleConfirmPin} className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-3 px-8 text-lg rounded-full shadow-lg">Confirm Pin</button><button onClick={handleCancelPin} className="bg-white hover:bg-gray-100 text-gray-700 font-bold py-3 px-8 text-lg rounded-full shadow-lg">Cancel</button></div>)}
             {isAddLocationModalOpen && (<LocationFormModal initialCoords={tempPin} onSuccess={handleSubmissionSuccess} onClose={() => { setIsAddLocationModalOpen(false); setTempPin(null); }} />)}
             
@@ -2984,19 +3726,162 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             {/* Search Results Panel */}
             {searchQuery.length > 0 && (<div className="absolute top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-gray-800 z-30 shadow-lg p-6 flex flex-col"><div className="relative flex items-center mb-4"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"><SearchIcon/></span><input type="text" className="w-full pl-10 pr-10 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-100" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." autoFocus /><button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div><ul className="space-y-2 overflow-y-auto">{searchResults.map((loc) => (<li key={loc.id} className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-lg" onClick={() => handleSearchResultClick(loc)}><div className="mr-3 text-gray-400 dark:text-gray-500">{loc.type === 'motorcycle' ? <MotorcycleIcon/> : <BusIcon/>}</div><span className="text-gray-700 dark:text-gray-200">{loc.name}</span></li>))}{searchResults.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-4">No results.</p>}</ul></div>)}
 
+            {isMyPinsModalOpen && user && (
+                <MyPinsModal 
+                    user={user} 
+                    onClose={() => setIsMyPinsModalOpen(false)} 
+                    onSelectLocation={handleSelectMyPin} 
+                />
+            )}
+            {/* ⭐ แสดง Modal Favorites ⭐ */}
+            {isFavoritesModalOpen && user && (
+                <FavoritesModal 
+                    locations={locations} // ส่งข้อมูลหมุดทั้งหมดไป
+                    userLikes={userLikes} // ส่งรายการ ID ที่ชอบไป
+                    onClose={() => setIsFavoritesModalOpen(false)} 
+                    onSelectLocation={(loc) => {
+                        // ใช้ฟังก์ชันเดียวกับ My Pins ได้เลย เพื่อพุ่งไปหาหมุด
+                        handleSelectMyPin(loc); 
+                        setIsFavoritesModalOpen(false);
+                    }} 
+                />
+            )}
+
             {/* User Menu Panel (Includes Dark Mode, Profile Edit, Guest Login) */}
-            <div className={`absolute top-0 left-0 h-full bg-white dark:bg-gray-800 shadow-lg z-30 transform transition-transform duration-300 ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'} w-80 p-6`}>
-                 <div className="flex items-center space-x-4"><div className="w-14 h-14 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400 text-2xl font-bold">{user ? (user.displayName || user.email)?.charAt(0).toUpperCase() : 'G'}</div><div><h3 className="font-bold text-lg dark:text-white">{user?.displayName || user?.email?.split('@')[0] || "Guest"}</h3>{user && <p className="text-sm text-gray-500 dark:text-gray-400">Joined {new Date(user.metadata.creationTime).toLocaleDateString()}</p>}</div></div>
-                {user && <p className="text-sm text-gray-600 dark:text-gray-400 mt-4 break-words">{user.email}</p>}
-                <div className="border-t dark:border-gray-700 my-6"></div>
-                <nav className="space-y-4">
-                    
-                    {/* Profile Button */}
-                    {user && (<button onClick={() => {setIsProfileModalOpen(true); setMenuOpen(false);}} className="flex items-center space-x-3 text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 w-full text-left"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg><span>Profile</span></button>)}
-                    {/* Logout / Login Button */}
-                    {user ? (<button onClick={handleSignOut} className="w-full flex items-center space-x-3 text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg><span>Log out</span></button>)
-                    : (<button onClick={() => setView('welcome')} className="w-full flex items-center space-x-3 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"><svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1" /></svg><span>Login / Sign Up</span></button>)}
-                </nav>
+            {/* --- ⭐ Sidebar Menu (Redesigned: Cosmic Command Center) ⭐ --- */}
+            <div className={`fixed inset-y-0 left-0 w-72 bg-[#0f172a]/95 backdrop-blur-xl border-r border-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+                
+                {/* 1. Header & Profile Section (ส่วนหัว) */}
+                <div className="relative p-6 pt-10 pb-8 overflow-hidden">
+                    {/* แสงพื้นหลังตกแต่ง */}
+                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-600/20 to-transparent pointer-events-none" />
+                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/30 rounded-full blur-3xl pointer-events-none" />
+
+                    {/* ข้อมูล User */}
+                    <div className="relative z-10 flex flex-col items-center">
+                         {/* รูป Avatar (มีวงแหวนสีรุ้ง) */}
+                        {/* รูป Avatar (มีวงแหวนสีรุ้ง) */}
+                        <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500 shadow-lg mb-3">
+                            <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden border-2 border-slate-900">
+                                {/* ⭐ ถ้ามีรูป ให้โชว์รูป ถ้าไม่มี ให้โชว์ตัวอักษร ⭐ */}
+                                {user?.photoURL ? (
+                                    <img 
+                                        src={user.photoURL} 
+                                        alt="Profile" 
+                                        className="w-full h-full object-cover"
+                                        referrerPolicy="no-referrer" // 👈 ⭐ เติมบรรทัดนี้เข้าไปครับ
+                                    />
+                                ) : (
+                                    <span className="text-3xl font-bold text-white">
+                                        {user?.displayName ? user.displayName.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'G'}
+                                    </span>
+                                )}
+                            </div>
+                        </div>
+                        
+                        {/* ชื่อและอีเมล */}
+                        <h3 className="text-xl font-bold text-white tracking-wide truncate max-w-[200px] text-center">
+                            {user?.displayName || (user?.email ? user.email.split('@')[0] : "Guest User")}
+                        </h3>
+                        {user && (
+                            <p className="text-xs text-slate-400 mt-1 font-mono bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700 truncate max-w-[220px]">
+                                {user.email}
+                            </p>
+                        )}
+                        <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
+                            <span className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></span> 
+                            {user ? `Joined ${new Date(user.metadata.creationTime).toLocaleDateString()}` : 'Not Logged In'}
+                        </p>
+                    </div>
+
+                    {/* ปุ่มปิด X (มุมขวาบน) */}
+                    <button 
+                        onClick={() => setMenuOpen(false)}
+                        className="absolute top-4 right-4 p-1 text-slate-500 hover:text-white transition-colors"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                    </button>
+                </div>
+
+                {/* 2. Menu Items (รายการเมนู) */}
+                <div className="flex-1 px-4 py-2 space-y-2 overflow-y-auto custom-scrollbar">
+                    {user ? (
+                        <>
+                            <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 mb-2 mt-2">Main Menu</p>
+                            
+                            {/* ปุ่ม Profile */}
+                            <button 
+                                onClick={() => {setIsProfileModalOpen(true); setMenuOpen(false);}} 
+                                className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-2xl transition-all group border border-transparent hover:border-slate-700"
+                            >
+                                <div className="p-2 bg-slate-800 rounded-xl group-hover:bg-blue-600/20 group-hover:text-blue-400 transition-colors shadow-sm">
+                                     <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                                </div>
+                                <span className="font-medium">My Profile</span>
+                            </button>
+
+                            {/* ปุ่ม My Pins */}
+                            <button 
+                                onClick={() => {
+                                    setIsMyPinsModalOpen(true);
+                                    setMenuOpen(false); // 👈 แก้ตรงนี้ครับ ปิดเมนูปุ๊บ เห็น Modal ปั๊บ
+                                }} 
+                                className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-2xl transition-all group border border-transparent hover:border-slate-700"
+                            >
+                                <div className="p-2 bg-slate-800 rounded-xl group-hover:bg-purple-600/20 group-hover:text-purple-400 transition-colors shadow-sm">
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <span className="font-medium">My Pins</span>
+                                </div>
+                            </button>
+                            {/* ⭐ ปุ่ม Favorites (เพิ่มตรงนี้) ⭐ */}
+                            <button 
+                                onClick={() => {
+                                    setIsFavoritesModalOpen(true);
+                                    setMenuOpen(false);
+                                }} 
+                                className="w-full flex items-center gap-3 px-4 py-3 text-slate-300 hover:text-white hover:bg-white/5 rounded-2xl transition-all group border border-transparent hover:border-slate-700"
+                            >
+                                <div className="p-2 bg-slate-800 rounded-xl group-hover:bg-pink-600/20 group-hover:text-pink-400 transition-colors shadow-sm">
+                                    {/* ไอคอนหัวใจ */}
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                                    </svg>
+                                </div>
+                                <div className="flex-1 text-left">
+                                    <span className="font-medium">Favorites</span>
+                                </div>
+                            </button>
+                        </>
+                    ) : (
+                        <div className="text-center py-10 px-4">
+                            <p className="text-slate-400 text-sm mb-4">Please login to access more features.</p>
+                            <button 
+                                onClick={() => setView('welcome')} 
+                                className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-xl font-bold shadow-lg hover:shadow-blue-500/30 transition-all"
+                            >
+                                Login / Sign Up
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* 3. Footer / Logout (ปุ่มล็อกเอาท์) */}
+                {user && (
+                    <div className="p-6 border-t border-slate-800 bg-[#0f172a]/80">
+                        <button 
+                            onClick={handleSignOut} 
+                            className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-red-500/10 hover:bg-red-500/20 text-red-500 hover:text-red-400 rounded-2xl transition-all border border-red-500/20 hover:border-red-500/40 shadow-lg hover:shadow-red-900/20"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+                            <span className="font-bold">Log Out</span>
+                        </button>
+                        <p className="text-[10px] text-center text-slate-600 mt-4 font-mono tracking-wider opacity-50">
+                            EASYWAY v1.0 • SPACE EDITION 🚀
+                        </p>
+                    </div>
+                )}
             </div>
             {isMenuOpen && <div onClick={() => setMenuOpen(false)} className="absolute inset-0 z-20 bg-black/40"></div>}
 
@@ -3007,7 +3892,42 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                 <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex flex-col space-y-2 pointer-events-auto">
                     <button onClick={moveToCurrentLocation} className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><TargetIcon /></button>
                     <div className="bg-white dark:bg-gray-800 rounded-full shadow-md"><button onClick={handleZoomIn} className="p-3 block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-full"><PlusIcon /></button><hr className="dark:border-gray-600"/><button onClick={handleZoomOut} className="p-3 block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-full"><MinusIcon /></button></div>
-                    <div className="bg-white dark:bg-gray-800 rounded-full shadow-md flex flex-col"><button onClick={() => setFilterType(prev => prev === 'songthaew' ? 'all' : 'songthaew')} className={`p-3 rounded-t-full ${filterType === 'songthaew' ? 'bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><BusIcon /></button><hr className="dark:border-gray-600"/><button onClick={() => setFilterType(prev => prev === 'motorcycle' ? 'all' : 'motorcycle')} className={`p-3 rounded-b-full ${filterType === 'motorcycle' ? 'bg-blue-100 dark:bg-blue-900 text-blue-500 dark:text-blue-400' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'}`}><MotorcycleIcon /></button></div>
+                    {/* ... ในส่วน Map Controls ... */}
+                    <div className="bg-white dark:bg-gray-800 rounded-full shadow-md flex flex-col overflow-hidden">
+                        
+                        {/* 🚌 ปุ่มสองแถว (ให้ไอคอนเป็นสีน้ำเงิน "ตลอดเวลา") */}
+                        <button 
+                            onClick={() => setFilterType(prev => prev === 'songthaew' ? 'all' : 'songthaew')} 
+                            className={`p-3 transition-colors ${
+                                filterType === 'songthaew' 
+                                ? 'bg-blue-100 dark:bg-blue-900/50' // ถ้าเลือกอยู่: พื้นหลังฟ้า
+                                : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700' // ถ้าไม่เลือก: พื้นใส
+                            }`}
+                        >
+                            {/* ⭐ ใส่สีที่ตัวไอคอนเลย (text-blue-600) ไม่ต้องรอ hover */}
+                            <div className="text-blue-600 dark:text-blue-400">
+                                <BusIcon />
+                            </div>
+                        </button>
+
+                        <hr className="border-gray-200 dark:border-gray-700"/>
+
+                        {/* 🛵 ปุ่มวิน (ให้ไอคอนเป็นสีแดง "ตลอดเวลา") */}
+                        <button 
+                            onClick={() => setFilterType(prev => prev === 'motorcycle' ? 'all' : 'motorcycle')} 
+                            className={`p-3 transition-colors ${
+                                filterType === 'motorcycle' 
+                                ? 'bg-red-100 dark:bg-red-900/50' // ถ้าเลือกอยู่: พื้นหลังแดง
+                                : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700' // ถ้าไม่เลือก: พื้นใส
+                            }`}
+                        >
+                            {/* ⭐ ใส่สีที่ตัวไอคอนเลย (text-red-600) ไม่ต้องรอ hover */}
+                            <div className="text-red-600 dark:text-red-400">
+                                <MotorcycleIcon />
+                            </div>
+                        </button>
+
+                    </div>
                 </div>
                 <div className="absolute bottom-4 left-4 pointer-events-auto">{user && !pinningMode && (<button onClick={() => setPinningMode(true)} className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600"><AddPinIcon /></button>)}</div>
             </div>
