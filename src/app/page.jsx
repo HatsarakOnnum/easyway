@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from 'react-hot-toast';
 import Tilt from 'react-parallax-tilt';
 import confetti from 'canvas-confetti';
+import imageCompression from 'browser-image-compression';
 // --- Firebase Initialization ---
 // --- Firebase Initialization ---
 import { initializeApp } from "firebase/app";
@@ -2918,6 +2919,58 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
         }
         setSelectedLocation(location);
     };
+
+    // --- 📸 เพิ่ม State และฟังก์ชันอัปโหลดรูปโปรไฟล์ ---
+    const [isUploadingProfile, setIsUploadingProfile] = useState(false);
+
+    // --- 📸 ฟังก์ชันอัปโหลดรูปโปรไฟล์ (เวอร์ชั่นบีบอัดไฟล์) ---
+    const handleProfileImageUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        // เช็กไฟล์ว่าเป็นรูปภาพไหม
+        if (!file.type.startsWith('image/')) {
+            toast.error("กรุณาเลือกไฟล์รูปภาพเท่านั้น");
+            return;
+        }
+
+        setIsUploadingProfile(true);
+        // เปลี่ยน Toast ให้บอกสถานะละเอียดขึ้น
+        const toastId = toast.loading("กำลังบีบอัดและอัปโหลด... 📸");
+
+        try {
+            // ⭐ 1. ตั้งค่าการบีบอัด
+            const options = {
+                maxSizeMB: 0.5,          // บีบให้เหลือไม่เกิน 0.5 MB (500KB)
+                maxWidthOrHeight: 1024,  // ย่อขนาดภาพให้ด้านที่ยาวที่สุดไม่เกิน 1024px
+                useWebWorker: true       // ใช้ WebWorker เพื่อไม่ให้หน้าเว็บค้างตอนบีบอัด
+            };
+
+            // ⭐ 2. เริ่มการบีบอัด
+            console.log(`Original size: ${file.size / 1024 / 1024} MB`);
+            const compressedFile = await imageCompression(file, options);
+            console.log(`Compressed size: ${compressedFile.size / 1024 / 1024} MB`);
+
+            // ⭐ 3. อัปโหลดไฟล์ที่บีบอัดแล้ว (compressedFile) แทนไฟล์เดิม
+            const fileRef = storageRef(storage, `profile_pictures/${user.uid}`);
+            
+            await uploadBytes(fileRef, compressedFile);
+            const newPhotoURL = await getDownloadURL(fileRef);
+
+            // 4. อัปเดตข้อมูล User
+            await updateProfile(auth.currentUser, { photoURL: newPhotoURL });
+            const userDocRef = doc(db, "users", user.uid);
+            await updateDoc(userDocRef, { photoURL: newPhotoURL });
+
+            toast.success("เปลี่ยนรูปโปรไฟล์เรียบร้อย! ✨", { id: toastId });
+
+        } catch (error) {
+            console.error("Error uploading profile:", error);
+            toast.error("เกิดข้อผิดพลาด: " + error.message, { id: toastId });
+        } finally {
+            setIsUploadingProfile(false);
+        }
+    };
     // ---------------------------------------------------------
     useEffect(() => { setLocalSelectedLocation(selectedLocation); }, [selectedLocation]);
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
@@ -3760,22 +3813,54 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                     {/* ข้อมูล User */}
                     <div className="relative z-10 flex flex-col items-center">
                          {/* รูป Avatar (มีวงแหวนสีรุ้ง) */}
-                        {/* รูป Avatar (มีวงแหวนสีรุ้ง) */}
-                        <div className="w-20 h-20 rounded-full p-[2px] bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500 shadow-lg mb-3">
-                            <div className="w-full h-full rounded-full bg-slate-900 flex items-center justify-center overflow-hidden border-2 border-slate-900">
-                                {/* ⭐ ถ้ามีรูป ให้โชว์รูป ถ้าไม่มี ให้โชว์ตัวอักษร ⭐ */}
-                                {user?.photoURL ? (
-                                    <img 
-                                        src={user.photoURL} 
-                                        alt="Profile" 
-                                        className="w-full h-full object-cover"
-                                        referrerPolicy="no-referrer" // 👈 ⭐ เติมบรรทัดนี้เข้าไปครับ
-                                    />
-                                ) : (
-                                    <span className="text-3xl font-bold text-white">
-                                        {user?.displayName ? user.displayName.charAt(0).toUpperCase() : user?.email?.charAt(0).toUpperCase() || 'G'}
-                                    </span>
-                                )}
+                        {/* รูป Avatar (มีวงแหวนสีรุ้ง + อัปโหลดได้) */}
+                        <div className="relative group w-24 h-24 mb-3 mx-auto">
+                            
+                            {/* กรอบสีรุ้ง */}
+                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500 p-[3px] shadow-lg">
+                                <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative">
+                                    
+                                    {/* รูปภาพ */}
+                                    {user?.photoURL ? (
+                                        <img 
+                                            src={user.photoURL} 
+                                            alt="Profile" 
+                                            className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
+                                            referrerPolicy="no-referrer"
+                                        />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-slate-800 text-3xl font-bold text-white transition-opacity group-hover:opacity-75">
+                                            {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                                        </div>
+                                    )}
+
+                                    {/* --- ⭐ Overlay กล้องถ่ายรูป (จะขึ้นเมื่อ Hover) ⭐ --- */}
+                                    {!isUploadingProfile && (
+                                        <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                                                <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            </svg>
+                                            <span className="text-[10px] text-white font-bold tracking-wider">CHANGE</span>
+                                            
+                                            {/* Input ซ่อนอยู่ตรงนี้ */}
+                                            <input 
+                                                type="file" 
+                                                className="hidden" 
+                                                accept="image/*" 
+                                                onChange={handleProfileImageUpload}
+                                            />
+                                        </label>
+                                    )}
+
+                                    {/* Loading Spinner (ตอนกำลังอัปโหลด) */}
+                                    {isUploadingProfile && (
+                                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20">
+                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
+                                        </div>
+                                    )}
+
+                                </div>
                             </div>
                         </div>
                         
