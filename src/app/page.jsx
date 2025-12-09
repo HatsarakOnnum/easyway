@@ -2275,15 +2275,30 @@ function AdminDashboard() {
         <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
             <Toaster position="top-right" reverseOrder={false} />
             <div className="w-full md:w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col flex-shrink-0">
+                
+                {/* ⭐ แก้ไขส่วนนี้: เพิ่มปุ่ม Logout สำหรับมือถือ ⭐ */}
                 <div className="flex justify-between items-center md:block">
                     <h1 className="text-2xl font-bold mb-0 md:mb-10">Admin Panel</h1>
+                    
+                    {/* ปุ่ม Logout แบบไอคอน (แสดงเฉพาะมือถือ) */}
+                    <button 
+                        onClick={handleSignOut}
+                        className="md:hidden p-2 bg-red-600/20 text-red-500 rounded-lg hover:bg-red-600/40 transition"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                    </button>
                 </div>
+
                 <nav className="flex flex-row md:flex-col space-x-2 md:space-x-0 md:space-y-2 mt-4 md:mt-0 overflow-x-auto pb-2 md:pb-0">
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('users'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'users' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Users</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('locations'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'locations' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Locations</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('reports'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reports' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Reports</a>
                     <a href="#" onClick={(e) => { e.preventDefault(); setView('reviews'); setViewingLocation(null);}} className={`p-2 rounded whitespace-nowrap ${view === 'reviews' ? 'bg-gray-700' : 'hover:bg-gray-700'}`}>Reviews</a>
                 </nav>
+                
+                {/* ปุ่ม Sign Out เดิม (สำหรับ Desktop) ปล่อยไว้เหมือนเดิม */}
                 <button onClick={handleSignOut} className="mt-auto w-full bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded hidden md:block">Sign Out</button>
             </div>
             <div className="flex-1 p-4 md:p-10 overflow-y-auto">
