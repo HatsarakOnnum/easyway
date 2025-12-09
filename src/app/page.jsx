@@ -2799,6 +2799,7 @@ const ImageModal = ({ imageUrl, onClose }) => {
 
 // --- ⭐ Profile Modal (New Component) ⭐ ---
 // --- ⭐ Profile Modal (Space ID Card Style) ⭐ ---
+// --- ⭐ Profile Modal (Updated: With Tilt Animation) ⭐ ---
 const ProfileModal = ({ user, onClose }) => {
     const [displayName, setDisplayName] = useState(user?.displayName || '');
     const [loading, setLoading] = useState(false);
@@ -2819,59 +2820,76 @@ const ProfileModal = ({ user, onClose }) => {
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[80] flex items-center justify-center p-4" onClick={onClose}>
             
-            {/* Card Container */}
-            <div className="relative w-full max-w-sm overflow-hidden rounded-3xl shadow-2xl transform transition-all scale-100" onClick={e => e.stopPropagation()}>
-                
-                {/* 🌌 Space Background (ส่วนหัว) */}
-                <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900">
-                    {/* Stars & Blobs (CSS เดิม) */}
-                    <div className="absolute inset-0 opacity-50">
-                        <div className="absolute top-[-50%] left-[-20%] w-60 h-60 bg-blue-500 rounded-full blur-[60px]"></div>
-                        <div className="absolute bottom-[-20%] right-[-20%] w-40 h-40 bg-pink-500 rounded-full blur-[50px]"></div>
-                    </div>
-                </div>
-
-                {/* Content (ส่วนเนื้อหา - สีขาว/ดำ) */}
-                <div className="relative bg-white dark:bg-gray-900 pt-16 pb-6 px-6 mt-20">
+            {/* ⭐⭐ ใช้ Tilt ครอบ Card Container ⭐⭐ */}
+            <Tilt
+                tiltMaxAngleX={5}    // เอียงซ้ายขวาสูงสุด 5 องศา
+                tiltMaxAngleY={5}    // เอียงบนล่างสูงสุด 5 องศา
+                perspective={1000}   // ความลึก
+                scale={1.02}         // ขยายขึ้นนิดหน่อยตอนชี้
+                transitionSpeed={1500}
+                className="w-full max-w-sm" // กำหนดขนาดที่ Tilt Wrapper เลย
+            >
+                {/* Card Container (ย้าย onClick stopPropagation มาไว้ตรงนี้ หรือไว้ที่ Tilt ก็ได้ แต่ไว้ข้างในชัวร์กว่าเรื่อง Layout) */}
+                <div className="relative w-full overflow-hidden rounded-3xl shadow-2xl transform transition-all" onClick={e => e.stopPropagation()}>
                     
-                    {/* Avatar (รูปวงกลมลอยทับส่วนหัว) */}
-                    <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
-                        <div className="w-28 h-28 rounded-full border-4 border-white dark:border-gray-900 bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center shadow-lg">
-                            <span className="text-4xl font-bold text-white">
-                                {user?.displayName?.charAt(0).toUpperCase() || 'U'}
-                            </span>
+                    {/* 🌌 Space Background (ส่วนหัว) */}
+                    <div className="absolute top-0 left-0 w-full h-32 bg-gradient-to-r from-indigo-900 via-purple-900 to-slate-900">
+                        {/* Stars & Blobs */}
+                        <div className="absolute inset-0 opacity-50">
+                            <div className="absolute top-[-50%] left-[-20%] w-60 h-60 bg-blue-500 rounded-full blur-[60px] animate-pulse"></div>
+                            <div className="absolute bottom-[-20%] right-[-20%] w-40 h-40 bg-pink-500 rounded-full blur-[50px] animate-pulse"></div>
                         </div>
                     </div>
 
-                    {/* Form */}
-                    <div className="text-center mb-6">
-                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Profile</h2>
-                        <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
+                    {/* Content (ส่วนเนื้อหา - สีขาว/ดำ) */}
+                    <div className="relative bg-white dark:bg-gray-900 pt-16 pb-6 px-6 mt-20">
+                        
+                        {/* Avatar (รูปวงกลมลอยทับส่วนหัว) */}
+                        <div className="absolute -top-16 left-1/2 transform -translate-x-1/2">
+                            {/* เพิ่มลูกเล่นแสงรอบๆ รูปหน่อย */}
+                            <div className="w-28 h-28 rounded-full p-[3px] bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500 shadow-xl">
+                                <div className="w-full h-full rounded-full border-4 border-white dark:border-gray-900 bg-slate-800 flex items-center justify-center overflow-hidden">
+                                    {user?.photoURL ? (
+                                        <img src={user.photoURL} alt="Profile" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <span className="text-4xl font-bold text-white">
+                                            {user?.displayName?.charAt(0).toUpperCase() || 'U'}
+                                        </span>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Form */}
+                        <div className="text-center mb-6">
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Edit Profile</h2>
+                            <p className="text-sm text-gray-500 dark:text-gray-400">{user?.email}</p>
+                        </div>
+
+                        <form onSubmit={handleProfileUpdate} className="space-y-4">
+                            <div>
+                                <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Display Name</label>
+                                <input 
+                                    type="text" 
+                                    value={displayName} 
+                                    onChange={(e) => setDisplayName(e.target.value)} 
+                                    className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-2 border-transparent focus:border-blue-500 outline-none text-gray-800 dark:text-white font-medium transition-all shadow-inner focus:bg-white dark:focus:bg-gray-900"
+                                    placeholder="Enter your name"
+                                />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                                <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition hover:scale-105 active:scale-95">
+                                    Cancel
+                                </button>
+                                <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow-lg hover:shadow-blue-500/40 hover:scale-105 active:scale-95 transition-all disabled:opacity-50">
+                                    {loading ? 'Saving...' : 'Save'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                    <form onSubmit={handleProfileUpdate} className="space-y-4">
-                        <div>
-                            <label className="block text-xs font-bold text-gray-500 uppercase mb-1 ml-1">Display Name</label>
-                            <input 
-                                type="text" 
-                                value={displayName} 
-                                onChange={(e) => setDisplayName(e.target.value)} 
-                                className="w-full px-4 py-3 rounded-xl bg-gray-100 dark:bg-gray-800 border-2 border-transparent focus:border-blue-500 outline-none text-gray-800 dark:text-white font-medium transition-all"
-                                placeholder="Enter your name"
-                            />
-                        </div>
-
-                        <div className="flex gap-3 pt-2">
-                            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-xl bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold hover:bg-gray-300 dark:hover:bg-gray-600 transition">
-                                Cancel
-                            </button>
-                            <button type="submit" disabled={loading} className="flex-1 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all disabled:opacity-50">
-                                {loading ? 'Saving...' : 'Save'}
-                            </button>
-                        </div>
-                    </form>
                 </div>
-            </div>
+            </Tilt>
         </div>
     );
 };
@@ -3821,87 +3839,109 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             {/* --- ⭐ Sidebar Menu (Redesigned: Cosmic Command Center) ⭐ --- */}
             <div className={`fixed inset-y-0 left-0 w-72 bg-[#0f172a]/95 backdrop-blur-xl border-r border-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out z-50 flex flex-col ${isMenuOpen ? 'translate-x-0' : '-translate-x-full'}`}>
                 
-                {/* 1. Header & Profile Section (ส่วนหัว) */}
-                <div className="relative p-6 pt-10 pb-8 overflow-hidden">
-                    {/* แสงพื้นหลังตกแต่ง */}
-                    <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-600/20 to-transparent pointer-events-none" />
-                    <div className="absolute -top-10 -right-10 w-32 h-32 bg-purple-500/30 rounded-full blur-3xl pointer-events-none" />
+                {/* 1. Header & Profile Section (Cosmic Animated Theme) */}
+                <div className="relative pt-10 pb-8 overflow-hidden group">
+                    
+                    {/* --- 🌌 1. Animated Space Background --- */}
+                    <div className="absolute inset-0 w-full h-full bg-[#0f172a]">
+                        {/* A. Nebula Gradients (แสงเนบิวลาวิ่งไปมา) */}
+                        <div className="absolute top-[-50%] left-[-50%] w-[200%] h-[200%] bg-[conic-gradient(from_0deg_at_50%_50%,#0f172a_0%,#1e1b4b_25%,#312e81_50%,#1e1b4b_75%,#0f172a_100%)] animate-[spin_20s_linear_infinite] opacity-60 blur-3xl"></div>
+                        
+                        {/* B. Moving Stars (ดาวระยิบระยับ) */}
+                        <style>{`
+                            @keyframes twinkle { 0%, 100% { opacity: 0.2; transform: scale(0.8); } 50% { opacity: 1; transform: scale(1.2); } }
+                            .star-sidebar { position: absolute; background: white; border-radius: 50%; animation: twinkle 3s infinite ease-in-out; }
+                        `}</style>
+                        <div className="star-sidebar w-1 h-1 top-4 left-10 delay-75"></div>
+                        <div className="star-sidebar w-0.5 h-0.5 top-10 right-8 delay-500"></div>
+                        <div className="star-sidebar w-1 h-1 bottom-6 left-6 delay-1000"></div>
+                        <div className="star-sidebar w-0.5 h-0.5 bottom-12 right-20 delay-200"></div>
+                        <div className="star-sidebar w-1.5 h-1.5 top-1/2 left-1/2 blur-[1px] delay-300"></div>
+                    </div>
 
                     {/* ข้อมูล User */}
-                    <div className="relative z-10 flex flex-col items-center">
-                         {/* รูป Avatar (มีวงแหวนสีรุ้ง) */}
-                        {/* รูป Avatar (มีวงแหวนสีรุ้ง + อัปโหลดได้) */}
-                        <div className="relative group w-24 h-24 mb-3 mx-auto">
+                    <div className="relative z-10 flex flex-col items-center px-6">
+                        
+                        {/* --- 👤 2. Glowing Avatar (กรอบแสงวิ่งวน) --- */}
+                        {/* Container หลักของรูป */}
+                        <div className="relative w-28 h-28 mb-4 flex items-center justify-center">
                             
-                            {/* กรอบสีรุ้ง */}
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-blue-400 via-purple-500 to-pink-500 p-[3px] shadow-lg">
-                                <div className="w-full h-full rounded-full bg-slate-900 overflow-hidden relative">
-                                    
-                                    {/* รูปภาพ */}
-                                    {user?.photoURL ? (
-                                        <img 
-                                            src={user.photoURL} 
-                                            alt="Profile" 
-                                            className="w-full h-full object-cover transition-opacity group-hover:opacity-75"
-                                            referrerPolicy="no-referrer"
-                                        />
-                                    ) : (
-                                        <div className="w-full h-full flex items-center justify-center bg-slate-800 text-3xl font-bold text-white transition-opacity group-hover:opacity-75">
-                                            {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
-                                        </div>
-                                    )}
+                            {/* A. แสงวิ่งวน (Spinning Conic Gradient) */}
+                            <div className="absolute inset-0 rounded-full overflow-hidden">
+                                <div className="absolute inset-[-50%] bg-[conic-gradient(transparent,transparent,#3b82f6,#a855f7,#3b82f6)] animate-[spin_4s_linear_infinite]"></div>
+                            </div>
 
-                                    {/* --- ⭐ Overlay กล้องถ่ายรูป (จะขึ้นเมื่อ Hover) ⭐ --- */}
-                                    {!isUploadingProfile && (
-                                        <label className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer z-10">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8 text-white mb-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                            {/* B. แสงฟุ้งด้านหลัง (Blur Glow) */}
+                            <div className="absolute inset-1 rounded-full bg-blue-500/20 blur-xl animate-pulse"></div>
+
+                            {/* C. พื้นหลังสีดำตัดขอบ (เพื่อสร้าง Gap ระหว่างแสงกับรูป) */}
+                            <div className="absolute inset-[3px] rounded-full bg-[#0f172a] z-10"></div>
+
+                            {/* D. รูปภาพจริง (อยู่ชั้นบนสุด) */}
+                            <div className="absolute inset-[6px] rounded-full overflow-hidden z-20 group/avatar cursor-pointer">
+                                {user?.photoURL ? (
+                                    <img 
+                                        src={user.photoURL} 
+                                        alt="Profile" 
+                                        className="w-full h-full object-cover transition-transform duration-500 group-hover/avatar:scale-110 group-hover/avatar:opacity-50"
+                                        referrerPolicy="no-referrer"
+                                    />
+                                ) : (
+                                    <div className="w-full h-full flex items-center justify-center bg-slate-800 text-4xl font-bold text-white transition-opacity group-hover/avatar:opacity-50">
+                                        {user?.displayName ? user.displayName.charAt(0).toUpperCase() : 'U'}
+                                    </div>
+                                )}
+
+                                {/* E. Overlay กล้องถ่ายรูป (จะขึ้นเมื่อ Hover ที่รูป) */}
+                                {!isUploadingProfile && (
+                                    <label className="absolute inset-0 flex flex-col items-center justify-center opacity-0 group-hover/avatar:opacity-100 transition-all duration-300 cursor-pointer">
+                                        <div className="bg-black/40 backdrop-blur-sm p-2 rounded-full mb-1 transform translate-y-4 group-hover/avatar:translate-y-0 transition-transform">
+                                            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
                                                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
                                             </svg>
-                                            <span className="text-[10px] text-white font-bold tracking-wider">CHANGE</span>
-                                            
-                                            {/* Input ซ่อนอยู่ตรงนี้ */}
-                                            <input 
-                                                type="file" 
-                                                className="hidden" 
-                                                accept="image/*" 
-                                                onChange={handleProfileImageUpload}
-                                            />
-                                        </label>
-                                    )}
-
-                                    {/* Loading Spinner (ตอนกำลังอัปโหลด) */}
-                                    {isUploadingProfile && (
-                                        <div className="absolute inset-0 flex items-center justify-center bg-black/60 z-20">
-                                            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-white"></div>
                                         </div>
-                                    )}
+                                        <span className="text-[10px] text-white font-bold tracking-widest uppercase drop-shadow-md">Change</span>
+                                        
+                                        <input 
+                                            type="file" 
+                                            className="hidden" 
+                                            accept="image/*" 
+                                            onChange={handleProfileImageUpload}
+                                        />
+                                    </label>
+                                )}
 
-                                </div>
+                                {/* Loading Spinner */}
+                                {isUploadingProfile && (
+                                    <div className="absolute inset-0 flex items-center justify-center bg-black/70 z-30">
+                                        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-400"></div>
+                                    </div>
+                                )}
                             </div>
                         </div>
                         
                         {/* ชื่อและอีเมล */}
-                        <h3 className="text-xl font-bold text-white tracking-wide truncate max-w-[200px] text-center">
-                            {user?.displayName || (user?.email ? user.email.split('@')[0] : "Guest User")}
-                        </h3>
-                        {user && (
-                            <p className="text-xs text-slate-400 mt-1 font-mono bg-slate-800/80 px-2 py-0.5 rounded-full border border-slate-700 truncate max-w-[220px]">
-                                {user.email}
-                            </p>
-                        )}
-                        <p className="text-[10px] text-slate-500 mt-2 flex items-center gap-1">
-                            <span className={`w-2 h-2 rounded-full ${user ? 'bg-green-500 animate-pulse' : 'bg-gray-500'}`}></span> 
-                            {user ? `Joined ${new Date(user.metadata.creationTime).toLocaleDateString()}` : 'Not Logged In'}
-                        </p>
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-200 via-white to-purple-200 tracking-wide truncate max-w-[200px]">
+                                {user?.displayName || (user?.email ? user.email.split('@')[0] : "Guest User")}
+                            </h3>
+                            {user && (
+                                <div className="inline-block mt-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 backdrop-blur-md">
+                                    <p className="text-[10px] text-blue-200 font-mono tracking-wider truncate max-w-[180px]">
+                                        {user.email}
+                                    </p>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* ปุ่มปิด X (มุมขวาบน) */}
+                    {/* ปุ่มปิด X */}
                     <button 
                         onClick={() => setMenuOpen(false)}
-                        className="absolute top-4 right-4 p-1 text-slate-500 hover:text-white transition-colors"
+                        className="absolute top-4 right-4 p-2 text-slate-400 hover:text-white hover:bg-white/10 rounded-full transition-all z-20"
                     >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
                     </button>
                 </div>
 
@@ -3989,7 +4029,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
 
             {/* Map Controls Overlay */}
             <div className="absolute inset-0 p-4 md:p-6 flex flex-col pointer-events-none">
-                <div className="w-full flex justify-between items-start pointer-events-auto"><button onClick={() => setMenuOpen(true)} className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><MenuIcon /></button><div className="text-center"><h1 className="text-4xl font-bold text-blue-600 dark:text-blue-400" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.3)' }}>EasyWay</h1></div><div className="w-12"></div></div>
+                <div className="w-full flex justify-between items-start pointer-events-auto"><button onClick={() => setMenuOpen(true)} className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><MenuIcon /></button><div className="text-center"><h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.3)' }}>EasyWay</h1></div><div className="w-12"></div></div>
                 <div className="mt-4 w-full max-w-lg mx-auto pointer-events-auto"><div className="relative flex items-center bg-white dark:bg-gray-800 rounded-full shadow-lg"><input type="text" placeholder="Search..." className="w-full py-3 pl-5 pr-12 rounded-full focus:outline-none dark:bg-gray-800 dark:text-gray-100" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /><button className="absolute right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"><SearchIcon /></button></div></div>
                 <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex flex-col space-y-2 pointer-events-auto">
                     <button onClick={moveToCurrentLocation} className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><TargetIcon /></button>
