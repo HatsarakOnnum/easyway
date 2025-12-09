@@ -1,6 +1,6 @@
 //project
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo } from 'react';
 import { motion, AnimatePresence } from "framer-motion";
 import toast, { Toaster } from 'react-hot-toast';
 import Tilt from 'react-parallax-tilt';
@@ -38,22 +38,22 @@ const firebaseConfig = {
 };
 // ***** ⬆️⬆️⬆️ สำคัญมาก! คัดลอก Config ที่ถูกต้องจาก Firebase Console มาวางทับตรงนี้ทั้งหมด ⬆️⬆️⬆️ *****
 // --- ⭐ Glowing Border Button Component ⭐ ---
+// เปลี่ยน GlowingButton ให้ใช้ MagneticWrapper ข้างใน
 const GlowingButton = ({ children, onClick, type = "button", className }) => {
   return (
-    <button
-      type={type}
-      onClick={onClick}
-      // เพิ่ม shadow-blue-500/50 ให้เงาฟุ้งขึ้น
-      className={`relative inline-flex h-14 w-full overflow-hidden rounded-xl p-[2px] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 shadow-2xl shadow-blue-600/40 transition-transform active:scale-95 group ${className}`}
-    >
-      {/* 1. แสงวิ่งวน (เปลี่ยนสีแสงให้สว่างขึ้น เป็น ขาว-ฟ้า) */}
-      <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#FFFFFF_0%,#3B82F6_50%,#FFFFFF_100%)]" />
-      
-      {/* 2. เนื้อปุ่มตรงกลาง (เปลี่ยนจากสีดำ เป็นไล่สี ฟ้า->ม่วง) */}
-      <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-1 text-lg font-bold text-white backdrop-blur-3xl group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-200">
-        {children}
-      </span>
-    </button>
+    // ครอบด้วย MagneticWrapper ตรงนี้
+    <MagneticWrapper className="w-full"> 
+        <button
+          type={type}
+          onClick={onClick}
+          className={`relative inline-flex h-14 w-full overflow-hidden rounded-xl p-[2px] focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 focus:ring-offset-slate-900 shadow-2xl shadow-blue-600/40 transition-transform active:scale-95 group ${className}`}
+        >
+          <span className="absolute inset-[-1000%] animate-[spin_2s_linear_infinite] bg-[conic-gradient(from_90deg_at_50%_50%,#FFFFFF_0%,#3B82F6_50%,#FFFFFF_100%)]" />
+          <span className="inline-flex h-full w-full cursor-pointer items-center justify-center rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 px-3 py-1 text-lg font-bold text-white backdrop-blur-3xl group-hover:from-blue-500 group-hover:to-purple-500 transition-all duration-200">
+            {children}
+          </span>
+        </button>
+    </MagneticWrapper>
   );
 };
 
@@ -170,152 +170,325 @@ const CheckCircleIcon = () => (
     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
+
+// --- ⌨️ Typewriter Component (วางไว้ข้างบน WelcomeScreen) ---
+const Typewriter = ({ text, delay = 100 }) => {
+  const [currentText, setCurrentText] = useState('');
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  useEffect(() => {
+    if (currentIndex < text.length) {
+      const timeout = setTimeout(() => {
+        setCurrentText(prev => prev + text[currentIndex]);
+        setCurrentIndex(prev => prev + 1);
+      }, delay);
+      return () => clearTimeout(timeout);
+    }
+  }, [currentIndex, delay, text]);
+
+  return (
+    <span>
+      {currentText}
+      {/* ตัว Cursor กระพริบ | */}
+      <span className="animate-pulse border-r-2 border-blue-200 ml-1">&nbsp;</span>
+    </span>
+  );
+};
+
+// --- 🧲 Magnetic Button Component ---
+const MagneticWrapper = ({ children, className }) => {
+    const ref = useRef(null);
+    const [position, setPosition] = useState({ x: 0, y: 0 });
+
+    const handleMouse = (e) => {
+        const { clientX, clientY } = e;
+        const { height, width, left, top } = ref.current.getBoundingClientRect();
+        const middleX = clientX - (left + width / 2);
+        const middleY = clientY - (top + height / 2);
+        // strength 0.2 = ขยับตามเมาส์ 20%
+        setPosition({ x: middleX * 0.2, y: middleY * 0.2 });
+    };
+
+    const reset = () => {
+        setPosition({ x: 0, y: 0 });
+    };
+
+    const { x, y } = position;
+    return (
+        <motion.div
+            style={{ position: 'relative' }}
+            ref={ref}
+            onMouseMove={handleMouse}
+            onMouseLeave={reset}
+            animate={{ x, y }}
+            transition={{ type: "spring", stiffness: 150, damping: 15, mass: 0.1 }}
+            className={className}
+        >
+            {children}
+        </motion.div>
+    );
+};
 // --- Authentication Screens ---
 // --- Welcome Screen (Creative Animated Style) ---
 // --- Welcome Screen (Cosmic Space Theme matched with Login) ---
 // --- Welcome Screen (Cosmic Theme + Space Clouds + Page Transition) ---
 // --- Welcome Screen (Cosmic Theme - Simple) ---
-function WelcomeScreen({ setView }) {
-    // ฟังก์ชันช่วยเปลี่ยนหน้า (เตรียมไว้เผื่ออนาคต)
-    const handleSetView = (view) => {
-        setView(view);
+// --- Welcome Screen (Updated: Restored Clouds & Spectacular Mouse Effect) ---
+
+// --- Helper Functions (สร้างดาวด้วย Code) ---
+// ฟังก์ชันสร้าง string สำหรับ box-shadow เพื่อจำลองดาวจำนวนมาก (ประสิทธิภาพสูงกว่าสร้าง div ทีละตัว)
+
+// --- Helper to generate static stars ---
+const generateSpaceShadows = (n, color) => {
+    let value = `${Math.random() * 2000}px ${Math.random() * 2000}px ${color}`;
+    for (let i = 2; i <= n; i++) {
+        value += `, ${Math.random() * 2000}px ${Math.random() * 2000}px ${color}`;
     }
+    return value;
+};
+
+// สีสำหรับละอองดาวที่หางเมาส์
+const spaceSparkleColors = ['#a5f3fc', '#c4b5fd', '#fde68a', '#67e8f9', '#e879f9', '#ffffff'];
+
+// --- Welcome Screen (Ultimate Cosmic Mouse Trail Edition) ---
+function WelcomeScreen({ setView }) {
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [trail, setTrail] = useState([]);
+
+    // Static Stars (เหมือนเดิม ไม่กะพริบ)
+    const starShadowsSmall = useMemo(() => generateSpaceShadows(700, '#ffffff'), []);
+    const starShadowsMedium = useMemo(() => generateSpaceShadows(200, '#a5f3fc'), []);
+
+    const handleMouseMove = useCallback((e) => {
+        const { clientX, clientY } = e;
+        // ใช้ requestAnimationFrame เพื่อความลื่นไหลสูงสุดในการอัปเดตตำแหน่งเมาส์
+        requestAnimationFrame(() => {
+             setMousePos({ x: clientX, y: clientY });
+        });
+
+        // สร้างละอองดาวที่หรูหราขึ้น
+        const newParticle = {
+            id: Date.now() + Math.random(),
+            x: clientX,
+            y: clientY,
+            size: Math.random() * 4 + 2, // ใหญ่ขึ้นนิดหน่อย
+            color: spaceSparkleColors[Math.floor(Math.random() * spaceSparkleColors.length)], // สุ่มสีอวกาศ
+            rotation: Math.random() * 360, // เพิ่มการหมุนตั้งต้น
+            driftX: (Math.random() - 0.5) * 80, // กระจายตัวกว้างขึ้น
+            driftY: (Math.random() - 0.5) * 80,
+        };
+        // เพิ่มจำนวน particle ต่อเฟรมเพื่อให้หางดูแน่นขึ้น (slice น้อยลง)
+        setTrail((prevTrail) => [...prevTrail.slice(-35), newParticle]);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            // เคลียร์ particle ที่เก่าเกิน 1.2 วิ
+            setTrail((prevTrail) => prevTrail.filter((p) => Date.now() - p.id < 1200));
+        }, 50); // ตรวจสอบบ่อยขึ้นเพื่อความเนียน
+        return () => clearInterval(interval);
+    }, []);
+
+    // Parallax movement
+    const moveX = (typeof window !== 'undefined' ? window.innerWidth / 2 - mousePos.x : 0) / 60;
+    const moveY = (typeof window !== 'undefined' ? window.innerHeight / 2 - mousePos.y : 0) / 60;
 
     return (
-        <div className="relative w-full h-[100dvh] overflow-hidden bg-[#0f172a] flex flex-col justify-between text-white animate-page-enter">
-            
-            {/* --- CSS Animations & Global Styles (ฝังไว้ที่นี่ที่เดียวพอ) --- */}
+        <div 
+            className="relative w-full h-[100dvh] overflow-hidden bg-[#020617] flex flex-col justify-between text-white animate-page-enter cursor-none"
+            onMouseMove={handleMouseMove}
+        >
             <style>{`
-                /* Page Transition */
-                @keyframes fadeInUp {
-                    from { opacity: 0; transform: translateY(30px); }
-                    to { opacity: 1; transform: translateY(0); }
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-page-enter { animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+                
+                @keyframes blob-slow { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(1.1); } }
+                .animate-blob { animation: blob-slow 25s infinite ease-in-out; }
+
+                /* ⭐⭐ NEW: Advanced Particle Animation ⭐⭐ */
+                @keyframes particle-drift-spin {
+                    0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(var(--start-rot)); }
+                    60% { opacity: 0.7; }
+                    100% { opacity: 0; transform: translate(var(--drift-x), var(--drift-y)) scale(0.2) rotate(calc(var(--start-rot) + 180deg)); }
                 }
-                .animate-page-enter {
-                    animation: fadeInUp 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+                .particle-anim-advanced { 
+                    animation: particle-drift-spin 1.2s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94); 
+                    will-change: transform, opacity;
+                }
+                
+                @keyframes floatingCloud { 0% { transform: translateX(100vw); opacity: 0; } 10%, 90% { opacity: var(--cloud-opacity); } 100% { transform: translateX(-200px); opacity: 0; } }
+                .cloud-space { position: absolute; fill: rgba(190, 220, 255, 0.05); filter: blur(10px); pointer-events: none; }
+                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 60s linear infinite; top: 15%; }
+                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 80s linear infinite; top: 40%; animation-delay: -30s; scale: 1.5; }
+
+                @keyframes shimmer { 100% { transform: translateX(100%); } }
+                .animate-shimmer { animation: shimmer 1.5s infinite; }
+
+                @keyframes moveRoad { 0% { background-position: 0px 0; } 100% { background-position: -100px 0; } }
+                .road-stripe { background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%); background-size: 100px 20px; animation: moveRoad 0.5s linear infinite; }
+                /* --- 🌌 AURORA TEXT CSS (วางเพิ่มใน <style>) --- */
+
+                /* Keyframes สั่งให้สีพื้นหลังขยับไปมา */
+                @keyframes aurora-flow {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
                 }
 
-                /* Blobs Animation */
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
+                /* Class หลักสำหรับตัวหนังสือสีไหล */
+                .text-aurora {
+                /* ไล่สี: ฟ้า -> ม่วง -> ชมพู -> ฟ้าอ่อน -> วนกลับมาฟ้าเดิม */
+                background: linear-gradient(
+                    90deg,
+                    #60a5fa, /* Blue-400 */
+                    #a855f7, /* Purple-500 */
+                    #f472b6, /* Pink-400 */
+                    #38bdf8, /* Sky-400 */
+                    #60a5fa  /* Loop back */
+                );
+                
+                /* ขยายขนาดพื้นหลังให้ใหญ่กว่าตัวหนังสือ เพื่อให้เลื่อนได้ */
+                background-size: 300% 100%;
+                
+                /* ตัดพื้นหลังให้เหลือแค่รูปตัวหนังสือ */
+                -webkit-background-clip: text;
+                background-clip: text;
+                
+                /* ทำให้ตัวหนังสือใส เพื่อโชว์พื้นหลัง */
+                color: transparent;
+                
+                /* สั่งให้ขยับ */
+                animation: aurora-flow 6s linear infinite;
                 }
-                .animate-blob { animation: blob 10s infinite; }
-                .animation-delay-2000 { animation-delay: 2s; }
-                .animation-delay-4000 { animation-delay: 4s; }
-
-                /* Road & Bike Animation */
-                @keyframes moveRoad {
-                    0% { background-position: 0px 0; }
-                    100% { background-position: -100px 0; }
-                }
-                @keyframes bounceBike {
-                    0%, 100% { transform: translateY(0) rotate(0deg) scaleX(-1); }
-                    50% { transform: translateY(-5px) rotate(1deg) scaleX(-1); }
-                }
-                .road-stripe {
-                    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%);
-                    background-size: 100px 20px;
-                    animation: moveRoad 0.5s linear infinite;
-                }
-                .bike-bounce { animation: bounceBike 0.5s ease-in-out infinite; }
-
-                /* Stars Animation */
-                @keyframes twinkle {
-                    0%, 100% { opacity: 0.8; transform: scale(1); }
-                    50% { opacity: 0.3; transform: scale(0.8); }
-                }
-                .star {
-                    position: absolute; background: white; border-radius: 50%;
-                    animation: twinkle 3s infinite ease-in-out;
-                }
-
-                /* Cloud Animation */
-                @keyframes floatingCloud {
-                    0% { transform: translateX(100vw); opacity: 0; }
-                    10% { opacity: var(--cloud-opacity); }
-                    90% { opacity: var(--cloud-opacity); }
-                    100% { transform: translateX(-200px); opacity: 0; }
-                }
-                .cloud-space {
-                    position: absolute; fill: rgba(200, 220, 255, 0.15); filter: blur(8px);
-                }
-                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 45s linear infinite; top: 15%; }
-                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 60s linear infinite; top: 30%; animation-delay: -20s; scale: 1.5; }
-                .cloud-3 { --cloud-opacity: 0.3; animation: floatingCloud 50s linear infinite; top: 5%; animation-delay: -5s; scale: 0.8; }
+                
             `}</style>
 
-            {/* --- Space Background Layers (พื้นหลังอวกาศ) --- */}
-            {/* Layer A: Nebula Blobs (แสงเนบิวลา) */}
-            <div className="absolute inset-0 w-full h-[100dvh] overflow-hidden pointer-events-none">
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
-                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
-                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
+            {/* Layer 1: Deep Nebula Background */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ transform: `translate(${moveX*0.2}px, ${moveY*0.2}px)` }}>
+                <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-indigo-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob"></div>
+                <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-purple-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-2000"></div>
+                <div className="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-blue-900/10 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-4000"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
             </div>
 
-            {/* Layer B: Stars (ดาวระยิบระยับ) */}
-            <div className="absolute inset-0 pointer-events-none">
-                <div className="star w-1 h-1 top-10 left-10" style={{animationDelay: '0s'}}></div>
-                <div className="star w-0.5 h-0.5 top-20 right-20" style={{animationDelay: '1s'}}></div>
-                <div className="star w-1 h-1 top-1/2 left-1/3" style={{animationDelay: '2s'}}></div>
-                <div className="star w-0.5 h-0.5 bottom-1/3 right-1/4" style={{animationDelay: '0.5s'}}></div>
-                <div className="star w-1 h-1 top-1/4 right-1/3" style={{animationDelay: '1.5s'}}></div>
-                <div className="star w-0.5 h-0.5 top-5 left-1/2 opacity-40"></div>
-                <div className="star w-0.5 h-0.5 bottom-20 left-10 opacity-40"></div>
-                <div className="star w-1 h-1 top-2/3 right-10 opacity-50" style={{animationDelay: '3s'}}></div>
+            {/* Layer 2: Static Stars */}
+            <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX*0.5}px, ${moveY*0.5}px)` }}>
+                <div style={{ width: '1px', height: '1px', boxShadow: starShadowsSmall, opacity: 0.5 }}></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX}px, ${moveY}px)` }}>
+                 <div style={{ width: '2px', height: '2px', boxShadow: starShadowsMedium, opacity: 0.6 }}></div>
+            </div>
+            
+            {/* Layer 4: Clouds */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <svg className="cloud-space cloud-1" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                <svg className="cloud-space cloud-2" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
             </div>
 
-             {/* Layer C: Space Clouds (กลุ่มก๊าซ) */}
-            <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                <svg className="cloud-space cloud-1" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                <svg className="cloud-space cloud-2" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                <svg className="cloud-space cloud-3" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-            </div>
+            {/* ================================================================================== */}
+            {/* ⭐⭐ THE ULTIMATE COSMIC MOUSE TRAIL ⭐⭐ */}
+            {/* ================================================================================== */}
+            <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+                
+                {/* 1. The Trail (Tail of sparkle dust) */}
+                {trail.map(particle => (
+                    <div 
+                        key={particle.id}
+                        className="absolute rounded-full particle-anim-advanced mix-blend-screen"
+                        style={{
+                            left: particle.x, top: particle.y,
+                            width: particle.size + 'px', height: particle.size + 'px',
+                            // ใช้ boxShadow แทน bgColor เพื่อให้แสงดูฟุ้งและเข้มข้นกว่า
+                            backgroundColor: particle.color,
+                            boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}, 0 0 ${particle.size * 3}px ${particle.color}`,
+                            '--drift-x': particle.driftX + 'px', 
+                            '--drift-y': particle.driftY + 'px',
+                            '--start-rot': particle.rotation + 'deg'
+                        }}
+                    />
+                ))}
 
-            {/* --- Content & Action Area --- */}
-            <div className="relative z-10 flex flex-col items-center pt-24 px-6 text-center space-y-6">
-                <div className="relative">
-                    <div className="absolute inset-0 bg-blue-500 blur-2xl opacity-20 rounded-full"></div>
-                    <h1 className="relative text-8xl font-black text-transparent bg-clip-text bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 tracking-tighter drop-shadow-sm">EW</h1>
+                {/* 2. The Core (Plasma Head - Multi-layered glowing orb) */}
+                {/* Layer Outer: Deep Purple/Blue Glow (Laggy & Large) */}
+                <div 
+                    className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out"
+                    style={{
+                        left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)',
+                        background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)'
+                    }}
+                />
+                 {/* Layer Middle: Cyan Bright Glow (Faster) */}
+                 <div 
+                    className="absolute rounded-full mix-blend-screen blur-[40px] opacity-60 transition-transform duration-200 ease-out"
+                    style={{
+                        left: mousePos.x, top: mousePos.y, width: '100px', height: '100px', transform: 'translate(-50%, -50%)',
+                        background: 'radial-gradient(circle, rgba(34, 211, 238, 0.8) 0%, transparent 70%)'
+                    }}
+                />
+                {/* Layer Inner: Hot White Core (Instant) */}
+                <div 
+                    className="absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white"
+                    style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }}
+                />
+            </div>
+            {/* ================================================================================== */}
+
+
+            {/* Content Area */}
+            <div className="relative z-20 flex flex-col items-center pt-24 px-6 text-center space-y-6 select-none">
+                <div className="relative group">
+                    <div className="absolute inset-0 bg-blue-500/30 blur-[100px] rounded-full group-hover:bg-purple-500/40 transition-colors duration-1000"></div>
+                    <h1 className="relative text-9xl font-black tracking-tighter drop-shadow-sm select-none text-aurora"> {/* ⭐ ใส่ text-aurora */}
+                        EW
+                    </h1>
                 </div>
                 <div>
-                    <h2 className="text-3xl font-bold tracking-widest text-blue-100">EASYWAY</h2>
-                    <p className="text-slate-400 text-sm mt-2 uppercase tracking-widest">The Future of Transit</p>
+                    <h2 className="text-3xl font-bold tracking-[0.2em] drop-shadow-md text-aurora"> {/* ⭐ ใส่ text-aurora */}
+                        EASYWAY
+                    </h2>
+                    {/* ใส่ h-6 เพื่อจองความสูงไว้กันข้อความกระตุก */}
+                    <p className="text-blue-200/70 text-sm mt-3 uppercase tracking-[0.3em] font-medium h-6">
+                        <Typewriter text="The Future of Transit" delay={100} />
+                    </p>
                 </div>
             </div>
 
-            <div className="relative z-10 w-full flex flex-col items-center pb-0">
-
-
+            <div className="relative z-20 w-full flex flex-col items-center pb-0 select-none">
                 <div className="w-full max-w-md px-6 pb-10 z-30">
-                    {/* 👇👇 ใช้ Tilt ครอบ div เดิม แล้วใส่ options เพิ่ม 👇👇 */}
                     <Tilt 
-                        tiltMaxAngleX={5}    // เอียงซ้ายขวาสูงสุด 5 องศา
-                        tiltMaxAngleY={5}    // เอียงบนล่างสูงสุด 5 องศา
-                        perspective={1000}   // ความลึก (ค่ายิ่งเยอะยิ่งดูแบน)
-                        scale={1.02}         // ขยายขึ้นนิดหน่อยตอนเอาเมาส์ชี้
-                        transitionSpeed={1500} // ความสมูทในการเอียง
-                        className="bg-slate-900/60 backdrop-blur-md border border-white/10 p-6 rounded-3xl shadow-2xl space-y-3"
+                        tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1000} scale={1.02} transitionSpeed={1500} 
+                        className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] space-y-3 relative overflow-hidden"
                     >
-                        <button onClick={() => handleSetView('login')} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/50 transition-all transform active:scale-95">
-                            Login
+                        <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
+                        {/* ... ใน Tilt Component ... */}
+                    
+                    {/* 🧲 ปุ่ม 1: Login */}
+                    <MagneticWrapper>
+                        <button onClick={() => setView('login')} className="w-full py-3.5 rounded-xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-bold text-lg shadow-lg shadow-blue-900/30 transition-all transform active:scale-95 relative overflow-hidden group">
+                            <span className="relative z-10 drop-shadow">Login</span>
+                            <div className="absolute inset-0 h-full w-full bg-gradient-to-r from-transparent via-white/30 to-transparent -translate-x-full group-hover:animate-shimmer"></div>
                         </button>
-                        <button onClick={() => handleSetView('signup')} className="w-full py-3.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-bold text-lg transition-all transform active:scale-95">
+                    </MagneticWrapper>
+                    
+                    {/* 🧲 ปุ่ม 2: Create Account */}
+                    <MagneticWrapper>
+                        <button onClick={() => setView('signup')} className="w-full py-3.5 rounded-xl bg-white/5 border border-white/10 hover:bg-white/10 hover:border-white/30 text-white font-bold text-lg transition-all transform active:scale-95 backdrop-blur-md">
                             Create Account
                         </button>
-                        <button onClick={() => handleSetView('map')} className="w-full py-2 text-sm text-slate-400 hover:text-white transition-colors">
+                    </MagneticWrapper>
+                    
+                    {/* 🧲 ปุ่ม 3: Guest */}
+                    <MagneticWrapper>
+                        <button onClick={() => setView('map')} className="w-full py-2 text-sm text-blue-300/70 hover:text-white transition-colors">
                             Continue as Guest →
                         </button>
+                    </MagneticWrapper>
                     </Tilt>
-                    {/* 👆👆 ปิด Tag Tilt 👆👆 */}
                 </div>
-
-                <div className="absolute bottom-0 w-full h-40 bg-gradient-to-t from-slate-900 to-transparent z-0"></div>
-                <div className="w-full h-32 bg-slate-800 relative overflow-hidden border-t border-blue-500/30 shadow-[0_-10px_50px_rgba(59,130,246,0.2)]">
-                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-                    <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%]"></div>
+                <div className="w-full h-32 bg-[#020617] relative overflow-hidden border-t border-blue-500/20 shadow-[0_-10px_50px_rgba(59,130,246,0.15)]">
+                    <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
+                     <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent blur-xl"></div>
+                    <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%] opacity-70"></div>
                 </div>
             </div>
         </div>
@@ -325,7 +498,9 @@ function WelcomeScreen({ setView }) {
 // --- Sign Up Screen (Updated with Cosmic Space Background) ---
 // --- Sign Up Screen (Cosmic Space Theme) ---
 // --- Sign Up Screen (Fixed: Animation & Icons match Login) ---
+// --- Sign Up Screen (Fixed: Added missing handleMouseMove logic) ---
 function SignUpScreen({ setView }) {
+    // 1. Logic เดิม (Form & Firebase)
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -334,177 +509,198 @@ function SignUpScreen({ setView }) {
     const handleSignUp = async (e) => {
         e.preventDefault(); 
         setError('');
-        if (password.length < 6) {
-            setError("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร");
-            return;
-        }
+        if (password.length < 6) { setError("รหัสผ่านต้องมีความยาวอย่างน้อย 6 ตัวอักษร"); return; }
         try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, password);
             const user = userCredential.user;
-            
             await setDoc(doc(db, "users", user.uid), {
-                uid: user.uid,
-                email: user.email,
-                createdAt: serverTimestamp(),
-                status: 'active',
-                displayName: email.split('@')[0]
+                uid: user.uid, email: user.email, createdAt: serverTimestamp(), status: 'active', displayName: email.split('@')[0]
             });
-            
             await updateProfile(user, { displayName: email.split('@')[0] });
-            
-            // สมัครเสร็จแล้วอาจจะให้ไปหน้าไหนต่อ? (ปกติระบบ Auth จะพาไปหน้า Map อัตโนมัติถ้าใช้ onAuthStateChanged)
-        } catch (err) {
-            console.error(err);
-            setError("ไม่สามารถสร้างบัญชีได้ อีเมลนี้อาจถูกใช้ไปแล้ว");
-        }
+        } catch (err) { console.error(err); setError("ไม่สามารถสร้างบัญชีได้ อีเมลนี้อาจถูกใช้ไปแล้ว"); }
     };
 
-    // สไตล์ (ชุดเดียวกับ LoginScreen)
+    // 2. ⭐ Logic การขยับเมาส์ (ส่วนที่ขาดไป) ⭐
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [trail, setTrail] = useState([]);
+
+    // สร้างดาว
+    const starShadowsSmall = useMemo(() => generateSpaceShadows(700, '#ffffff'), []);
+    const starShadowsMedium = useMemo(() => generateSpaceShadows(200, '#a5f3fc'), []);
+
+    // ฟังก์ชันจับเมาส์
+    const handleMouseMove = useCallback((e) => {
+        const { clientX, clientY } = e;
+        requestAnimationFrame(() => setMousePos({ x: clientX, y: clientY }));
+        
+        const newParticle = {
+            id: Date.now() + Math.random(),
+            x: clientX, y: clientY,
+            size: Math.random() * 4 + 2,
+            color: spaceSparkleColors[Math.floor(Math.random() * spaceSparkleColors.length)],
+            rotation: Math.random() * 360,
+            driftX: (Math.random() - 0.5) * 80,
+            driftY: (Math.random() - 0.5) * 80,
+        };
+        setTrail((prevTrail) => [...prevTrail.slice(-35), newParticle]);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTrail((prevTrail) => prevTrail.filter((p) => Date.now() - p.id < 1200));
+        }, 50);
+        return () => clearInterval(interval);
+    }, []);
+
+    const moveX = (typeof window !== 'undefined' ? window.innerWidth / 2 - mousePos.x : 0) / 60;
+    const moveY = (typeof window !== 'undefined' ? window.innerHeight / 2 - mousePos.y : 0) / 60;
+
+    // Styles
     const inputContainerStyle = "relative group transition-all duration-300 transform hover:-translate-y-0.5";
-    const inputStyle = "w-full pl-12 pr-12 py-3.5 rounded-xl bg-white/10 border-2 border-transparent focus:border-blue-500 focus:bg-slate-900/50 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-sm group-hover:shadow-md";
-    const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-500 transition-colors duration-300";
+    const inputStyle = "w-full pl-12 pr-12 py-3.5 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:bg-white/10 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-inner backdrop-blur-md";
+    const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-400 transition-colors duration-300";
 
     return (
-        <div className="relative min-h-[100dvh] w-full flex items-center justify-center bg-[#0f172a] overflow-hidden animate-page-enter">
-            
-            {/* --- CSS Animations (ต้องใส่ไว้เพื่อให้หน้านี้ขยับได้ด้วย) --- */}
-            <style>{`
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
+        <div 
+            className="relative min-h-[100dvh] w-full flex flex-col bg-[#020617] overflow-hidden animate-page-enter cursor-none"
+            onMouseMove={handleMouseMove}
+        >
+             {/* CSS Styles */}
+             <style>{`
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-page-enter { animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+                @keyframes blob-slow { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(1.1); } }
+                .animate-blob { animation: blob-slow 25s infinite ease-in-out; }
+                @keyframes particle-drift-spin {
+                    0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(var(--start-rot)); }
+                    60% { opacity: 0.7; }
+                    100% { opacity: 0; transform: translate(var(--drift-x), var(--drift-y)) scale(0.2) rotate(calc(var(--start-rot) + 180deg)); }
                 }
-                .animate-blob { animation: blob 10s infinite; }
-                .animation-delay-2000 { animation-delay: 2s; }
-                .animation-delay-4000 { animation-delay: 4s; }
-                @keyframes moveRoad {
-                    0% { background-position: 0px 0; }
-                    100% { background-position: -100px 0; }
+                .particle-anim-advanced { animation: particle-drift-spin 1.2s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform, opacity; }
+                
+                @keyframes floatingCloud { 0% { transform: translateX(100vw); opacity: 0; } 10%, 90% { opacity: var(--cloud-opacity); } 100% { transform: translateX(-200px); opacity: 0; } }
+                .cloud-space { position: absolute; fill: rgba(190, 220, 255, 0.05); filter: blur(10px); pointer-events: none; }
+                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 60s linear infinite; top: 15%; }
+                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 80s linear infinite; top: 40%; animation-delay: -30s; scale: 1.5; }
+                @keyframes moveRoad { 0% { background-position: 0px 0; } 100% { background-position: -100px 0; } }
+                .road-stripe { background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%); background-size: 100px 20px; animation: moveRoad 0.5s linear infinite; }
+                /* --- 🌌 AURORA TEXT CSS (วางเพิ่มใน <style>) --- */
+
+                /* Keyframes สั่งให้สีพื้นหลังขยับไปมา */
+                @keyframes aurora-flow {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
                 }
-                .road-stripe {
-                    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%);
-                    background-size: 100px 20px;
-                    animation: moveRoad 0.5s linear infinite;
+
+                /* Class หลักสำหรับตัวหนังสือสีไหล */
+                .text-aurora {
+                /* ไล่สี: ฟ้า -> ม่วง -> ชมพู -> ฟ้าอ่อน -> วนกลับมาฟ้าเดิม */
+                background: linear-gradient(
+                    90deg,
+                    #60a5fa, /* Blue-400 */
+                    #a855f7, /* Purple-500 */
+                    #f472b6, /* Pink-400 */
+                    #38bdf8, /* Sky-400 */
+                    #60a5fa  /* Loop back */
+                );
+                
+                /* ขยายขนาดพื้นหลังให้ใหญ่กว่าตัวหนังสือ เพื่อให้เลื่อนได้ */
+                background-size: 300% 100%;
+                
+                /* ตัดพื้นหลังให้เหลือแค่รูปตัวหนังสือ */
+                -webkit-background-clip: text;
+                background-clip: text;
+                
+                /* ทำให้ตัวหนังสือใส เพื่อโชว์พื้นหลัง */
+                color: transparent;
+                
+                /* สั่งให้ขยับ */
+                animation: aurora-flow 6s linear infinite;
                 }
-                /* Cloud Animation */
-                @keyframes floatingCloud {
-                    0% { transform: translateX(100vw); opacity: 0; }
-                    10% { opacity: var(--cloud-opacity); }
-                    90% { opacity: var(--cloud-opacity); }
-                    100% { transform: translateX(-200px); opacity: 0; }
-                }
-                .cloud-space {
-                    position: absolute; fill: rgba(200, 220, 255, 0.15); filter: blur(8px);
-                }
-                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 45s linear infinite; top: 15%; }
-                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 60s linear infinite; top: 30%; animation-delay: -20s; scale: 1.5; }
-                .cloud-3 { --cloud-opacity: 0.3; animation: floatingCloud 50s linear infinite; top: 5%; animation-delay: -5s; scale: 0.8; }
             `}</style>
 
-            {/* --- Background Layers (เหมือนหน้า Login เป๊ะๆ) --- */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-                {/* 1. Blobs */}
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
-                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
-                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
-
-                {/* Clouds */}
-                <div className="absolute inset-0 overflow-hidden">
-                    <svg className="cloud-space cloud-1" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                    <svg className="cloud-space cloud-2" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                    <svg className="cloud-space cloud-3" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                </div>
-
-                {/* 3. Moving Road */}
-                <div className="absolute bottom-0 w-full z-0">
-                     <div className="w-full h-40 bg-gradient-to-t from-slate-900 to-transparent"></div>
-                     <div className="w-full h-32 bg-slate-800 relative overflow-hidden border-t border-blue-500/30 shadow-[0_-10px_50px_rgba(59,130,246,0.2)]">
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-                        <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%]"></div>
-                    </div>
-                </div>
+            {/* Background Layers */}
+            <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ transform: `translate(${moveX*0.2}px, ${moveY*0.2}px)` }}>
+                <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-indigo-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob"></div>
+                <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-purple-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-2000"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX*0.5}px, ${moveY*0.5}px)` }}>
+                <div style={{ width: '1px', height: '1px', boxShadow: starShadowsSmall, opacity: 0.5 }}></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX}px, ${moveY}px)` }}>
+                 <div style={{ width: '2px', height: '2px', boxShadow: starShadowsMedium, opacity: 0.6 }}></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <svg className="cloud-space cloud-1" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                <svg className="cloud-space cloud-2" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
             </div>
 
-            {/* --- Glass Card Form --- */}
-            <Tilt 
-                tiltMaxAngleX={3} 
-                tiltMaxAngleY={3} 
-                perspective={1000} 
-                scale={1.01}
-                transitionSpeed={2000}
-                className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10"
-            >
-                
-                {/* Back Button */}
-                <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all">
-                    <BackIcon />
-                </button>
+            {/* Mouse Trail */}
+            <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+                {trail.map(particle => (
+                    <div key={particle.id} className="absolute rounded-full particle-anim-advanced mix-blend-screen"
+                        style={{
+                            left: particle.x, top: particle.y, width: particle.size + 'px', height: particle.size + 'px',
+                            backgroundColor: particle.color, boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`,
+                            '--drift-x': particle.driftX + 'px', '--drift-y': particle.driftY + 'px', '--start-rot': particle.rotation + 'deg'
+                        }}
+                    />
+                ))}
+                <div className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)' }} />
+                <div className="absolute rounded-full mix-blend-screen blur-[40px] opacity-60 transition-transform duration-200 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '100px', height: '100px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(34, 211, 238, 0.8) 0%, transparent 70%)' }} />
+                <div className="absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white" style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }} />
+            </div>
 
-                <div className="text-center mb-8 pt-2">
-                    <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2 tracking-tight pb-2 pr-2 inline-block">
-                        Create Account
-                    </h1>
-                    <p className="text-slate-300 font-medium">Join EasyWay today!</p>
-                </div>
-
-                {error && (
-                    <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">
-                       ⚠️ {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleSignUp} className="space-y-5">
-                    {/* Email Input */}
-                    <div className={inputContainerStyle}>
-                        <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Email</label>
-                        <div className="relative">
-                            <div className={iconStyle}><EnvelopeIcon /></div>
-                            <input 
-                                type="email" 
-                                value={email} 
-                                onChange={e => setEmail(e.target.value)} 
-                                className={inputStyle} 
-                                placeholder="name@example.com" 
-                                required 
-                            />
-                        </div>
-                    </div>
-
-                    {/* Password Input */}
-                    <div className={inputContainerStyle}>
-                        <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Password</label>
-                        <div className="relative">
-                            <div className={iconStyle}><LockIcon /></div>
-                            <input 
-                                type={passwordVisible ? "text" : "password"} 
-                                value={password} 
-                                onChange={e => setPassword(e.target.value)} 
-                                className={`${inputStyle} pr-12`} 
-                                placeholder="Min. 6 characters" 
-                                required 
-                            />
-                            
-                            {/* ปุ่มดูรหัสผ่าน (ใช้ EyeSlashIcon / EyeIcon) */}
-                            <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
-                                <EyeIcon closed={passwordVisible} />
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Submit Button */}
-                    <GlowingButton type="submit">
-                        Create Account
-                    </GlowingButton>
-                </form>
-
-                <p className="mt-8 text-center text-slate-400 text-sm">
-                    Already have an account?{' '}
-                    <button onClick={() => setView('login')} className="text-blue-400 font-bold hover:underline transition-colors">
-                        Login
+            {/* Wrapper */}
+            <div className="flex-grow flex items-center justify-center relative z-20 py-10">
+                <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10">
+                    <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all">
+                        <BackIcon />
                     </button>
-                </p>
-            </Tilt>
+                    <div className="text-center mb-8 pt-2">
+                        <h1 className="text-5xl font-extrabold mb-2 tracking-tight inline-block text-aurora"> {/* ⭐ ใส่ text-aurora */}
+                            EasyWay
+                        </h1>
+                        <p className="text-slate-300 font-medium">Join EasyWay today!</p>
+                    </div>
+                    {error && <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">⚠️ {error}</div>}
+
+                    <form onSubmit={handleSignUp} className="space-y-5">
+                        <div className={inputContainerStyle}>
+                            <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Email</label>
+                            <div className="relative">
+                                <div className={iconStyle}><EnvelopeIcon /></div>
+                                <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputStyle} placeholder="name@example.com" required />
+                            </div>
+                        </div>
+                        <div className={inputContainerStyle}>
+                            <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Password</label>
+                            <div className="relative">
+                                <div className={iconStyle}><LockIcon /></div>
+                                <input type={passwordVisible ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className={`${inputStyle} pr-12`} placeholder="Min. 6 characters" required />
+                                <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
+                                    <EyeIcon closed={passwordVisible} />
+                                </button>
+                            </div>
+                        </div>
+                        <GlowingButton type="submit">Create Account</GlowingButton>
+                    </form>
+
+                    <p className="mt-8 text-center text-slate-400 text-sm">
+                        Already have an account?{' '}
+                        <button onClick={() => setView('login')} className="text-blue-400 font-bold hover:underline transition-colors">Login</button>
+                    </p>
+                </Tilt>
+            </div>
+            
+            {/* Road */}
+            <div className="relative z-20 w-full h-32 bg-[#020617] overflow-hidden border-t border-blue-500/20 shadow-[0_-10px_50px_rgba(59,130,246,0.15)] shrink-0">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent blur-xl"></div>
+                <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%] opacity-70"></div>
+            </div>
         </div>
     );
 }
@@ -512,7 +708,9 @@ function SignUpScreen({ setView }) {
 // --- Login Screen (Modern Glassmorphism Design) ---
 // --- Login Screen (Updated with Cosmic Space Background) ---
 // --- Login Screen (Modern Glassmorphism Design) ---
+// --- Login Screen (Fixed: Added missing handleMouseMove logic) ---
 function LoginScreen({ setView }) {
+    // 1. Logic เดิม
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [error, setError] = useState('');
@@ -520,217 +718,226 @@ function LoginScreen({ setView }) {
     const [isPasswordResetOpen, setIsPasswordResetOpen] = useState(false);
 
     const handleLogin = async (e) => {
-        e.preventDefault(); 
-        setError('');
-        try { 
-            await signInWithEmailAndPassword(auth, email, password); 
-        } catch (err) { 
-            console.error(err); 
-            setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); 
-        }
+        e.preventDefault(); setError('');
+        try { await signInWithEmailAndPassword(auth, email, password); } catch (err) { console.error(err); setError("อีเมลหรือรหัสผ่านไม่ถูกต้อง"); }
     };
-
-    // (Keep your existing handleGoogleSignIn logic here if needed)
-     const handleGoogleSignIn = async () => {
+    const handleGoogleSignIn = async () => {
         setError('');
         const provider = new GoogleAuthProvider();
         try {
+            // ⭐ ต้องมี await ตรงนี้
             const result = await signInWithPopup(auth, provider);
             const user = result.user;
-            const userRef = doc(db, "users", user.uid);
             
-            // ใช้ setDoc แบบ merge: true เพื่ออัปเดตข้อมูล (เช่น รูปโปรไฟล์เปลี่ยน) โดยไม่ลบข้อมูลเก่า
+            // ... (Logic บันทึกข้อมูลลง Firestore) ...
+            const userRef = doc(db, "users", user.uid);
             await setDoc(userRef, {
                 uid: user.uid,
                 email: user.email,
                 displayName: user.displayName || user.email.split('@')[0],
-                photoURL: user.photoURL || null, // ⭐ บันทึก URL รูปภาพตรงนี้
+                photoURL: user.photoURL || null,
                 lastLogin: serverTimestamp(),
-                // เช็กว่ามี status หรือยัง ถ้าไม่มีให้เป็น active
-            }, { merge: true }); 
-            
-            // เช็กเพิ่มกรณีสร้างใหม่จริงๆ เพื่อใส่ createdAt (ถ้าจำเป็น) หรือใช้ logic เดิมของคุณก็ได้
+            }, { merge: true });
+
+            // เช็กสถานะ user (เผื่อโดนแบน)
             const userSnap = await getDoc(userRef);
             if (!userSnap.data().createdAt) {
                  await updateDoc(userRef, { createdAt: serverTimestamp(), status: 'active' });
             } else if (userSnap.data().status === 'suspended') {
-                setError("บัญชีของคุณถูกระงับการใช้งาน กรุณาติดต่อผู้ดูแล");
+                setError("บัญชีของคุณถูกระงับการใช้งาน");
                 await signOut(auth);
                 return;
             }
+            
+            // ถ้าสำเร็จ ระบบจะ redirect ไปหน้า Map เองโดยอัตโนมัติ (เพราะมี onAuthStateChanged ใน App component คอยฟังอยู่)
 
         } catch (err) {
-            console.error("Google Sign-In Error:", err);
-            if (err.code !== 'auth/popup-closed-by-user') setError("Failed to sign in with Google.");
+            console.error("Google Sign-In Error:", err); // ⭐ ดู error ใน Console (F12)
+            if (err.code === 'auth/popup-closed-by-user') {
+                // กรณี user กดปิด popup เอง ไม่ต้องทำอะไร หรือแจ้งเตือนเบาๆ
+                toast.error("ยกเลิกการเข้าสู่ระบบ");
+            } else {
+                setError("Failed to sign in with Google: " + err.message);
+            }
         }
     };
 
-    // Define styles for inputs
+    // 2. ⭐ Logic การขยับเมาส์ (ส่วนที่ขาดไป) ⭐
+    const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+    const [trail, setTrail] = useState([]);
+    const starShadowsSmall = useMemo(() => generateSpaceShadows(700, '#ffffff'), []);
+    const starShadowsMedium = useMemo(() => generateSpaceShadows(200, '#a5f3fc'), []);
+
+    const handleMouseMove = useCallback((e) => {
+        const { clientX, clientY } = e;
+        requestAnimationFrame(() => setMousePos({ x: clientX, y: clientY }));
+        const newParticle = {
+            id: Date.now() + Math.random(),
+            x: clientX, y: clientY,
+            size: Math.random() * 4 + 2,
+            color: spaceSparkleColors[Math.floor(Math.random() * spaceSparkleColors.length)],
+            rotation: Math.random() * 360,
+            driftX: (Math.random() - 0.5) * 80,
+            driftY: (Math.random() - 0.5) * 80,
+        };
+        setTrail((prevTrail) => [...prevTrail.slice(-35), newParticle]);
+    }, []);
+
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setTrail((prevTrail) => prevTrail.filter((p) => Date.now() - p.id < 1200));
+        }, 50);
+        return () => clearInterval(interval);
+    }, []);
+
+    const moveX = (typeof window !== 'undefined' ? window.innerWidth / 2 - mousePos.x : 0) / 60;
+    const moveY = (typeof window !== 'undefined' ? window.innerHeight / 2 - mousePos.y : 0) / 60;
+
+    // Styles
     const inputContainerStyle = "relative group transition-all duration-300 transform hover:-translate-y-0.5";
-    const inputStyle = "w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/10 border-2 border-transparent focus:border-blue-500 focus:bg-slate-900/50 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-sm group-hover:shadow-md";
+    const inputStyle = "w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:bg-white/10 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-inner backdrop-blur-md";
     const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-500 transition-colors duration-300";
 
-
     return (
-        <div className="relative min-h-[100dvh] w-full flex items-center justify-center bg-[#0f172a] overflow-hidden animate-page-enter">
+        <div className="relative min-h-[100dvh] w-full flex flex-col bg-[#020617] overflow-hidden animate-page-enter cursor-none" onMouseMove={handleMouseMove}>
             
-            {/* --- Animation Styles --- */}
             <style>{`
-                @keyframes blob {
-                    0% { transform: translate(0px, 0px) scale(1); }
-                    33% { transform: translate(30px, -50px) scale(1.1); }
-                    66% { transform: translate(-20px, 20px) scale(0.9); }
-                    100% { transform: translate(0px, 0px) scale(1); }
+                @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+                .animate-page-enter { animation: fadeInUp 0.8s cubic-bezier(0.22, 1, 0.36, 1) forwards; }
+                @keyframes blob-slow { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(30px, -30px) scale(1.1); } }
+                .animate-blob { animation: blob-slow 25s infinite ease-in-out; }
+                @keyframes particle-drift-spin {
+                    0% { opacity: 1; transform: translate(0, 0) scale(1) rotate(var(--start-rot)); }
+                    60% { opacity: 0.7; }
+                    100% { opacity: 0; transform: translate(var(--drift-x), var(--drift-y)) scale(0.2) rotate(calc(var(--start-rot) + 180deg)); }
                 }
-                .animate-blob { animation: blob 10s infinite; }
-                .animation-delay-2000 { animation-delay: 2s; }
-                .animation-delay-4000 { animation-delay: 4s; }
-                @keyframes twinkle {
-                    0%, 100% { opacity: 0.8; transform: scale(1); }
-                    50% { opacity: 0.3; transform: scale(0.8); }
-                }
-                .star {
-                    position: absolute; background: white; border-radius: 50%;
-                    animation: twinkle 3s infinite ease-in-out;
-                }
-                @keyframes moveRoad {
-                    0% { background-position: 0px 0; }
-                    100% { background-position: -100px 0; }
-                }
-                 .road-stripe {
-                    background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%);
-                    background-size: 100px 20px;
-                    animation: moveRoad 0.5s linear infinite;
-                }
-                 /* Cloud Animation */
-                @keyframes floatingCloud {
-                    0% { transform: translateX(100vw); opacity: 0; }
-                    10% { opacity: var(--cloud-opacity); }
-                    90% { opacity: var(--cloud-opacity); }
-                    100% { transform: translateX(-200px); opacity: 0; }
-                }
-                .cloud-space {
-                    position: absolute; fill: rgba(200, 220, 255, 0.15); filter: blur(8px);
-                }
-                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 45s linear infinite; top: 15%; }
-                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 60s linear infinite; top: 30%; animation-delay: -20s; scale: 1.5; }
-                .cloud-3 { --cloud-opacity: 0.3; animation: floatingCloud 50s linear infinite; top: 5%; animation-delay: -5s; scale: 0.8; }
+                .particle-anim-advanced { animation: particle-drift-spin 1.2s forwards cubic-bezier(0.25, 0.46, 0.45, 0.94); will-change: transform, opacity; }
+                @keyframes floatingCloud { 0% { transform: translateX(100vw); opacity: 0; } 10%, 90% { opacity: var(--cloud-opacity); } 100% { transform: translateX(-200px); opacity: 0; } }
+                .cloud-space { position: absolute; fill: rgba(190, 220, 255, 0.05); filter: blur(10px); pointer-events: none; }
+                .cloud-1 { --cloud-opacity: 0.2; animation: floatingCloud 60s linear infinite; top: 15%; }
+                .cloud-2 { --cloud-opacity: 0.15; animation: floatingCloud 80s linear infinite; top: 40%; animation-delay: -30s; scale: 1.5; }
+                @keyframes moveRoad { 0% { background-position: 0px 0; } 100% { background-position: -100px 0; } }
+                .road-stripe { background-image: linear-gradient(90deg, transparent 50%, rgba(255,255,255,0.5) 50%); background-size: 100px 20px; animation: moveRoad 0.5s linear infinite; }
+                /* --- 🌌 AURORA TEXT CSS (วางเพิ่มใน <style>) --- */
 
+                /* Keyframes สั่งให้สีพื้นหลังขยับไปมา */
+                @keyframes aurora-flow {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+                }
+
+                /* Class หลักสำหรับตัวหนังสือสีไหล */
+                .text-aurora {
+                /* ไล่สี: ฟ้า -> ม่วง -> ชมพู -> ฟ้าอ่อน -> วนกลับมาฟ้าเดิม */
+                background: linear-gradient(
+                    90deg,
+                    #60a5fa, /* Blue-400 */
+                    #a855f7, /* Purple-500 */
+                    #f472b6, /* Pink-400 */
+                    #38bdf8, /* Sky-400 */
+                    #60a5fa  /* Loop back */
+                );
+                
+                /* ขยายขนาดพื้นหลังให้ใหญ่กว่าตัวหนังสือ เพื่อให้เลื่อนได้ */
+                background-size: 300% 100%;
+                
+                /* ตัดพื้นหลังให้เหลือแค่รูปตัวหนังสือ */
+                -webkit-background-clip: text;
+                background-clip: text;
+                
+                /* ทำให้ตัวหนังสือใส เพื่อโชว์พื้นหลัง */
+                color: transparent;
+                
+                /* สั่งให้ขยับ */
+                animation: aurora-flow 6s linear infinite;
+                }
             `}</style>
 
-            {/* --- Background Layers --- */}
-            <div className="absolute inset-0 w-full h-full overflow-hidden pointer-events-none">
-                 {/* Blobs */}
-                <div className="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-purple-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob"></div>
-                <div className="absolute top-[20%] right-[-10%] w-[400px] h-[400px] bg-blue-600 rounded-full mix-blend-screen filter blur-[100px] opacity-30 animate-blob animation-delay-2000"></div>
-                <div className="absolute bottom-[-10%] left-[20%] w-[600px] h-[600px] bg-pink-600 rounded-full mix-blend-screen filter blur-[100px] opacity-20 animate-blob animation-delay-4000"></div>
-                
-                 {/* Stars */}
-                <div className="absolute inset-0">
-                    <div className="star w-1 h-1 top-10 left-10" style={{animationDelay: '0s'}}></div>
-                    <div className="star w-0.5 h-0.5 top-20 right-20" style={{animationDelay: '1s'}}></div>
-                    <div className="star w-1 h-1 top-1/2 left-1/3" style={{animationDelay: '2s'}}></div>
-                    <div className="star w-0.5 h-0.5 bottom-1/3 right-1/4" style={{animationDelay: '0.5s'}}></div>
-                     <div className="star w-0.5 h-0.5 top-5 left-1/2 opacity-40"></div>
-                </div>
-
-                 {/* Clouds */}
-                <div className="absolute inset-0 overflow-hidden">
-                    <svg className="cloud-space cloud-1" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                    <svg className="cloud-space cloud-2" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                    <svg className="cloud-space cloud-3" width="200" height="120" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
-                </div>
-
-                 {/* Moving Road */}
-                <div className="absolute bottom-0 w-full z-0">
-                     <div className="w-full h-40 bg-gradient-to-t from-slate-900 to-transparent"></div>
-                     <div className="w-full h-32 bg-slate-800 relative overflow-hidden border-t border-blue-500/30 shadow-[0_-10px_50px_rgba(59,130,246,0.2)]">
-                        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20"></div>
-                        <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%]"></div>
-                    </div>
-                </div>
+            <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ transform: `translate(${moveX*0.2}px, ${moveY*0.2}px)` }}>
+                <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-indigo-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob"></div>
+                <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-purple-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-2000"></div>
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX*0.5}px, ${moveY*0.5}px)` }}>
+                <div style={{ width: '1px', height: '1px', boxShadow: starShadowsSmall, opacity: 0.5 }}></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX}px, ${moveY}px)` }}>
+                 <div style={{ width: '2px', height: '2px', boxShadow: starShadowsMedium, opacity: 0.6 }}></div>
+            </div>
+            <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+                <svg className="cloud-space cloud-1" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
+                <svg className="cloud-space cloud-2" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
             </div>
 
-            {/* --- Glass Card --- */}
-            <Tilt 
-                tiltMaxAngleX={3} 
-                tiltMaxAngleY={3} 
-                perspective={1000} 
-                scale={1.01}
-                transitionSpeed={2000}
-                className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10"
-            >
-                
-                {/* ⭐ Back Button (Inside the Card, Top Left) ⭐ */}
-                <button 
-                    onClick={() => setView('welcome')} 
-                    className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all z-20"
-                >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-                    </svg>
-                </button>
+            <div className="pointer-events-none fixed inset-0 z-50 overflow-hidden">
+                {trail.map(particle => (
+                    <div key={particle.id} className="absolute rounded-full particle-anim-advanced mix-blend-screen"
+                        style={{
+                            left: particle.x, top: particle.y, width: particle.size + 'px', height: particle.size + 'px',
+                            backgroundColor: particle.color, boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`,
+                            '--drift-x': particle.driftX + 'px', '--drift-y': particle.driftY + 'px', '--start-rot': particle.rotation + 'deg'
+                        }}
+                    />
+                ))}
+                <div className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)' }} />
+                <div className="absolute rounded-full mix-blend-screen blur-[40px] opacity-60 transition-transform duration-200 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '100px', height: '100px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(34, 211, 238, 0.8) 0%, transparent 70%)' }} />
+                <div className="absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white" style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }} />
+            </div>
 
-                <div className="text-center mb-8 pt-2">
-                    <h1 className="text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-400 mb-2 tracking-tight pb-2 pr-2 inline-block">
-                        EasyWay
-                    </h1>
-                    <p className="text-slate-300 font-medium">Welcome Back!</p>
-                </div>
-
-                {error && (
-                    <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">
-                       ⚠️ {error}
-                    </div>
-                )}
-
-                <form onSubmit={handleLogin} className="space-y-5">
-                    {/* Email Input */}
-                    <div className={inputContainerStyle}>
-                        <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Email</label>
-                        <div className="relative">
-                            <div className={iconStyle}><EnvelopeIcon /></div>
-                            <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputStyle} placeholder="name@example.com" required />
-                        </div>
-                    </div>
-                    {/* Password Input */}
-                    <div className={inputContainerStyle}>
-                        <div className="flex justify-between ml-1 mb-1.5">
-                             <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Password</label>
-                             <button type="button" onClick={() => setIsPasswordResetOpen(true)} className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">Forgot?</button>
-                        </div>
-                        <div className="relative">
-                            <div className={iconStyle}><LockIcon /></div>
-                            <input type={passwordVisible ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className={`${inputStyle} pr-12`} placeholder="••••••••" required />
-                            <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
-                                <EyeIcon closed={passwordVisible} />
-                            </button>
-                        </div>
-                    </div>
-                    <GlowingButton type="submit">
-                        Sign In
-                    </GlowingButton>
-                </form>
-
-                 {/* Google Button */}
-                 <div className="mt-6">
-                    <button
-                        onClick={handleGoogleSignIn}
-                        className="w-full py-3.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold flex items-center justify-center transition-all duration-300 hover:shadow-md group active:scale-[0.98]"
-                    >
-                        <GoogleIcon /> 
-                        <span className="ml-3">Sign in with Google</span>
+            <div className="flex-grow flex items-center justify-center relative z-20 py-10">
+                <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10">
+                    <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all z-20">
+                        <BackIcon />
                     </button>
-                </div>
-
-                <p className="mt-8 text-center text-slate-400 text-sm">
-                    Don't have an account?{' '}
-                    <button onClick={() => setView('signup')} className="text-blue-400 font-bold hover:underline transition-colors">
-                        Sign Up
-                    </button>
-                </p>
-            </Tilt>
+                    <div className="text-center mb-8 pt-2">
+                        <h1 className="text-5xl font-extrabold mb-2 tracking-tight inline-block text-aurora"> {/* ⭐ ใส่ text-aurora */}
+                            EasyWay
+                        </h1>
+                        <p className="text-slate-300 font-medium">Welcome Back!</p>
+                    </div>
+                    {error && <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">⚠️ {error}</div>}
+                    <form onSubmit={handleLogin} className="space-y-5">
+                        <div className={inputContainerStyle}>
+                            <label className="block text-xs font-bold text-slate-400 mb-1.5 ml-1 uppercase tracking-wide">Email</label>
+                            <div className="relative">
+                                <div className={iconStyle}><EnvelopeIcon /></div>
+                                <input type="email" value={email} onChange={e => setEmail(e.target.value)} className={inputStyle} placeholder="name@example.com" required />
+                            </div>
+                        </div>
+                        <div className={inputContainerStyle}>
+                            <div className="flex justify-between ml-1 mb-1.5">
+                                 <label className="text-xs font-bold text-slate-400 uppercase tracking-wide">Password</label>
+                                 <button type="button" onClick={() => setIsPasswordResetOpen(true)} className="text-xs font-bold text-blue-400 hover:text-blue-300 transition-colors">Forgot?</button>
+                            </div>
+                            <div className="relative">
+                                <div className={iconStyle}><LockIcon /></div>
+                                <input type={passwordVisible ? "text" : "password"} value={password} onChange={e => setPassword(e.target.value)} className={`${inputStyle} pr-12`} placeholder="••••••••" required />
+                                <button type="button" onClick={() => setPasswordVisible(!passwordVisible)} className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-400 transition-colors">
+                                    <EyeIcon closed={passwordVisible} />
+                                </button>
+                            </div>
+                        </div>
+                        <GlowingButton type="submit">Sign In</GlowingButton>
+                    </form>
+                     <div className="mt-6">
+                        <button onClick={handleGoogleSignIn} className="w-full py-3.5 rounded-xl bg-white/10 border border-white/20 hover:bg-white/20 text-white font-semibold flex items-center justify-center transition-all duration-300 hover:shadow-md group active:scale-[0.98]">
+                            <GoogleIcon /> <span className="ml-3">Sign in with Google</span>
+                        </button>
+                    </div>
+                    <p className="mt-8 text-center text-slate-400 text-sm">
+                        Don't have an account?{' '}
+                        <button onClick={() => setView('signup')} className="text-blue-400 font-bold hover:underline transition-colors">Sign Up</button>
+                    </p>
+                </Tilt>
+            </div>
             {isPasswordResetOpen && <PasswordResetModal onClose={() => setIsPasswordResetOpen(false)} />}
+            
+            <div className="relative z-20 w-full h-32 bg-[#020617] overflow-hidden border-t border-blue-500/20 shadow-[0_-10px_50px_rgba(59,130,246,0.15)] shrink-0">
+                <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
+                <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent blur-xl"></div>
+                <div className="absolute top-1/2 left-0 right-0 h-2 -mt-1 road-stripe w-[200%] opacity-70"></div>
+            </div>
         </div>
     );
 }
@@ -2275,7 +2482,55 @@ function AdminDashboard() {
 
     return (
         <div className="flex flex-col md:flex-row h-screen bg-gray-100 dark:bg-gray-900">
-            <Toaster position="top-right" reverseOrder={false} />
+            <Toaster 
+                position="top-right" 
+                reverseOrder={false}
+                toastOptions={{
+                    // 1. สไตล์พื้นฐาน (Default) สำหรับทุก Toast
+                    style: {
+                        background: 'rgba(15, 23, 42, 0.85)', // สีน้ำเงินเข้มโปร่งแสง (Dark Blue Slate)
+                        color: '#e2e8f0',                    // สีตัวอักษรขาวนวล
+                        backdropFilter: 'blur(12px)',        // เบลอฉากหลัง (Glass Effect)
+                        border: '1px solid rgba(255, 255, 255, 0.1)', // ขอบขาวจางๆ
+                        borderRadius: '16px',                // มุมโค้งมน
+                        padding: '16px',
+                        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.05) inset', // เงาลึก + แสงด้านใน
+                        fontSize: '14px',
+                        fontWeight: '500',
+                    },
+                    // 2. สไตล์ตอนสำเร็จ (Success) - สีเขียวเรืองแสง
+                    success: {
+                        iconTheme: {
+                            primary: '#4ade80', // ไอคอนสีเขียวสว่าง
+                            secondary: '#0f172a', // พื้นหลังไอคอนสีเข้ม
+                        },
+                        style: {
+                            border: '1px solid rgba(74, 222, 128, 0.3)', // ขอบเขียวเรืองๆ
+                            background: 'rgba(6, 78, 59, 0.7)', // พื้นหลังอมเขียวจางๆ
+                            boxShadow: '0 0 30px rgba(74, 222, 128, 0.15)', // แสงฟุ้งสีเขียว
+                        },
+                    },
+                    // 3. สไตล์ตอน Error - สีแดงเรืองแสง
+                    error: {
+                        iconTheme: {
+                            primary: '#f87171', // ไอคอนสีแดงสว่าง
+                            secondary: '#0f172a',
+                        },
+                        style: {
+                            border: '1px solid rgba(248, 113, 113, 0.3)', // ขอบแดงเรืองๆ
+                            background: 'rgba(127, 29, 29, 0.7)', // พื้นหลังอมแดงจางๆ
+                            boxShadow: '0 0 30px rgba(248, 113, 113, 0.15)', // แสงฟุ้งสีแดง
+                        },
+                    },
+                    // 4. สไตล์ตอน Loading - สีฟ้าเรืองแสง
+                    loading: {
+                        style: {
+                            border: '1px solid rgba(96, 165, 250, 0.3)', // ขอบฟ้า
+                            boxShadow: '0 0 30px rgba(96, 165, 250, 0.15)', // แสงฟุ้งสีฟ้า
+                        },
+                    },
+                }} 
+            />
             <div className="w-full md:w-64 bg-gray-800 dark:bg-gray-950 text-white p-5 flex flex-col flex-shrink-0">
                 
                 {/* ⭐ แก้ไขส่วนนี้: เพิ่มปุ่ม Logout สำหรับมือถือ ⭐ */}
@@ -3463,7 +3718,55 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     // --- ⭐ JSX Structure (Includes Dark Mode, Profile, Full Screen Image, Guest Login Button) ⭐ ---
     return (
         <div className="relative w-screen h-[100dvh] overflow-hidden touch-none">
-            <Toaster position="top-right" reverseOrder={false} />
+            <Toaster 
+                position="top-right" 
+                reverseOrder={false}
+                toastOptions={{
+                    // 1. สไตล์พื้นฐาน (Default) สำหรับทุก Toast
+                    style: {
+                        background: 'rgba(15, 23, 42, 0.85)', // สีน้ำเงินเข้มโปร่งแสง (Dark Blue Slate)
+                        color: '#e2e8f0',                    // สีตัวอักษรขาวนวล
+                        backdropFilter: 'blur(12px)',        // เบลอฉากหลัง (Glass Effect)
+                        border: '1px solid rgba(255, 255, 255, 0.1)', // ขอบขาวจางๆ
+                        borderRadius: '16px',                // มุมโค้งมน
+                        padding: '16px',
+                        boxShadow: '0 10px 40px -10px rgba(0,0,0,0.8), 0 0 20px rgba(255,255,255,0.05) inset', // เงาลึก + แสงด้านใน
+                        fontSize: '14px',
+                        fontWeight: '500',
+                    },
+                    // 2. สไตล์ตอนสำเร็จ (Success) - สีเขียวเรืองแสง
+                    success: {
+                        iconTheme: {
+                            primary: '#4ade80', // ไอคอนสีเขียวสว่าง
+                            secondary: '#0f172a', // พื้นหลังไอคอนสีเข้ม
+                        },
+                        style: {
+                            border: '1px solid rgba(74, 222, 128, 0.3)', // ขอบเขียวเรืองๆ
+                            background: 'rgba(6, 78, 59, 0.7)', // พื้นหลังอมเขียวจางๆ
+                            boxShadow: '0 0 30px rgba(74, 222, 128, 0.15)', // แสงฟุ้งสีเขียว
+                        },
+                    },
+                    // 3. สไตล์ตอน Error - สีแดงเรืองแสง
+                    error: {
+                        iconTheme: {
+                            primary: '#f87171', // ไอคอนสีแดงสว่าง
+                            secondary: '#0f172a',
+                        },
+                        style: {
+                            border: '1px solid rgba(248, 113, 113, 0.3)', // ขอบแดงเรืองๆ
+                            background: 'rgba(127, 29, 29, 0.7)', // พื้นหลังอมแดงจางๆ
+                            boxShadow: '0 0 30px rgba(248, 113, 113, 0.15)', // แสงฟุ้งสีแดง
+                        },
+                    },
+                    // 4. สไตล์ตอน Loading - สีฟ้าเรืองแสง
+                    loading: {
+                        style: {
+                            border: '1px solid rgba(96, 165, 250, 0.3)', // ขอบฟ้า
+                            boxShadow: '0 0 30px rgba(96, 165, 250, 0.15)', // แสงฟุ้งสีฟ้า
+                        },
+                    },
+                }} 
+            />
             {/* Map Container */}
             <div ref={mapRef} className="w-full h-full bg-gray-300 dark:bg-gray-700">
                 {/* Basic Loading based only on script load */}
