@@ -231,27 +231,41 @@ const MagneticWrapper = ({ children, className }) => {
 // --- Reusable Animated Background Component ---
 // --- Reusable Animated Background Component (Fixed: Z-Index & Mobile Layout) ---
 // --- Reusable Animated Background Component (Fixed: Smart Cursor) ---
+// --- Reusable Animated Background Component (Optimized for Mobile) ---
 const CosmicBackground = ({ children }) => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [trail, setTrail] = useState([]);
-    // ⭐ เพิ่ม State เช็คว่าเมาส์อยู่บนการ์ดไหม
     const [isOverCard, setIsOverCard] = useState(false);
+    const [isMobile, setIsMobile] = useState(true); // เริ่มต้นถือว่าเป็น Mobile ไว้ก่อนเพื่อความลื่น
 
-    // Static Stars
-    const starShadowsSmall = useMemo(() => generateSpaceShadows(700, '#ffffff'), []);
-    const starShadowsMedium = useMemo(() => generateSpaceShadows(200, '#a5f3fc'), []);
+    // เช็คขนาดหน้าจอเมื่อโหลดเสร็จ
+    useEffect(() => {
+        const checkMobile = () => {
+            setIsMobile(window.innerWidth < 768);
+        };
+        checkMobile();
+        window.addEventListener('resize', checkMobile);
+        return () => window.removeEventListener('resize', checkMobile);
+    }, []);
+
+    // ลดจำนวนดาวลงถ้าเป็นมือถือ (700 -> 200) เพื่อความลื่น
+    const starCountSmall = isMobile ? 200 : 700;
+    const starCountMedium = isMobile ? 50 : 200;
+
+    const starShadowsSmall = useMemo(() => generateSpaceShadows(starCountSmall, '#ffffff'), [starCountSmall]);
+    const starShadowsMedium = useMemo(() => generateSpaceShadows(starCountMedium, '#a5f3fc'), [starCountMedium]);
 
     const handleMouseMove = useCallback((e) => {
+        // ⭐⭐ ถ้าเป็นมือถือ ไม่ต้องคำนวณ Particle ให้หนักเครื่อง ⭐⭐
+        if (isMobile) return;
+
         const { clientX, clientY } = e;
         requestAnimationFrame(() => setMousePos({ x: clientX, y: clientY }));
         
-        // ⭐ ตรวจสอบว่าเมาส์ชี้โดน element ที่มี class 'glass-card' หรือไม่
         const target = e.target;
         const isHoveringCard = target.closest('.glass-card');
+        setIsOverCard(!!isHoveringCard);
 
-        setIsOverCard(!!isHoveringCard); // อัปเดตสถานะ
-
-        // ⭐ ถ้าอยู่บนการ์ด ให้หยุดสร้าง Particle (ละอองดาว)
         if (isHoveringCard) return;
 
         const newParticle = {
@@ -264,23 +278,27 @@ const CosmicBackground = ({ children }) => {
             driftY: (Math.random() - 0.5) * 80,
         };
         setTrail((prevTrail) => [...prevTrail.slice(-35), newParticle]);
-    }, []);
+    }, [isMobile]); // เพิ่ม dependency isMobile
 
     useEffect(() => {
+        if (isMobile) return; // ไม่ต้องรัน interval ถ้าเป็นมือถือ
         const interval = setInterval(() => {
             setTrail((prevTrail) => prevTrail.filter((p) => Date.now() - p.id < 1200));
         }, 50);
         return () => clearInterval(interval);
-    }, []);
+    }, [isMobile]);
 
-    const moveX = (typeof window !== 'undefined' ? window.innerWidth / 2 - mousePos.x : 0) / 60;
-    const moveY = (typeof window !== 'undefined' ? window.innerHeight / 2 - mousePos.y : 0) / 60;
+    // Parallax: บนมือถือให้ขยับน้อยมากๆ หรือไม่ขยับเลย
+    const moveX = isMobile ? 0 : (typeof window !== 'undefined' ? window.innerWidth / 2 - mousePos.x : 0) / 60;
+    const moveY = isMobile ? 0 : (typeof window !== 'undefined' ? window.innerHeight / 2 - mousePos.y : 0) / 60;
 
     return (
         <div 
-            // ⭐ เปลี่ยน cursor-none เป็น class ที่ขึ้นกับสถานะ (ถ้าอยู่บนการ์ดให้โชว์เมาส์ auto)
-            className={`relative min-h-[100dvh] w-full flex flex-col bg-[#020617] overflow-hidden animate-page-enter ${isOverCard ? 'cursor-auto' : 'cursor-none'}`}
+            className={`relative min-h-[100dvh] w-full flex flex-col bg-[#020617] overflow-hidden animate-page-enter ${isOverCard || isMobile ? 'cursor-auto' : 'cursor-none'}`}
             onMouseMove={handleMouseMove}
+            onTouchMove={(e) => {
+                // ป้องกันการลากจอเลื่อนไปมาโดยไม่ตั้งใจ (Optional)
+            }}
         >
             <style>{`
                 @keyframes fadeInUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
@@ -320,11 +338,12 @@ const CosmicBackground = ({ children }) => {
                 }
             `}</style>
 
-            {/* Background Layers (เหมือนเดิม) */}
+            {/* Background Layers */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ transform: `translate(${moveX*0.2}px, ${moveY*0.2}px)` }}>
-                <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-indigo-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob"></div>
-                <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-purple-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-2000"></div>
-                <div className="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-blue-900/10 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-4000"></div>
+                {/* ลด Blur บนมือถือ */}
+                <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-indigo-900/20 rounded-full mix-blend-screen blur-[80px] md:blur-[150px] animate-blob"></div>
+                <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-purple-900/20 rounded-full mix-blend-screen blur-[80px] md:blur-[150px] animate-blob animation-delay-2000"></div>
+                <div className="absolute top-[40%] left-[30%] w-[400px] h-[400px] bg-blue-900/10 rounded-full mix-blend-screen blur-[80px] md:blur-[150px] animate-blob animation-delay-4000"></div>
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
             </div>
 
@@ -337,44 +356,44 @@ const CosmicBackground = ({ children }) => {
 
             {/* Gentle Cosmic Dust */}
             <div className="absolute inset-0 pointer-events-none">
-                {[...Array(12)].map((_, i) => {
+                {[...Array(isMobile ? 5 : 12)].map((_, i) => { // ลดจำนวน Dust บนมือถือ
                     const style = { top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 20}s`, '--target-opacity': Math.random() * 0.4 + 0.1 };
                      const size = Math.random() * 2 + 1; const colorClass = Math.random() > 0.5 ? 'bg-blue-200' : 'bg-white'; const speedClass = i % 2 === 0 ? 'drift-slow' : 'drift-medium';
                     return <div key={i} className={`absolute rounded-full ${colorClass} ${speedClass} mix-blend-screen filter blur-[1px]`} style={{...style, width: size, height: size}}></div>
                 })}
             </div>
 
+            {/* Clouds & Road */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
                 <svg className="cloud-space cloud-1" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
                 <svg className="cloud-space cloud-2" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
             </div>
 
-            {/* Mouse Trail (Z-Index 0) */}
-            <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-                {trail.map(particle => (
-                    <div key={particle.id} className="absolute rounded-full particle-anim-advanced mix-blend-screen"
-                        style={{
-                            left: particle.x, top: particle.y, width: particle.size + 'px', height: particle.size + 'px',
-                            backgroundColor: particle.color, boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`,
-                            '--drift-x': particle.driftX + 'px', '--drift-y': particle.driftY + 'px', '--start-rot': particle.rotation + 'deg'
-                        }}
-                    />
-                ))}
-                {/* ⭐ ซ่อนจุดแสงเมาส์ ถ้าเมาส์อยู่บนการ์ด (isOverCard) ⭐ */}
-                {!isOverCard && (
-                    <>
-                        <div className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)' }} />
-                        <div className="hidden md:block absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white" style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }} />
-                    </>
-                )}
-            </div>
+            {/* Mouse Trail (ปิดถาวรบนมือถือ) */}
+            {!isMobile && (
+                <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
+                    {trail.map(particle => (
+                        <div key={particle.id} className="absolute rounded-full particle-anim-advanced mix-blend-screen"
+                            style={{
+                                left: particle.x, top: particle.y, width: particle.size + 'px', height: particle.size + 'px',
+                                backgroundColor: particle.color, boxShadow: `0 0 ${particle.size * 1.5}px ${particle.color}`,
+                                '--drift-x': particle.driftX + 'px', '--drift-y': particle.driftY + 'px', '--start-rot': particle.rotation + 'deg'
+                            }}
+                        />
+                    ))}
+                    {!isOverCard && (
+                        <>
+                            <div className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)' }} />
+                            <div className="hidden md:block absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white" style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }} />
+                        </>
+                    )}
+                </div>
+            )}
 
-            {/* Main Content */}
             <div className="flex-grow flex flex-col items-center justify-center relative z-20 px-4">
                 {children}
             </div>
 
-            {/* Road */}
             <div className="relative z-20 w-full h-32 bg-[#020617] overflow-hidden border-t border-blue-500/20 shadow-[0_-10px_50px_rgba(59,130,246,0.15)] shrink-0">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent blur-xl"></div>
@@ -409,9 +428,12 @@ const spaceSparkleColors = ['#a5f3fc', '#c4b5fd', '#fde68a', '#67e8f9', '#e879f9
 // --- 1. Welcome Screen ---
 // --- 1. Welcome Screen (Fixed: Use Flex/Gap instead of Space-y) ---
 function WelcomeScreen({ setView }) {
+    // เช็ค Mobile เพื่อปิด Tilt
+    const [isMobile, setIsMobile] = useState(true);
+    useEffect(() => { setIsMobile(window.innerWidth < 768); }, []);
+
     return (
         <CosmicBackground>
-            {/* Logo & Text (อยู่นอกกระจก) */}
             <div className="flex flex-col items-center text-center space-y-4 mb-8 relative z-20 -mt-10">
                 <div className="relative group">
                     <div className="absolute inset-0 bg-blue-500/30 blur-[80px] rounded-full group-hover:bg-purple-500/40 transition-colors duration-1000"></div>
@@ -425,14 +447,12 @@ function WelcomeScreen({ setView }) {
                 </div>
             </div>
 
-            {/* Glass Card Container */}
             <div className="w-full max-w-md px-6 z-30">
+                {/* ⭐⭐ tiltEnable={!isMobile} คือปิด Tilt ถ้าเป็นมือถือ ⭐⭐ */}
                 <Tilt 
+                    tiltEnable={!isMobile}
                     tiltMaxAngleX={5} tiltMaxAngleY={5} perspective={1000} scale={1.02} transitionSpeed={1500} 
-                    glareEnable={true} glareMaxOpacity={0.2} glareColor="#a5f3fc" glarePosition="all"
-                    
-                    // ⭐⭐ แก้ไขตรงนี้: ลบ space-y-* ออก แล้วใช้ flex flex-col gap-4 แทน ⭐⭐
-                    // ใส่ pb-8 (padding-bottom) เพื่อเว้นที่ด้านล่างให้สวยงาม ไม่ชิดขอบ
+                    glareEnable={!isMobile} glareMaxOpacity={0.2} glareColor="#a5f3fc" glarePosition="all"
                     className="glass-card cursor-default bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 pb-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-4 relative overflow-hidden group"
                 >
                      <div className="holo-sheen"></div>
@@ -452,7 +472,6 @@ function WelcomeScreen({ setView }) {
                     </MagneticWrapper>
                     
                     <MagneticWrapper>
-                        {/* ไม่ต้องใส่ margin top (mt-2) แล้ว เพราะใช้ gap-4 จัดการให้แล้ว */}
                         <button onClick={() => setView('map')} className="w-full py-2 text-sm text-blue-300/70 hover:text-white transition-colors">
                             Continue as Guest →
                         </button>
@@ -476,11 +495,14 @@ function SignUpScreen({ setView }) {
     const inputStyle = "w-full pl-12 pr-12 py-3.5 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:bg-white/10 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-inner backdrop-blur-md";
     const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-400 transition-colors duration-300";
 
+    // เช็ค Mobile เพื่อปิด Tilt
+    const [isMobile, setIsMobile] = useState(true);
+    useEffect(() => { setIsMobile(window.innerWidth < 768); }, []);
+
     return (
         <CosmicBackground>
-            <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="glass-card cursor-default relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
+            <Tilt tiltEnable={!isMobile} tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="glass-card cursor-default relative z-10 w-full max-w-md p-8 mx-auto bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
                 
-                {/* ⭐⭐ HOLOGRAPHIC SHEEN ⭐⭐ */}
                 <div className="holo-sheen"></div>
 
                 <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all z-20">
@@ -535,11 +557,14 @@ function LoginScreen({ setView }) {
     const inputStyle = "w-full pl-12 pr-4 py-3.5 rounded-xl bg-white/5 border border-white/10 focus:border-blue-400 focus:bg-white/10 focus:ring-4 focus:ring-blue-500/20 transition-all duration-300 outline-none text-white placeholder-slate-400 font-medium shadow-inner backdrop-blur-md";
     const iconStyle = "absolute left-4 top-1/2 transform -translate-y-1/2 text-slate-400 group-hover:text-blue-400 transition-colors duration-300";
 
+    // เช็ค Mobile เพื่อปิด Tilt
+    const [isMobile, setIsMobile] = useState(true);
+    useEffect(() => { setIsMobile(window.innerWidth < 768); }, []);
+
     return (
         <CosmicBackground>
-            <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="glass-card cursor-default relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
+            <Tilt tiltEnable={!isMobile} tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="glass-card cursor-default relative z-10 w-full max-w-md p-8 mx-auto bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
                 
-                {/* ⭐⭐ HOLOGRAPHIC SHEEN ⭐⭐ */}
                 <div className="holo-sheen"></div>
 
                 <button onClick={() => setView('welcome')} className="absolute top-6 left-6 p-2 rounded-full text-slate-400 hover:text-white hover:bg-white/10 transition-all z-20">
