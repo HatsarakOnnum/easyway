@@ -1830,7 +1830,9 @@ const ManageReports = () => {
 
     return (
         <div className="dark:text-gray-200">
-            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 mb-5">Manage Reports</h2>
+            <h2 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500 mb-6 inline-block">
+                Manage Reports
+            </h2>
 
             {/* 📱 Mobile View (Cards) */}
             <div className="grid grid-cols-1 gap-4 md:hidden">
