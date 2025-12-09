@@ -230,9 +230,12 @@ const MagneticWrapper = ({ children, className }) => {
 };
 // --- Reusable Animated Background Component ---
 // --- Reusable Animated Background Component (Fixed: Z-Index & Mobile Layout) ---
+// --- Reusable Animated Background Component (Fixed: Smart Cursor) ---
 const CosmicBackground = ({ children }) => {
     const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
     const [trail, setTrail] = useState([]);
+    // ⭐ เพิ่ม State เช็คว่าเมาส์อยู่บนการ์ดไหม
+    const [isOverCard, setIsOverCard] = useState(false);
 
     // Static Stars
     const starShadowsSmall = useMemo(() => generateSpaceShadows(700, '#ffffff'), []);
@@ -242,6 +245,15 @@ const CosmicBackground = ({ children }) => {
         const { clientX, clientY } = e;
         requestAnimationFrame(() => setMousePos({ x: clientX, y: clientY }));
         
+        // ⭐ ตรวจสอบว่าเมาส์ชี้โดน element ที่มี class 'glass-card' หรือไม่
+        const target = e.target;
+        const isHoveringCard = target.closest('.glass-card');
+
+        setIsOverCard(!!isHoveringCard); // อัปเดตสถานะ
+
+        // ⭐ ถ้าอยู่บนการ์ด ให้หยุดสร้าง Particle (ละอองดาว)
+        if (isHoveringCard) return;
+
         const newParticle = {
             id: Date.now() + Math.random(),
             x: clientX, y: clientY,
@@ -266,7 +278,8 @@ const CosmicBackground = ({ children }) => {
 
     return (
         <div 
-            className="relative min-h-[100dvh] w-full flex flex-col bg-[#020617] overflow-hidden animate-page-enter cursor-none"
+            // ⭐ เปลี่ยน cursor-none เป็น class ที่ขึ้นกับสถานะ (ถ้าอยู่บนการ์ดให้โชว์เมาส์ auto)
+            className={`relative min-h-[100dvh] w-full flex flex-col bg-[#020617] overflow-hidden animate-page-enter ${isOverCard ? 'cursor-auto' : 'cursor-none'}`}
             onMouseMove={handleMouseMove}
         >
             <style>{`
@@ -307,7 +320,7 @@ const CosmicBackground = ({ children }) => {
                 }
             `}</style>
 
-            {/* Layer 1: Deep Nebula */}
+            {/* Background Layers (เหมือนเดิม) */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden" style={{ transform: `translate(${moveX*0.2}px, ${moveY*0.2}px)` }}>
                 <div className="absolute top-[-20%] left-[-20%] w-[800px] h-[800px] bg-indigo-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob"></div>
                 <div className="absolute bottom-[-20%] right-[-20%] w-[600px] h-[600px] bg-purple-900/20 rounded-full mix-blend-screen blur-[150px] animate-blob animation-delay-2000"></div>
@@ -315,7 +328,6 @@ const CosmicBackground = ({ children }) => {
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
             </div>
 
-            {/* Layer 2: Static Stars */}
             <div className="absolute inset-0 pointer-events-none" style={{ transform: `translate(${moveX*0.5}px, ${moveY*0.5}px)` }}>
                 <div style={{ width: '1px', height: '1px', boxShadow: starShadowsSmall, opacity: 0.5 }}></div>
             </div>
@@ -323,7 +335,7 @@ const CosmicBackground = ({ children }) => {
                  <div style={{ width: '2px', height: '2px', boxShadow: starShadowsMedium, opacity: 0.6 }}></div>
             </div>
 
-            {/* Layer 3: Gentle Cosmic Dust */}
+            {/* Gentle Cosmic Dust */}
             <div className="absolute inset-0 pointer-events-none">
                 {[...Array(12)].map((_, i) => {
                     const style = { top: `${Math.random() * 100}%`, left: `${Math.random() * 100}%`, animationDelay: `${Math.random() * 20}s`, '--target-opacity': Math.random() * 0.4 + 0.1 };
@@ -332,13 +344,12 @@ const CosmicBackground = ({ children }) => {
                 })}
             </div>
 
-            {/* Layer 4: Clouds */}
             <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
                 <svg className="cloud-space cloud-1" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
                 <svg className="cloud-space cloud-2" width="300" height="180" viewBox="0 0 24 24"><path d="M18.5 12A5.5 5.5 0 0 0 13 6.5C12.8 6.5 12.6 6.5 12.4 6.5A6.5 6.5 0 0 0 5.5 12.5v.5H5a5 5 0 1 0 0 10h13.5a5.5 5.5 0 0 0 0-11z"/></svg>
             </div>
 
-            {/* ⭐⭐ Mouse Trail (เปลี่ยน Z-Index เป็น 0 เพื่อให้อยู่หลัง Content) ⭐⭐ */}
+            {/* Mouse Trail (Z-Index 0) */}
             <div className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
                 {trail.map(particle => (
                     <div key={particle.id} className="absolute rounded-full particle-anim-advanced mix-blend-screen"
@@ -349,19 +360,21 @@ const CosmicBackground = ({ children }) => {
                         }}
                     />
                 ))}
-                <div className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)' }} />
-                <div className="absolute rounded-full mix-blend-screen blur-[40px] opacity-60 transition-transform duration-200 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '100px', height: '100px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(34, 211, 238, 0.8) 0%, transparent 70%)' }} />
-                
-                {/* ถ้าอยากซ่อนจุดเมาส์สีขาวๆ ในมือถือ (เพื่อไม่ให้บัง) สามารถเอา div ด้านล่างนี้ออก หรือใส่ hidden บน mobile ได้ */}
-                <div className="hidden md:block absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white" style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }} />
+                {/* ⭐ ซ่อนจุดแสงเมาส์ ถ้าเมาส์อยู่บนการ์ด (isOverCard) ⭐ */}
+                {!isOverCard && (
+                    <>
+                        <div className="absolute rounded-full mix-blend-screen blur-[80px] opacity-40 transition-transform duration-500 ease-out" style={{ left: mousePos.x, top: mousePos.y, width: '250px', height: '250px', transform: 'translate(-50%, -50%)', background: 'radial-gradient(circle, rgba(76, 29, 149, 0.8) 0%, rgba(30, 64, 175, 0.2) 60%, transparent 100%)' }} />
+                        <div className="hidden md:block absolute rounded-full mix-blend-normal shadow-[0_0_25px_rgba(255,255,255,0.8)] bg-white" style={{ left: mousePos.x, top: mousePos.y, width: '12px', height: '12px', transform: 'translate(-50%, -50%)' }} />
+                    </>
+                )}
             </div>
 
-            {/* ⭐⭐ Main Content (เปลี่ยน Z-Index เป็น 20 เพื่อให้ทับหางเมาส์) ⭐⭐ */}
+            {/* Main Content */}
             <div className="flex-grow flex flex-col items-center justify-center relative z-20 px-4">
                 {children}
             </div>
 
-            {/* Road (Bottom) */}
+            {/* Road */}
             <div className="relative z-20 w-full h-32 bg-[#020617] overflow-hidden border-t border-blue-500/20 shadow-[0_-10px_50px_rgba(59,130,246,0.15)] shrink-0">
                 <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-10 mix-blend-overlay"></div>
                 <div className="absolute inset-0 bg-gradient-to-t from-blue-900/20 to-transparent blur-xl"></div>
@@ -420,7 +433,7 @@ function WelcomeScreen({ setView }) {
                     
                     // ⭐⭐ แก้ไขตรงนี้: ลบ space-y-* ออก แล้วใช้ flex flex-col gap-4 แทน ⭐⭐
                     // ใส่ pb-8 (padding-bottom) เพื่อเว้นที่ด้านล่างให้สวยงาม ไม่ชิดขอบ
-                    className="bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 pb-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-4 relative overflow-hidden group"
+                    className="glass-card cursor-default bg-slate-900/40 backdrop-blur-xl border border-white/10 p-6 pb-8 rounded-3xl shadow-[0_20px_50px_rgba(0,0,0,0.5)] flex flex-col gap-4 relative overflow-hidden group"
                 >
                      <div className="holo-sheen"></div>
                      <div className="absolute inset-0 bg-gradient-to-tr from-white/5 to-transparent pointer-events-none"></div>
@@ -465,7 +478,7 @@ function SignUpScreen({ setView }) {
 
     return (
         <CosmicBackground>
-            <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
+            <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="glass-card cursor-default relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
                 
                 {/* ⭐⭐ HOLOGRAPHIC SHEEN ⭐⭐ */}
                 <div className="holo-sheen"></div>
@@ -524,7 +537,7 @@ function LoginScreen({ setView }) {
 
     return (
         <CosmicBackground>
-            <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
+            <Tilt tiltMaxAngleX={3} tiltMaxAngleY={3} perspective={1000} scale={1.01} transitionSpeed={2000} className="glass-card cursor-default relative z-10 w-full max-w-md p-8 mx-4 bg-slate-900/60 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/10 my-10 select-none overflow-hidden group">
                 
                 {/* ⭐⭐ HOLOGRAPHIC SHEEN ⭐⭐ */}
                 <div className="holo-sheen"></div>
