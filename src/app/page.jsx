@@ -905,6 +905,8 @@ const UserFormModal = ({ currentUser, onClose }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        // ⭐ เพิ่มบรรทัดนี้: ถ้ากำลังโหลดอยู่ ให้หยุดทำงานทันที (กันกดเบิ้ล)
+        if (uploading) return;
         setLoading(true);
 
         try {
@@ -1986,7 +1988,9 @@ const LocationMapView = ({ location, onBack, onApprove, onReject, onSelectLocati
                             {location.status === 'pending' ? 'Waiting Approval' : 'Active'}
                         </span>
                     </h2>
-                    <p className="text-sm text-gray-500 mt-1">By: {location.userEmail || 'Unknown'}</p>
+                    <p className="text-sm text-gray-500 mt-1">
+                        By: {location.userName || location.userEmail || 'Unknown'}
+                    </p>
                 </div>
                 
                 <button onClick={onBack} className="w-full md:w-auto bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold py-2.5 px-4 rounded-xl transition flex items-center justify-center gap-2">
@@ -2254,6 +2258,7 @@ function AdminDashboard() {
 
 // --- Location Form Modal (Updated with Skeleton on Upload) ---
 // --- Location Form Modal (Updated: Use Toast for Alerts) ---
+// --- Location Form Modal (Fixed: Save Button Logic & Owner Name) ---
 const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess, setView }) => {
     const [name, setName] = useState(currentLocation?.name || '');
     const [lat, setLat] = useState(currentLocation?.lat || initialCoords?.lat || '');
@@ -2265,7 +2270,6 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
     const [imagePreview, setImagePreview] = useState(currentLocation?.imageUrl || null);
 
     const [uploading, setUploading] = useState(false);
-    // const [error, setError] = useState(''); // ❌ ไม่ใช้ State error แล้ว ใช้ toast แทน
 
     const handleRouteChange = (index, field, value) => {
         const newRoutes = [...routes];
@@ -2286,9 +2290,10 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        // setError(''); // ไม่ต้องใช้แล้ว
 
-        // --- ⭐ ใช้ toast.error แจ้งเตือนแบบน่ารักๆ ⭐ ---
+        // 🔒 1. ป้องกันการกดซ้ำ (ถ้ากำลังโหลด ให้เด้งออก)
+        if (uploading) return;
+
         if (!name || name.trim() === '') {
             toast.error("กรุณาใส่ชื่อสถานที่ (Pin Name) ด้วยนะครับ 🥺");
             return;
@@ -2301,12 +2306,12 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
             toast.error("ต้องเข้าสู่ระบบก่อนนะ ถึงจะปักหมุดได้ 🔒"); 
             return;
         }
-        // ------------------------------------------------
 
-        setUploading(true);
-        let imageUrl = currentLocation?.imageUrl || '';
+        setUploading(true); // เริ่มล็อคปุ่ม
 
         try {
+            let imageUrl = currentLocation?.imageUrl || '';
+
             // Upload Image
             if (imageFile) {
                 if (currentLocation?.imageUrl) { 
@@ -2320,45 +2325,68 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
                 imageUrl = await getDownloadURL(snapshot.ref);
             }
 
-            // Prepare Data
-            const locationData = {
-                name, lat: Number(lat), lng: Number(lng), type, routes, imageUrl,
-                status: currentLocation?.status || 'pending',
-                submittedBy: currentLocation?.submittedBy || auth.currentUser.uid,
-                createdAt: currentLocation?.createdAt || serverTimestamp(),
+            // ⭐⭐ 2. Logic แยก Data (แก้เรื่อง By Unknown / By Admin) ⭐⭐
+            // สร้าง object พื้นฐานก่อน
+            let locationData = {
+                name, 
+                lat: Number(lat), 
+                lng: Number(lng), 
+                type, 
+                routes, 
+                imageUrl,
                 updatedAt: serverTimestamp()
             };
+
+            if (currentLocation) {
+                // 🟢 กรณี 1: แก้ไข (Edit) - ใช้ข้อมูลเจ้าของเดิม
+                locationData = {
+                    ...locationData,
+                    status: currentLocation.status,
+                    submittedBy: currentLocation.submittedBy,
+                    createdAt: currentLocation.createdAt,
+                    // คงชื่อคนสร้างเดิมไว้ (ถ้ามี)
+                    userEmail: currentLocation.userEmail || null,
+                    userName: currentLocation.userName || 'Anonymous',
+                };
+            } else {
+                // 🟢 กรณี 2: สร้างใหม่ (Create) - ใช้ข้อมูลเรา
+                locationData = {
+                    ...locationData,
+                    status: 'pending',
+                    submittedBy: auth.currentUser.uid,
+                    createdAt: serverTimestamp(),
+                    userEmail: auth.currentUser.email,
+                    userName: auth.currentUser.displayName || 'Anonymous',
+                };
+            }
 
             // Save to Firestore
             if (currentLocation) {
                 await setDoc(doc(db, "locations", currentLocation.id), locationData, { merge: true });
-                toast.success("แก้ไขข้อมูลเรียบร้อย! 🎉"); // แจ้งเตือนสำเร็จ
+                toast.success("แก้ไขข้อมูลเรียบร้อย! 🎉");
             } else {
                 await addDoc(collection(db, "locations"), locationData);
-                toast.success("ส่งข้อมูลเรียบร้อย! รอแอดมินอนุมัตินะ 🚀"); // แจ้งเตือนสำเร็จ
+                toast.success("ส่งข้อมูลเรียบร้อย! รอแอดมินอนุมัตินะ 🚀");
             }
 
-            // --- 🎉🎉 จุดพลุฉลองตรงนี้เลยครับ 🎉🎉 ---
             confetti({
-                particleCount: 150,   // จำนวนชิ้นพลุ
-                spread: 70,           // การกระจายตัว
-                origin: { y: 0.6 },   // จุดที่พุ่งออกมา (0.6 คือค่อนไปทางล่างหน่อย)
-                colors: ['#2563eb', '#9333ea', '#ffffff'], // สีฟ้า, ม่วง, ขาว (ธีมอวกาศของเรา)
-                zIndex: 9999          // ให้ลอยทับ Modal
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 },
+                colors: ['#2563eb', '#9333ea', '#ffffff'],
+                zIndex: 9999
             });
-            // ---------------------------------------
             
-            onSuccess(); // ปิด Modal
+            onSuccess(); 
 
-            // Logic เปลี่ยนหน้า
             if (!currentLocation && setView) {
                 setView('waiting');
             }
         } catch (err) {
             console.error("Error submitting location:", err); 
-            toast.error("เกิดข้อผิดพลาด: " + err.message); // แจ้งเตือน Error
+            toast.error("เกิดข้อผิดพลาด: " + err.message);
         } finally { 
-            setUploading(false); 
+            setUploading(false); // ปลดล็อคปุ่ม
         }
     };
 
@@ -2375,10 +2403,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
 
                 <div className="p-8 overflow-y-auto custom-scrollbar space-y-6">
                     
-                    {/* ❌ ลบกล่อง Error สีแดงเดิมออก เพราะเราใช้ Toast แล้ว */}
-                    {/* {error && (...)} */}
-
-                    {/* Image Upload with Skeleton Overlay */}
+                    {/* Image Upload */}
                     <div>
                         <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location Image</label>
                         <div className="relative group h-48 w-full">
@@ -2410,51 +2435,26 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Pin Name</label>
                             <input type="text" value={name} onChange={e => setName(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white" required />
                         </div>
-                        {/* Latitude */}
+                        
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Latitude</label>
-                            <input 
-                                type="number" 
-                                step="any" // 👈 สำคัญ! เพื่อให้ใส่ทศนิยมละเอียดๆ ได้
-                                value={lat} 
-                                onChange={(e) => setLat(e.target.value)} // 👈 เพิ่มอันนี้ให้พิมพ์ค่าได้
-                                placeholder="13.xxxxxx"
-                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white transition-all" 
-                            />
+                            <input type="number" step="any" value={lat} onChange={(e) => setLat(e.target.value)} placeholder="13.xxxxxx" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white transition-all" />
                         </div>
 
-                        {/* Longitude */}
                         <div>
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Longitude</label>
-                            <input 
-                                type="number" 
-                                step="any" // 👈 สำคัญ!
-                                value={lng} 
-                                onChange={(e) => setLng(e.target.value)} // 👈 เพิ่มอันนี้ให้พิมพ์ค่าได้
-                                placeholder="100.xxxxxx"
-                                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white transition-all" 
-                            />
+                            <input type="number" step="any" value={lng} onChange={(e) => setLng(e.target.value)} placeholder="100.xxxxxx" className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white transition-all" />
                         </div>
-                        {/* Vehicle Type (ปรับปรุงใหม่: มีลูกศร Dropdown) */}
+
                         <div className="md:col-span-2">
                             <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Vehicle Type</label>
-                            
                             <div className="relative">
-                                {/* ตัว Dropdown */}
-                                <select 
-                                    value={type} 
-                                    onChange={e => setType(e.target.value)} 
-                                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white appearance-none cursor-pointer transition-shadow hover:shadow-sm"
-                                >
+                                <select value={type} onChange={e => setType(e.target.value)} className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 dark:text-white appearance-none cursor-pointer transition-shadow hover:shadow-sm">
                                     <option value="motorcycle">🛵 Win Motorbike (วินมอเตอร์ไซค์)</option>
                                     <option value="songthaew">🚌 Songthaew (รถสองแถว)</option>
                                 </select>
-
-                                {/* ⭐⭐ ไอคอนลูกศรชี้ลง (วางทับด้านขวา) ⭐⭐ */}
                                 <div className="absolute inset-y-0 right-0 flex items-center px-4 pointer-events-none text-gray-500 dark:text-gray-400">
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-                                    </svg>
+                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
                                 </div>
                             </div>
                         </div>
@@ -2492,7 +2492,14 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
                 {/* Footer */}
                 <div className="px-8 py-5 bg-gray-50 dark:bg-gray-800 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end space-x-3">
                     <button type="button" onClick={onClose} className="px-6 py-2.5 rounded-xl text-gray-600 dark:text-gray-300 font-semibold hover:bg-gray-200 dark:hover:bg-gray-700 transition">Cancel</button>
-                    <button type="button" onClick={handleSubmit} disabled={uploading} className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed transition transform active:scale-95 flex items-center">
+                    
+                    {/* ⭐⭐ เปลี่ยนกลับเป็น type="button" + onClick={handleSubmit} เพื่อให้ทำงานได้ชัวร์ๆ แม้ไม่มี <form> ⭐⭐ */}
+                    <button 
+                        type="button" 
+                        onClick={handleSubmit} 
+                        disabled={uploading} 
+                        className="px-6 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 disabled:bg-blue-400 disabled:cursor-not-allowed transition transform active:scale-95 flex items-center"
+                    >
                         {uploading ? 'Saving...' : 'Save Location'}
                     </button>
                 </div>
