@@ -3791,9 +3791,6 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             {isAddLocationModalOpen && (<LocationFormModal initialCoords={tempPin} onSuccess={handleSubmissionSuccess} onClose={() => { setIsAddLocationModalOpen(false); setTempPin(null); }} />)}
             
 
-            {/* Search Results Panel */}
-            {searchQuery.length > 0 && (<div className="absolute top-0 right-0 h-full w-full max-w-sm bg-white dark:bg-gray-800 z-30 shadow-lg p-6 flex flex-col"><div className="relative flex items-center mb-4"><span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500"><SearchIcon/></span><input type="text" className="w-full pl-10 pr-10 py-2 border-2 border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none dark:bg-gray-700 dark:text-gray-100" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} placeholder="Search..." autoFocus /><button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"><svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg></button></div><ul className="space-y-2 overflow-y-auto">{searchResults.map((loc) => (<li key={loc.id} className="flex items-center p-3 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer rounded-lg" onClick={() => handleSearchResultClick(loc)}><div className="mr-3 text-gray-400 dark:text-gray-500">{loc.type === 'motorcycle' ? <MotorcycleIcon/> : <BusIcon/>}</div><span className="text-gray-700 dark:text-gray-200">{loc.name}</span></li>))}{searchResults.length === 0 && <p className="text-gray-500 dark:text-gray-400 text-center py-4">No results.</p>}</ul></div>)}
-
             {isMyPinsModalOpen && user && (
                 <MyPinsModal 
                     user={user} 
@@ -4007,51 +4004,102 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
             </div>
             {isMenuOpen && <div onClick={() => setMenuOpen(false)} className="absolute inset-0 z-20 bg-black/40"></div>}
 
-            {/* Map Controls Overlay */}
-            <div className="absolute inset-0 p-4 md:p-6 flex flex-col pointer-events-none">
-                <div className="w-full flex justify-between items-start pointer-events-auto"><button onClick={() => setMenuOpen(true)} className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><MenuIcon /></button><div className="text-center"><h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-500" style={{ textShadow: '1px 1px 3px rgba(0,0,0,0.3)' }}>EasyWay</h1></div><div className="w-12"></div></div>
-                <div className="mt-4 w-full max-w-lg mx-auto pointer-events-auto"><div className="relative flex items-center bg-white dark:bg-gray-800 rounded-full shadow-lg"><input type="text" placeholder="Search..." className="w-full py-3 pl-5 pr-12 rounded-full focus:outline-none dark:bg-gray-800 dark:text-gray-100" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} /><button className="absolute right-2 bg-blue-500 text-white p-2 rounded-full hover:bg-blue-600"><SearchIcon /></button></div></div>
+            {/* ⭐⭐ Map Controls Overlay (Final: Menu ซ้ายสุด, Search กลางจอเป๊ะ) ⭐⭐ */}
+            <div className="absolute inset-0 p-4 md:p-6 flex flex-col pointer-events-none z-10">
+                
+                {/* 1. Top Bar Container */}
+                <div className="relative w-full flex items-start justify-center pointer-events-auto">
+                    
+                    {/* A. ปุ่ม Menu (บังคับชิดซ้ายสุดด้วย absolute) */}
+                    <button 
+                        onClick={() => setMenuOpen(true)} 
+                        className="absolute left-0 top-0 bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 z-50"
+                    >
+                        <MenuIcon />
+                    </button>
+
+                    {/* B. Search Bar Container (อยู่ตรงกลางหน้าจอ) */}
+                    {/* !pinningMode เพื่อซ่อนตอนปักหมุดจะได้ไม่เกะกะ */}
+                    {!pinningMode && (
+                        // ⭐⭐ เพิ่ม pl-14 ในมือถือ เพื่อกันไม่ให้ทับปุ่ม Menu, ส่วน Desktop (md) เอา padding ออกเพื่อให้กลางเป๊ะ ⭐⭐
+                        <div className="w-full max-w-md flex flex-col items-center z-40 pl-14 md:pl-0">
+                            
+                            {/* ตัว Input Bar */}
+                            <div className="relative w-full shadow-lg rounded-full bg-white dark:bg-gray-800 flex items-center">
+                                <span className="absolute left-4 text-gray-400 dark:text-gray-500">
+                                    <SearchIcon />
+                                </span>
+                                <input 
+                                    type="text" 
+                                    placeholder="Search..." 
+                                    className="w-full py-3 pl-12 pr-12 rounded-full focus:outline-none bg-transparent dark:text-gray-100" 
+                                    value={searchQuery} 
+                                    onChange={(e) => setSearchQuery(e.target.value)} 
+                                />
+                                {searchQuery && (
+                                    <button 
+                                        onClick={() => setSearchQuery('')} 
+                                        className="absolute right-2 p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200"
+                                    >
+                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                    </button>
+                                )}
+                            </div>
+
+                            {/* Dropdown ผลลัพธ์ (เลื่อนตาม Search Bar) */}
+                            {searchQuery.length > 0 && (
+                                <div className="mt-2 w-full bg-white dark:bg-gray-800 rounded-xl shadow-xl overflow-hidden pointer-events-auto max-h-60 overflow-y-auto custom-scrollbar">
+                                    {searchResults.length > 0 ? (
+                                        <ul className="divide-y divide-gray-100 dark:divide-gray-700">
+                                            {searchResults.map((loc) => (
+                                                <li 
+                                                    key={loc.id} 
+                                                    className="flex items-center p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors" 
+                                                    onClick={() => handleSearchResultClick(loc)}
+                                                >
+                                                    <div className="mr-3 text-gray-400 dark:text-gray-500">
+                                                        {loc.type === 'motorcycle' ? <MotorcycleIcon/> : <BusIcon/>}
+                                                    </div>
+                                                    <span className="text-gray-700 dark:text-gray-200 font-medium">{loc.name}</span>
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    ) : (
+                                        <p className="text-gray-500 dark:text-gray-400 text-center py-4 text-sm">No results found.</p>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+
+                {/* 2. Right Side Controls (Target, Zoom, Filter) - อยู่ที่เดิม ไม่ต้องแก้ */}
                 <div className="absolute right-4 md:right-6 top-1/2 -translate-y-1/2 flex flex-col space-y-2 pointer-events-auto">
                     <button onClick={moveToCurrentLocation} className="bg-white dark:bg-gray-800 p-3 rounded-full shadow-md text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"><TargetIcon /></button>
-                    <div className="bg-white dark:bg-gray-800 rounded-full shadow-md"><button onClick={handleZoomIn} className="p-3 block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-full"><PlusIcon /></button><hr className="dark:border-gray-600"/><button onClick={handleZoomOut} className="p-3 block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-full"><MinusIcon /></button></div>
-                    {/* ... ในส่วน Map Controls ... */}
+                    <div className="bg-white dark:bg-gray-800 rounded-full shadow-md">
+                        <button onClick={handleZoomIn} className="p-3 block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-t-full"><PlusIcon /></button>
+                        <hr className="dark:border-gray-600"/>
+                        <button onClick={handleZoomOut} className="p-3 block text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-b-full"><MinusIcon /></button>
+                    </div>
                     <div className="bg-white dark:bg-gray-800 rounded-full shadow-md flex flex-col overflow-hidden">
-                        
-                        {/* 🚌 ปุ่มสองแถว (ให้ไอคอนเป็นสีน้ำเงิน "ตลอดเวลา") */}
-                        <button 
-                            onClick={() => setFilterType(prev => prev === 'songthaew' ? 'all' : 'songthaew')} 
-                            className={`p-3 transition-colors ${
-                                filterType === 'songthaew' 
-                                ? 'bg-blue-100 dark:bg-blue-900/50' // ถ้าเลือกอยู่: พื้นหลังฟ้า
-                                : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700' // ถ้าไม่เลือก: พื้นใส
-                            }`}
-                        >
-                            {/* ⭐ ใส่สีที่ตัวไอคอนเลย (text-blue-600) ไม่ต้องรอ hover */}
-                            <div className="text-blue-600 dark:text-blue-400">
-                                <BusIcon />
-                            </div>
+                        <button onClick={() => setFilterType(prev => prev === 'songthaew' ? 'all' : 'songthaew')} className={`p-3 transition-colors ${filterType === 'songthaew' ? 'bg-blue-100 dark:bg-blue-900/50' : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <div className="text-blue-600 dark:text-blue-400"><BusIcon /></div>
                         </button>
-
                         <hr className="border-gray-200 dark:border-gray-700"/>
-
-                        {/* 🛵 ปุ่มวิน (ให้ไอคอนเป็นสีแดง "ตลอดเวลา") */}
-                        <button 
-                            onClick={() => setFilterType(prev => prev === 'motorcycle' ? 'all' : 'motorcycle')} 
-                            className={`p-3 transition-colors ${
-                                filterType === 'motorcycle' 
-                                ? 'bg-red-100 dark:bg-red-900/50' // ถ้าเลือกอยู่: พื้นหลังแดง
-                                : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700' // ถ้าไม่เลือก: พื้นใส
-                            }`}
-                        >
-                            {/* ⭐ ใส่สีที่ตัวไอคอนเลย (text-red-600) ไม่ต้องรอ hover */}
-                            <div className="text-red-600 dark:text-red-400">
-                                <MotorcycleIcon />
-                            </div>
+                        <button onClick={() => setFilterType(prev => prev === 'motorcycle' ? 'all' : 'motorcycle')} className={`p-3 transition-colors ${filterType === 'motorcycle' ? 'bg-red-100 dark:bg-red-900/50' : 'bg-transparent hover:bg-gray-100 dark:hover:bg-gray-700'}`}>
+                            <div className="text-red-600 dark:text-red-400"><MotorcycleIcon /></div>
                         </button>
-
                     </div>
                 </div>
-                <div className="absolute bottom-4 left-4 pointer-events-auto">{user && !pinningMode && (<button onClick={() => setPinningMode(true)} className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600"><AddPinIcon /></button>)}</div>
+
+                {/* 3. Bottom Left (Add Pin) - อยู่ที่เดิม ไม่ต้องแก้ */}
+                <div className="absolute bottom-4 left-4 pointer-events-auto">
+                    {user && !pinningMode && (
+                        <button onClick={() => setPinningMode(true)} className="bg-blue-500 text-white p-4 rounded-full shadow-lg hover:bg-blue-600 transition-transform active:scale-95">
+                            <AddPinIcon />
+                        </button>
+                    )}
+                </div>
             </div>
         </div>
         
