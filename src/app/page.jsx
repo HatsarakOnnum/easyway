@@ -1350,7 +1350,7 @@ const ManageLocations = ({ onViewLocation, currentFilter, setFilter, onApprove, 
                                             <img src={loc.imageUrl || "https://placehold.co/100"} alt="" className="h-full w-full object-cover" />
                                         </div>
                                         <div className="ml-4">
-                                            <div className="text-sm font-bold text-gray-900 dark:text-white">{loc.name}</div>
+                                            <div className="text-sm  text-gray-900 dark:text-white">{loc.name}</div>
                                             <div className="text-xs text-gray-500">Added: {loc.createdAt?.toDate().toLocaleDateString()}</div>
                                         </div>
                                     </div>
@@ -1628,7 +1628,7 @@ const ManageReviews = () => {
                     <div key={review.id} className="bg-white dark:bg-gray-800 p-5 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700">
                         <div className="mb-2 pb-2 border-b border-gray-100 dark:border-gray-700">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wider">Review for:</p>
-                            <p className="font-bold text-blue-600 dark:text-blue-400 truncate text-lg">
+                            <p className="font-bold text-white dark:text-white text-lg">
                                 📍 {locationsMap[review.locationId] || 'Unknown Location'}
                             </p>
                         </div>
@@ -1673,7 +1673,7 @@ const ManageReviews = () => {
                         {filteredReviews.map((review) => (
                             <tr key={review.id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                 <td className="px-5 py-4">
-                                    <p className="text-blue-600 dark:text-blue-400 font-bold text-sm">
+                                    <p className="text-white dark:text-white ">
                                         {locationsMap[review.locationId] || 'Unknown'}
                                     </p>
                                 </td>
