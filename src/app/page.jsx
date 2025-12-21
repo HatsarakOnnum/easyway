@@ -786,7 +786,7 @@ const ManageUsers = () => {
                         </button>
                         <button 
                             onClick={() => handleOpenModal()} 
-                            className="flex-1 md:flex-none justify-center bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap"
+                            className="flex-1 md:flex-none justify-center bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded whitespace-nowrap"
                         >
                             Add User
                         </button>
@@ -1295,9 +1295,9 @@ const ManageLocations = ({ onViewLocation, currentFilter, setFilter, onApprove, 
                     </div>
                     <button 
                         onClick={() => handleOpenModal()} 
-                        className="flex-1 px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition transform active:scale-95 flex items-center justify-center gap-2"
+                        className="flex-1 px-4 py-2.5 rounded bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-lg shadow-blue-500/30 transition transform active:scale-95 flex items-center justify-center gap-2"
                     >
-                        <PlusIcon /> <span>Add Pin</span>
+                         <span>Add Pin</span>
                     </button>
                 </div>
             </div>
@@ -2973,7 +2973,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
     const handleSignOut = async () => { try { await signOut(auth); } catch (error) { console.error("Sign out error: ", error); } };
     useEffect(() => { if (!user) { setUserLikes(new Set()); return; } const likesRef = collection(db, "users", user.uid, "likes"); const unsubscribe = onSnapshot(likesRef, (snapshot) => { setUserLikes(new Set(snapshot.docs.map(doc => doc.id))); }); return () => unsubscribe(); }, [user]);
     const handleLike = async (location) => { if (!user) { 
-            toast.error("กรุณาเข้าสู่ระบบเพื่อกดถูกใจ ", {
+            toast.error("Please log in to like. ", {
             });
             return; 
         } if (!location || !location.id) return; const locationId = location.id; const locationRef = doc(db, "locations", locationId); const likeRef = doc(db, "users", user.uid, "likes", locationId); const isLiked = userLikes.has(locationId); const newLikes = new Set(userLikes); const currentCount = localSelectedLocation?.likeCount || locations.find(l => l.id === locationId)?.likeCount || 0; let updatedCount; if (isLiked) { newLikes.delete(locationId); updatedCount = currentCount - 1; } else { newLikes.add(locationId); updatedCount = currentCount + 1; } setLocalSelectedLocation(prev => prev ? { ...prev, likeCount: updatedCount < 0 ? 0 : updatedCount } : null); setUserLikes(newLikes); try { if (isLiked) { await deleteDoc(likeRef); await updateDoc(locationRef, { likeCount: increment(-1) }); } else { await setDoc(likeRef, { createdAt: serverTimestamp() }); await updateDoc(locationRef, { likeCount: increment(1) }); } } catch (error) { console.error("Like error:", error); setUserLikes(userLikes); setLocalSelectedLocation(location); alert("Failed to update like."); } };
@@ -3518,7 +3518,7 @@ function MapScreen({ user, setView, darkMode, toggleDarkMode }) {
                                 <motion.button
                                     whileHover={{ scale: 1.05 }} 
                                     whileTap={{ scale: 0.95 }}
-                                    onClick={() => { if (user) { setIsReportModalOpen(true) } else { toast.error('กรุณาเข้าสู่ระบบเพื่อรายงาน') } }}
+                                    onClick={() => { if (user) { setIsReportModalOpen(true) } else { toast.error('Please log in to report.') } }}
                                     // เปลี่ยน Style ตรงนี้ครับ 👇
                                     className="absolute top-3 left-3 z-10 flex items-center gap-1.5 bg-red-600/90 hover:bg-red-700 text-white px-3 py-1.5 rounded-full shadow-md backdrop-blur-sm transition-all border border-red-400/30"
                                 >
