@@ -2081,7 +2081,7 @@ function AdminDashboard() {
                 });
             }
 
-            toast.success(`อนุมัติ "${location.name}" เรียบร้อย!`);
+            toast.success(`This pin "${location.name}" has been approved!`);
             confetti({ particleCount: 100, spread: 60, origin: { y: 0.6 } });
             
             // ปิด Map (ถ้าเปิดอยู่) กลับไปหน้า List
@@ -2139,7 +2139,7 @@ function AdminDashboard() {
                 });
             }
 
-            toast.success(isPending ? "ปฏิเสธคำขอเรียบร้อย" : "ลบสถานที่เรียบร้อย");
+            toast.success(isPending ? "The request was successfully rejected." : "The location has been deleted.");
             
             // Reset ค่าต่างๆ
             setViewingLocation(null); // ปิด Map
@@ -2391,7 +2391,7 @@ const LocationFormModal = ({ currentLocation, onClose, initialCoords, onSuccess,
                 toast.success("แก้ไขข้อมูลเรียบร้อย! 🎉");
             } else {
                 await addDoc(collection(db, "locations"), locationData);
-                toast.success("ส่งข้อมูลเรียบร้อย! รอแอดมินอนุมัตินะ 🚀");
+                toast.success("successfully! Please wait for administrator approval. 🚀");
             }
 
             confetti({
