@@ -462,7 +462,7 @@ function WelcomeScreen({ setView }) {
             <div className="flex flex-col items-center text-center space-y-4 mb-8 relative z-20 -mt-10">
                 <div className="relative group">
                     <div className="absolute inset-0 bg-blue-500/30 blur-[80px] rounded-full group-hover:bg-purple-500/40 transition-colors duration-1000"></div>
-                    <h1 className="relative text-9xl font-black text-transparent tracking-tighter drop-shadow-sm select-none text-aurora">EW</h1>
+                    <h1 className="relative text-9xl font-black text-transparent tracking-tighter drop-shadow-sm select-none text-aurora pr-1.5">EW</h1>
                 </div>
                 <div>
                     <h2 className="text-3xl font-bold tracking-[0.2em] drop-shadow-md text-aurora">EASYWAY</h2>
@@ -596,7 +596,7 @@ function LoginScreen({ setView }) {
                     <BackIcon />
                 </button>
                 <div className="text-center mb-8 pt-2">
-                    <h1 className="text-5xl font-extrabold mb-2 tracking-tight inline-block text-aurora">EasyWay</h1>
+                    <h1 className="text-5xl font-extrabold mb-2 pb-2 tracking-tight inline-block text-aurora">EasyWay</h1>
                     <p className="text-slate-300 font-medium">Welcome Back!</p>
                 </div>
                 {error && <div className="mb-6 p-3 bg-red-900/30 text-red-300 text-sm rounded-xl border border-red-800 flex items-center shadow-sm animate-pulse">⚠️ {error}</div>}
